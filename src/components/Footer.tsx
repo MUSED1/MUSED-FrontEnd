@@ -21,18 +21,18 @@ export function Footer() {
                                 href="#"
                                 className="text-cream/70 hover:text-gold transition-colors"
                             >
-                                <Facebook size={20} />
+
                             </a>
                             <a
                                 href="#"
                                 className="text-cream/70 hover:text-gold transition-colors"
                             >
-                                <Twitter size={20} />
+
                             </a>
                         </div>
                     </div>
                     <div>
-                        <h4 className="text-lg font-medium mb-4">Rent</h4>
+                        <h4 className="text-lg font-medium mb-4">Lend & Rent</h4>
                         <ul className="space-y-2">
                             <li>
                                 <a
@@ -137,7 +137,7 @@ export function Footer() {
                                     href="#"
                                     className="text-cream/70 hover:text-gold transition-colors"
                                 >
-                                    Shipping & Returns
+
                                 </a>
                             </li>
                             <li>
@@ -145,7 +145,7 @@ export function Footer() {
                                     href="#"
                                     className="text-cream/70 hover:text-gold transition-colors"
                                 >
-                                    Size Guide
+
                                 </a>
                             </li>
                             <li>
@@ -153,7 +153,7 @@ export function Footer() {
                                     href="#"
                                     className="text-cream/70 hover:text-gold transition-colors"
                                 >
-                                    Order Track
+
                                 </a>
                             </li>
                             <li>

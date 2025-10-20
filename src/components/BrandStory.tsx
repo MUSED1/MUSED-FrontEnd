@@ -12,15 +12,15 @@ export function BrandStory() {
                             Our Story
                         </h2>
                         <p className="text-plum/80 mb-6 leading-relaxed transform transition-all duration-500 delay-100 hover:translate-x-1 hover:text-plum">
-                            Founded in 2025, Mused was born from a passion for creating
-                            clothing that combines contemporary aesthetics with timeless
-                            elegance
+                            First we arrived in HK: We arrived in Hk, one suitcase in hand, living in a tiny 6^2 room
+                            we borrowed everything from friends & we weren’t the only ones!
+                            Then, we saw the coolest fits. We realized there were so many hidden gems tucked away in closets
+                            so many stylish girls walking down the streets. We Were Mused!
+
                         </p>
                         <p className="text-plum/80 mb-8 leading-relaxed transform transition-all duration-500 delay-200 hover:translate-x-1 hover:text-plum">
-                            kahsdlkjañhksjdhj,alhsdkjhasjdhaksjdhañs,kdh,ñ
-                            ak.sdjaksjdkahsjdlkajskdjlaksjdlajlskdjlkasjd
-                            askldjañsldkhjñaskdjñlaksjdñlkashf,hgsaj,ghla,jshgas
-                            asldjaksjdkasjldkajlskdjlaksjdlaksjdlkasjdlkajsdkJla
+                            So we decided to create Mused- We wanted to create a space where this inspiration was shared.
+                            A place where people could rent, lend, and inspire each other. Together let’s create an augmented wardrobe built YOU, for YOU!
                         </p>
                         <div className="transform transition-all duration-500 delay-300 hover:scale-105">
                             <Button variant="primary">Learn More</Button>
@@ -32,8 +32,8 @@ export function BrandStory() {
                         {/* Top Left Image */}
                         <div className="aspect-square overflow-hidden transform transition-all duration-700 ease-out hover:scale-105 hover:rotate-1 hover:shadow-2xl">
                             <img
-                                src="https://images.unsplash.com/photo-1551232864-3f0890e580d9?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=687&q=80"
-                                alt="Mused atelier"
+                                src="src/assets/t1.jpg"
+                            alt="Mused atelier"
                                 className="w-full h-full object-cover transform transition-all duration-700 ease-in-out hover:scale-110"
                             />
                         </div>
@@ -41,7 +41,7 @@ export function BrandStory() {
                         {/* Top Right Image */}
                         <div className="aspect-square overflow-hidden mt-8 transform transition-all duration-700 ease-out hover:scale-105 hover:-rotate-1 hover:shadow-2xl">
                             <img
-                                src="https://images.unsplash.com/photo-1605289355680-75fb41239154?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=764&q=80"
+                                src="src/assets/t2.jpg"
                                 alt="Fabric selection"
                                 className="w-full h-full object-cover transform transition-all duration-700 ease-in-out hover:scale-110"
                             />
@@ -50,7 +50,7 @@ export function BrandStory() {
                         {/* Bottom Left Image */}
                         <div className="aspect-square overflow-hidden transform transition-all duration-700 ease-out hover:scale-105 hover:-rotate-1 hover:shadow-2xl">
                             <img
-                                src="https://images.unsplash.com/photo-1574634534894-89d7576c8259?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=764&q=80"
+                                src="src/assets/t4.jpg"
                                 alt="Design process"
                                 className="w-full h-full object-cover transform transition-all duration-700 ease-in-out hover:scale-110"
                             />
@@ -59,7 +59,7 @@ export function BrandStory() {
                         {/* Bottom Right Image */}
                         <div className="aspect-square overflow-hidden mt-8 transform transition-all duration-700 ease-out hover:scale-105 hover:rotate-1 hover:shadow-2xl">
                             <img
-                                src="https://images.unsplash.com/photo-1558769132-cb1aea458c5e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=774&q=80"
+                                src="src/assets/t5.jpg"
                                 alt="Finished garment"
                                 className="w-full h-full object-cover transform transition-all duration-700 ease-in-out hover:scale-110"
                             />
