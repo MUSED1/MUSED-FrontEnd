@@ -1,5 +1,13 @@
 import React from 'react'
+import { useNavigate } from 'react-router-dom'
+
 export function Categories() {
+    const navigate = useNavigate()
+
+    const handleExploreCollection = () => {
+        navigate('/collections')
+    }
+
     return (
         <section className="py-16 bg-rose/10 w-full">
             <div className="container mx-auto px-4">
@@ -19,12 +27,12 @@ export function Categories() {
                         <div className="absolute inset-0 bg-gradient-to-t from-burgundy/80 to-transparent flex items-end p-6">
                             <div className="text-cream">
                                 <h3 className="text-2xl font-bold mb-2">Dresses</h3>
-                                <a
-                                    href="#"
-                                    className="inline-block border-b-2 border-cream pb-1 hover:text-gold transition-colors"
+                                <button
+                                    onClick={handleExploreCollection}
+                                    className="inline-block border-b-2 border-cream pb-1 hover:text-gold transition-colors text-left"
                                 >
                                     Explore collection
-                                </a>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -37,13 +45,12 @@ export function Categories() {
                         <div className="absolute inset-0 bg-gradient-to-t from-burgundy/80 to-transparent flex items-end p-6">
                             <div className="text-cream">
                                 <h3 className="text-2xl font-bold mb-2">Trousers</h3>
-                                <a
-                                    href="#"
-                                    className="inline-block border-b-2 border-cream pb-1 hover:text-gold transition-colors"
+                                <button
+                                    onClick={handleExploreCollection}
+                                    className="inline-block border-b-2 border-cream pb-1 hover:text-gold transition-colors text-left"
                                 >
                                     Explore collection
-
-                                </a>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -56,13 +63,12 @@ export function Categories() {
                         <div className="absolute inset-0 bg-gradient-to-t from-burgundy/80 to-transparent flex items-end p-6">
                             <div className="text-cream">
                                 <h3 className="text-2xl font-bold mb-2">Accessories</h3>
-                                <a
-                                    href="#"
-                                    className="inline-block border-b-2 border-cream pb-1 hover:text-gold transition-colors"
+                                <button
+                                    onClick={handleExploreCollection}
+                                    className="inline-block border-b-2 border-cream pb-1 hover:text-gold transition-colors text-left"
                                 >
                                     Explore collection
-
-                                </a>
+                                </button>
                             </div>
                         </div>
                     </div>
