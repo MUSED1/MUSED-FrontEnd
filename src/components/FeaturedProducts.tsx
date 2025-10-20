@@ -13,7 +13,7 @@ export function FeaturedProducts() {
             name: 'Beige mini dress',
             price: '',
             image:
-                "src/assets/dress1.jpg",
+                "src/assets/featured1.jpg",
             category: 'S',
         },
         {
@@ -22,14 +22,14 @@ export function FeaturedProducts() {
             category: 'XS',
             price: '',
             image:
-                "src/assets/dress2.png",
+                "src/assets/featured2.jpg",
         },
         {
             id: 3,
             name: 'Two-piece white set',
             price: '',
             image:
-                "src/assets/dress3.png",
+                "src/assets/featured3.jpg",
             category: 'M',
         },
         {
@@ -37,7 +37,7 @@ export function FeaturedProducts() {
             name: 'MINI dress',
             price: '',
             image:
-                "src/assets/dress4.jpg",
+                "src/assets/main1.jpg",
             category: 'S',
         },
     ]
