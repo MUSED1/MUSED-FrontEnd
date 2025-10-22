@@ -1,5 +1,5 @@
-import React from 'react'
-import { Instagram, Facebook, Twitter } from 'lucide-react'
+
+import { Instagram } from 'lucide-react'
 export function Footer() {
     return (
         <footer className="bg-plum text-cream w-full">
