@@ -1,5 +1,5 @@
-//
 import { Instagram } from 'lucide-react'
+
 export function Footer() {
     return (
         <footer className="bg-plum text-cream w-full">
@@ -16,18 +16,6 @@ export function Footer() {
                                 className="text-cream/70 hover:text-gold transition-colors"
                             >
                                 <Instagram size={20} />
-                            </a>
-                            <a
-                                href="#"
-                                className="text-cream/70 hover:text-gold transition-colors"
-                            >
-
-                            </a>
-                            <a
-                                href="#"
-                                className="text-cream/70 hover:text-gold transition-colors"
-                            >
-
                             </a>
                         </div>
                     </div>
@@ -100,22 +88,6 @@ export function Footer() {
                                     href="#"
                                     className="text-cream/70 hover:text-gold transition-colors"
                                 >
-
-                                </a>
-                            </li>
-                            <li>
-                                <a
-                                    href="#"
-                                    className="text-cream/70 hover:text-gold transition-colors"
-                                >
-
-                                </a>
-                            </li>
-                            <li>
-                                <a
-                                    href="#"
-                                    className="text-cream/70 hover:text-gold transition-colors"
-                                >
                                     Contact
                                 </a>
                             </li>
@@ -130,30 +102,6 @@ export function Footer() {
                                     className="text-cream/70 hover:text-gold transition-colors"
                                 >
                                     Help Center
-                                </a>
-                            </li>
-                            <li>
-                                <a
-                                    href="#"
-                                    className="text-cream/70 hover:text-gold transition-colors"
-                                >
-
-                                </a>
-                            </li>
-                            <li>
-                                <a
-                                    href="#"
-                                    className="text-cream/70 hover:text-gold transition-colors"
-                                >
-
-                                </a>
-                            </li>
-                            <li>
-                                <a
-                                    href="#"
-                                    className="text-cream/70 hover:text-gold transition-colors"
-                                >
-
                                 </a>
                             </li>
                             <li>
