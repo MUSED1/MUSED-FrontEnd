@@ -11,7 +11,7 @@ export function Hero() {
     })
 
     const images = [
-        "src/assets/first.jpg",
+        "/first.jpg",
     ]
 
     // Event date: October 23, 2025 at 19:00

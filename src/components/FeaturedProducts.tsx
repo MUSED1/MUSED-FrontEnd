@@ -19,7 +19,7 @@ export function FeaturedProducts() {
             id: 1,
             name: '',
             price: '',
-            image: "src/assets/featured1.jpg",
+            image: "/featured1.jpg",
             category: 'S',
         },
         {
@@ -27,20 +27,20 @@ export function FeaturedProducts() {
             name: ' ',
             category: 'XS',
             price: '',
-            image: "src/assets/featured2.jpg",
+            image: "/featured2.jpg",
         },
         {
             id: 3,
             name: '',
             price: '',
-            image: "src/assets/featured3.jpg",
+            image: "/featured3.jpg",
             category: 'M',
         },
         {
             id: 4,
             name: '',
             price: '',
-            image: "src/assets/main1.jpg",
+            image: "/main1.jpg",
             category: 'S',
         },
     ]
