@@ -1,5 +1,5 @@
 // App.tsx
-import React, { useState, useEffect } from 'react'
+import  { useState, useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { Header } from './components/Header'
 import { Hero } from './components/Hero'
@@ -12,7 +12,7 @@ import { LoadingScreen } from './components/LoadingScreen'
 import { Collections } from './components/Collections'
 import { Diner } from './components/Diner'
 import { About } from './components/About' // Add this import
-
+//
 function HomePage() {
     return (
         <div className="font-sans">
