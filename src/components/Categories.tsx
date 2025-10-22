@@ -19,7 +19,7 @@ export function Categories() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="relative h-96 overflow-hidden group">
                         <img
-                            src="../../public/dress.png"
+                            src="/dress.png"
                             alt="Women's Collection"
                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                         />
@@ -37,7 +37,7 @@ export function Categories() {
                     </div>
                     <div className="relative h-96 overflow-hidden group">
                         <img
-                            src="../../public/pants.png"
+                            src="/pants.png"
                             alt="Men's Collection"
                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                         />
@@ -55,7 +55,7 @@ export function Categories() {
                     </div>
                     <div className="relative h-96 overflow-hidden group">
                         <img
-                            src="../../public/bag.jpg"
+                            src="/bag.jpg"
                             alt="Accessories Collection"
                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                         />
