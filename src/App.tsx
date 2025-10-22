@@ -12,7 +12,7 @@ import { LoadingScreen } from './components/LoadingScreen'
 import { Collections } from './components/Collections'
 import { Diner } from './components/Diner'
 import { About } from './components/About' // Add this import
-
+//
 function HomePage() {
     return (
         <div className="font-sans">
