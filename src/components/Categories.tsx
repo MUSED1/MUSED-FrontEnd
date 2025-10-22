@@ -1,4 +1,3 @@
-import React from 'react'
 import { useNavigate } from 'react-router-dom'
 
 export function Categories() {
@@ -44,7 +43,7 @@ export function Categories() {
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-burgundy/80 to-transparent flex items-end p-6">
                             <div className="text-cream">
-                                <h3 className="text-2xl font-bold mb-2">Trousers</h3>
+                                <h3 className="text-2xl font-bold mb-2">Bottoms</h3>
                                 <button
                                     onClick={handleExploreCollection}
                                     className="inline-block border-b-2 border-cream pb-1 hover:text-gold transition-colors text-left"

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { Search, ShoppingBag, User, Menu, X } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
@@ -38,12 +38,12 @@ export function Header() {
                                 </Link>
                             </li>
                             <li>
-                                <a
-                                    href="#"
+                                <Link
+                                    to="/diner"
                                     className="text-cream hover:text-gold font-medium transition-all duration-300 ease-in-out transform hover:scale-105 hover:font-semibold"
                                 >
-                                    Dinner
-                                </a>
+                                    Diner
+                                </Link>
                             </li>
                             <li>
                                 <Link
@@ -54,12 +54,12 @@ export function Header() {
                                 </Link>
                             </li>
                             <li>
-                                <a
-                                    href="#"
+                                <Link
+                                    to="/about"
                                     className="text-cream hover:text-gold font-medium transition-all duration-300 ease-in-out transform hover:scale-105 hover:font-semibold"
                                 >
                                     About
-                                </a>
+                                </Link>
                             </li>
                         </ul>
                     </nav>
@@ -95,13 +95,13 @@ export function Header() {
                                 </Link>
                             </li>
                             <li>
-                                <a
-                                    href="#"
+                                <Link
+                                    to="/diner"
                                     className="block text-cream hover:text-gold font-medium transition-all duration-300 ease-in-out transform hover:translate-x-2 hover:font-semibold"
                                     onClick={() => setIsMenuOpen(false)}
                                 >
                                     Diner
-                                </a>
+                                </Link>
                             </li>
                             <li>
                                 <Link
@@ -113,13 +113,13 @@ export function Header() {
                                 </Link>
                             </li>
                             <li>
-                                <a
-                                    href="#"
+                                <Link
+                                    to="/about"
                                     className="block text-cream hover:text-gold font-medium transition-all duration-300 ease-in-out transform hover:translate-x-2 hover:font-semibold"
                                     onClick={() => setIsMenuOpen(false)}
                                 >
                                     About
-                                </a>
+                                </Link>
                             </li>
                         </ul>
                     </div>

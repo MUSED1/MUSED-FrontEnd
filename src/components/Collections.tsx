@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Filter, X, Search } from 'lucide-react';
+import { ArrowLeft, Filter, X, Search, Ruler, Tag, Calendar, User, MapPin, Phone, Mail } from 'lucide-react';
 
 interface Outfit {
     id: number;
@@ -84,9 +84,14 @@ export function Collections() {
                         </button>
 
                         {/* Title */}
-                        <h1 className="text-2xl md:text-3xl font-bold tracking-wider text-[#FFF0C8] transition-all duration-300 ease-in-out hover:text-[#AD7301] hover:scale-105">
-                            COLLECTIONS
-                        </h1>
+                        <div className="text-center">
+                            <h1 className="text-2xl md:text-3xl font-bold tracking-wider text-[#FFF0C8] transition-all duration-300 ease-in-out hover:text-[#AD7301] hover:scale-105">
+                                COLLECTIONS
+                            </h1>
+                            <div className="text-lg md:text-xl text-[#AD7301] font-light italic mt-1">
+                                First Dinner Collection
+                            </div>
+                        </div>
 
                         {/* Filter Button */}
                         <button
@@ -270,14 +275,25 @@ export function Collections() {
                             <h2 className="text-3xl font-bold text-[#5B1B3A] mb-3">{selectedOutfit.name}</h2>
                             <p className="text-gray-600 text-lg mb-6">{selectedOutfit.description}</p>
 
+                            {/* Elegant Size and Category Display */}
                             <div className="grid grid-cols-2 gap-4 mb-8">
-                                <div className="bg-[#FFF0C8] p-4 rounded-xl border-2 border-[#AD7301] transform transition-all duration-300 hover:scale-105">
-                                    <p className="text-sm text-[#5B1B3A] font-semibold">Size</p>
-                                    <p className="text-[#891B81] font-bold text-lg">{selectedOutfit.size}</p>
+                                <div className="bg-gradient-to-br from-[#5B1B3A] to-[#891B81] p-4 rounded-xl text-white transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
+                                    <div className="flex items-center space-x-3">
+                                        <Ruler className="text-[#AD7301]" size={24} />
+                                        <div>
+                                            <p className="text-sm font-semibold opacity-90">Size</p>
+                                            <p className="text-xl font-bold">{selectedOutfit.size}</p>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="bg-[#FFF0C8] p-4 rounded-xl border-2 border-[#AD7301] transform transition-all duration-300 hover:scale-105">
-                                    <p className="text-sm text-[#5B1B3A] font-semibold">Category</p>
-                                    <p className="text-[#891B81] font-bold text-lg">{selectedOutfit.category}</p>
+                                <div className="bg-gradient-to-br from-[#AD7301] to-[#FFD166] p-4 rounded-xl text-[#5B1B3A] transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
+                                    <div className="flex items-center space-x-3">
+                                        <Tag className="text-[#891B81]" size={24} />
+                                        <div>
+                                            <p className="text-sm font-semibold opacity-90">Category</p>
+                                            <p className="text-xl font-bold">{selectedOutfit.category}</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -364,7 +380,10 @@ function ReservationForm({ outfit, onClose }: { outfit: Outfit; onClose: () => v
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="transform transition-all duration-300 hover:scale-105">
-                    <label className="block text-sm font-semibold text-[#5B1B3A] mb-2">Full Name *</label>
+                    <label className="block text-sm font-semibold text-[#5B1B3A] mb-2 flex items-center">
+                        <User size={16} className="mr-2 text-[#891B81]" />
+                        Full Name *
+                    </label>
                     <input
                         type="text"
                         name="name"
@@ -376,7 +395,10 @@ function ReservationForm({ outfit, onClose }: { outfit: Outfit; onClose: () => v
                     />
                 </div>
                 <div className="transform transition-all duration-300 hover:scale-105">
-                    <label className="block text-sm font-semibold text-[#5B1B3A] mb-2">Email *</label>
+                    <label className="block text-sm font-semibold text-[#5B1B3A] mb-2 flex items-center">
+                        <Mail size={16} className="mr-2 text-[#891B81]" />
+                        Email *
+                    </label>
                     <input
                         type="email"
                         name="email"
@@ -391,7 +413,10 @@ function ReservationForm({ outfit, onClose }: { outfit: Outfit; onClose: () => v
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="transform transition-all duration-300 hover:scale-105">
-                    <label className="block text-sm font-semibold text-[#5B1B3A] mb-2">Phone Number *</label>
+                    <label className="block text-sm font-semibold text-[#5B1B3A] mb-2 flex items-center">
+                        <Phone size={16} className="mr-2 text-[#891B81]" />
+                        Phone Number *
+                    </label>
                     <input
                         type="tel"
                         name="phone"
@@ -403,7 +428,10 @@ function ReservationForm({ outfit, onClose }: { outfit: Outfit; onClose: () => v
                     />
                 </div>
                 <div className="transform transition-all duration-300 hover:scale-105">
-                    <label className="block text-sm font-semibold text-[#5B1B3A] mb-2">Preferred Pickup Date *</label>
+                    <label className="block text-sm font-semibold text-[#5B1B3A] mb-2 flex items-center">
+                        <Calendar size={16} className="mr-2 text-[#891B81]" />
+                        Preferred Pickup Date *
+                    </label>
                     <input
                         type="date"
                         name="pickupDate"
@@ -416,7 +444,10 @@ function ReservationForm({ outfit, onClose }: { outfit: Outfit; onClose: () => v
             </div>
 
             <div className="transform transition-all duration-300 hover:scale-105">
-                <label className="block text-sm font-semibold text-[#5B1B3A] mb-2">Delivery Address *</label>
+                <label className="block text-sm font-semibold text-[#5B1B3A] mb-2 flex items-center">
+                    <MapPin size={16} className="mr-2 text-[#891B81]" />
+                    Delivery Address *
+                </label>
                 <textarea
                     name="address"
                     value={formData.address}
@@ -440,7 +471,7 @@ function ReservationForm({ outfit, onClose }: { outfit: Outfit; onClose: () => v
                 />
             </div>
 
-            <div className="bg-[#FFF0C8] p-6 rounded-xl border-2 border-[#AD7301] transform transition-all duration-300 hover:scale-105">
+            <div className="bg-gradient-to-br from-[#FFF0C8] to-[#FFE8A5] p-6 rounded-xl border-2 border-[#AD7301] transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
                 <div className="flex items-start space-x-4">
                     <input
                         type="checkbox"
@@ -467,7 +498,7 @@ function ReservationForm({ outfit, onClose }: { outfit: Outfit; onClose: () => v
                 <button
                     type="submit"
                     disabled={!formData.agreeToTerms}
-                    className="flex-1 bg-[#940000] text-white py-4 rounded-xl font-semibold hover:bg-[#891B81] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+                    className="flex-1 bg-gradient-to-r from-[#940000] to-[#891B81] text-white py-4 rounded-xl font-semibold hover:from-[#891B81] hover:to-[#5B1B3A] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
                 >
                     Submit Reservation
                 </button>

@@ -1,3 +1,4 @@
+// App.tsx
 import React, { useState, useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { Header } from './components/Header'
@@ -9,6 +10,8 @@ import { Newsletter } from './components/Newsletter'
 import { Footer } from './components/Footer'
 import { LoadingScreen } from './components/LoadingScreen'
 import { Collections } from './components/Collections'
+import { Diner } from './components/Diner'
+import { About } from './components/About' // Add this import
 
 function HomePage() {
     return (
@@ -46,6 +49,8 @@ export function App() {
             <Routes>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/collections" element={<Collections />} />
+                <Route path="/diner" element={<Diner />} />
+                <Route path="/about" element={<About />} /> {/* Add this route */}
             </Routes>
         </Router>
     )
