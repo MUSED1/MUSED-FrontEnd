@@ -18,14 +18,14 @@ export function BrandStory() {
                             </h2>
 
                             <div className="space-y-6">
-                                <p className="text-plum/80 text-lg leading-relaxed transform transition-all duration-500 delay-100 hover:translate-x-2 hover:text-plum bg-white/50 p-4 rounded-xl border-l-4 border-gold">
+                                <p className="text-plum/80 text-lg leading-relaxed transform transition-all duration-500 delay-100 hover:translate-x-2 hover:text-plum bg-white/50 p-4 rounded-xl border-l-4 border-gold font-amandine">
                                     First we arrived in HK: We arrived in Hk, one suitcase in hand, living in a tiny 6² room
                                     we borrowed everything from friends & we weren't the only ones!
                                     Then, we saw the coolest fits. We realized there were so many hidden gems tucked away in closets
                                     so many stylish girls walking down the streets. We Were Mused!
                                 </p>
 
-                                <p className="text-plum/80 text-lg leading-relaxed transform transition-all duration-500 delay-200 hover:translate-x-2 hover:text-plum bg-white/50 p-4 rounded-xl border-l-4 border-plum">
+                                <p className="text-plum/80 text-lg leading-relaxed transform transition-all duration-500 delay-200 hover:translate-x-2 hover:text-plum bg-white/50 p-4 rounded-xl border-l-4 border-plum font-amandine">
                                     So we decided to create Mused- We wanted to create a space where this inspiration was shared.
                                     A place where people could rent, lend, and inspire each other. Together let's create an augmented wardrobe built YOU, for YOU!
                                 </p>
@@ -33,7 +33,7 @@ export function BrandStory() {
 
                             <div className="mt-8 transform transition-all duration-500 delay-300 hover:scale-105 hover:translate-x-2">
                                 <Button variant="primary" className="group">
-                                    <span className="flex items-center gap-2">
+                                    <span className="flex items-center gap-2 font-amandine">
                                         Learn More
                                         <svg className="w-4 h-4 transform transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -69,7 +69,7 @@ export function BrandStory() {
 
                             {/* Decorative Text */}
                             <div className="absolute -bottom-6 -right-6 transform rotate-12 opacity-60">
-                                <span className="text-6xl font-bold text-gold/30 select-none">MUSED</span>
+                                <span className="text-6xl font-bold text-gold/30 select-none font-amandine">MUSED</span>
                             </div>
                         </div>
                     </div>

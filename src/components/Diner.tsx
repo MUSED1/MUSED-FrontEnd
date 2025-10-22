@@ -19,59 +19,35 @@ export function Diner() {
                         </p>
                     </div>
 
-                    {/* Event Grid */}
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-                        {/* Event 1 */}
-                        <div className="bg-white rounded-2xl shadow-lg overflow-hidden transform transition-all duration-500 hover:scale-105 hover:shadow-2xl">
-                            <div className="aspect-video bg-gradient-to-r from-plum to-gold"></div>
-                            <div className="p-6">
-                                <h3 className="text-2xl font-bold text-plum mb-2">Seasonal Showcase</h3>
-                                <p className="text-plum/70 mb-4">
-                                    An intimate dinner featuring our latest seasonal collection with live styling sessions.
+                    {/* Wear Something Borrowed Section */}
+                    <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-16">
+                        <div className="md:flex">
+                            <div className="md:w-1/2 p-8">
+                                <h2 className="text-3xl font-bold text-plum mb-4">Wear Something Borrowed Dinner</h2>
+                                <p className="text-plum/80 mb-6 leading-relaxed">
+                                    Come to dinner wearing a borrowed piece from the dinner collection. This is where muses
+                                    can meet the mused. Get to know who you are lending to and borrowing from. Share your
+                                    style, share a moment.
                                 </p>
                                 <div className="flex justify-between items-center">
-                                    <span className="text-gold font-semibold">$120 per person</span>
-                                    <button className="bg-plum text-cream px-6 py-2 rounded-full hover:bg-gold transition-all duration-300">
-                                        Book Now
+                                    <span className="text-2xl font-bold text-gold">300 HKD</span>
+                                    <button className="bg-plum text-cream px-8 py-3 rounded-full hover:bg-gold transition-all duration-300 font-semibold">
+                                        Reserve Your Seat
                                     </button>
                                 </div>
                             </div>
-                        </div>
-
-                        {/* Event 2 */}
-                        <div className="bg-white rounded-2xl shadow-lg overflow-hidden transform transition-all duration-500 hover:scale-105 hover:shadow-2xl">
-                            <div className="aspect-video bg-gradient-to-r from-gold to-plum"></div>
-                            <div className="p-6">
-                                <h3 className="text-2xl font-bold text-plum mb-2">Designer Night</h3>
-                                <p className="text-plum/70 mb-4">
-                                    Meet emerging designers and be the first to experience their exclusive collections.
-                                </p>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-gold font-semibold">$150 per person</span>
-                                    <button className="bg-plum text-cream px-6 py-2 rounded-full hover:bg-gold transition-all duration-300">
-                                        Book Now
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Event 3 */}
-                        <div className="bg-white rounded-2xl shadow-lg overflow-hidden transform transition-all duration-500 hover:scale-105 hover:shadow-2xl">
-                            <div className="aspect-video bg-gradient-to-r from-plum to-amber-200"></div>
-                            <div className="p-6">
-                                <h3 className="text-2xl font-bold text-plum mb-2">VIP Closet Exchange</h3>
-                                <p className="text-plum/70 mb-4">
-                                    Bring your pre-loved pieces and swap with other fashion enthusiasts in our community.
-                                </p>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-gold font-semibold">Members Only</span>
-                                    <button className="bg-plum text-cream px-6 py-2 rounded-full hover:bg-gold transition-all duration-300">
-                                        Learn More
-                                    </button>
+                            <div className="md:w-1/2 bg-gradient-to-br from-plum to-gold p-8 flex items-center justify-center">
+                                <div className="text-center text-white">
+                                    <h3 className="text-2xl font-bold mb-4">Next Event</h3>
+                                    <p className="text-xl mb-2">Wear Something Borrowed</p>
+                                    <p className="text-3xl font-bold mb-4">Oct 23, 2025</p>
+                                    <p className="text-amber-100">7:00 PM - Central Hong Kong</p>
                                 </div>
                             </div>
                         </div>
                     </div>
+
+                    {/* Past Events Section */}
 
                     {/* Info Section */}
                     <div className="bg-white rounded-2xl shadow-lg p-8 max-w-4xl mx-auto">

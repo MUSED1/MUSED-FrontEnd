@@ -52,30 +52,29 @@ export function Hero() {
     }
 
     return (
-        <section className="relative h-[80vh] bg-[#fff0c8] w-full overflow-hidden">
+        <section className="relative h-[80vh] bg-[#fff0c8] w-full overflow-hidden font-amandine">
             <div className="container mx-auto h-full px-4 flex flex-col md:flex-row items-center">
                 {/* Text Content */}
                 <div className="w-full md:w-1/2 z-10 pt-16 md:pt-0">
                     <h2 className="text-4xl md:text-6xl font-bold text-plum mb-4 transform transition-all duration-1000 ease-out hover:translate-x-4 hover:text-burgundy">
                         First <span className="text-burgundy transform transition-all duration-700 hover:text-gold hover:scale-110">Night</span>
                     </h2>
-                    <p className="text-plum/80 text-lg md:text-xl mb-8 max-w-md transform transition-all duration-700 delay-200 hover:translate-x-2 hover:text-plum">
+                    <p className="text-plum/80 text-lg md:text-xl mb-8 max-w-md transform transition-all duration-700 delay-200 hover:translate-x-2 hover:text-plum leading-relaxed">
                         Browse the collection Claim your look. Then join us for night one -the first gathering where this idea comes to life.An evening where style circulates. connections form and you witness the concept become reality
                     </p>
 
                     {/* Minimalistic Countdown Timer */}
                     <div className="mb-8 transform transition-all duration-700 delay-300">
-                        <h1 className="text-2xl md:text-3xl font-bold text-plum mb-4 transform transition-all duration-1000 ease-out hover:translate-x-2">
+                        <h1 className="text-2xl md:text-3xl font-bold text-plum mb-4 transform transition-all duration-1000 ease-out hover:translate-x-2 tracking-tight">
                             {timeLeft.days}d : {timeLeft.hours}h : {timeLeft.minutes}m : {timeLeft.seconds}s
                         </h1>
-
                     </div>
 
                     <div className="flex space-x-4 transform transition-all duration-700 delay-300">
-                        <Button variant="primary" className="transform transition-all duration-300 hover:scale-110 hover:shadow-2xl">
+                        <Button variant="primary" className="transform transition-all duration-300 hover:scale-110 hover:shadow-2xl font-amandine">
                             Reserve Now
                         </Button>
-                        <Button variant="secondary" className="transform transition-all duration-300 hover:scale-110 hover:shadow-2xl">
+                        <Button variant="secondary" className="transform transition-all duration-300 hover:scale-110 hover:shadow-2xl font-amandine">
                             View Lookbook
                         </Button>
                     </div>
@@ -127,10 +126,6 @@ export function Hero() {
                     />
                 ))}
             </div>
-
-            {/* Animated background elements */}
-            <div className="absolute top-10 left-10 w-20 h-20 border-2 border-plum/20 rounded-full animate-ping-slow"></div>
-            <div className="absolute bottom-20 right-20 w-16 h-16 border-2 border-burgundy/20 rounded-full animate-ping-slower"></div>
         </section>
     )
 }

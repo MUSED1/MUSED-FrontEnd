@@ -486,23 +486,23 @@ function ReservationForm({ outfit, onClose }: { outfit: Outfit; onClose: () => v
                     </label>
                 </div>
             </div>
-
             <div className="flex space-x-4">
                 <button
                     type="button"
                     onClick={onClose}
-                    className="flex-1 bg-gray-300 text-[#5B1B3A] py-4 rounded-xl font-semibold hover:bg-gray-400 transition-all duration-300 transform hover:scale-105"
+                    className="flex-1 bg-[#FFF0C8] text-[#5B1B3A] py-4 rounded-xl font-semibold hover:bg-[#AD7301] hover:text-white transition-all duration-300 transform hover:scale-105"
                 >
                     Cancel
                 </button>
                 <button
                     type="submit"
                     disabled={!formData.agreeToTerms}
-                    className="flex-1 bg-gradient-to-r from-[#940000] to-[#891B81] text-white py-4 rounded-xl font-semibold hover:from-[#891B81] hover:to-[#5B1B3A] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+                    className="flex-1 bg-[#5B1B3A] text-white py-4 rounded-xl font-semibold hover:bg-[#891B81] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
                 >
                     Submit Reservation
                 </button>
             </div>
+
         </form>
     );
 }

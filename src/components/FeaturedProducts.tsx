@@ -40,7 +40,7 @@ export function FeaturedProducts() {
             id: 4,
             name: '',
             price: '',
-            image: "/main1.jpg",
+            image: "/replace.jpg",
             category: 'S',
         },
     ]
@@ -109,9 +109,9 @@ export function FeaturedProducts() {
                         <div className="relative">
                             <button
                                 onClick={() => setSelectedProduct(null)}
-                                className="absolute top-4 right-4 bg-white rounded-full p-2 hover:bg-gray-100 transition-all transform hover:scale-110 z-10 shadow-lg"
+                                className="absolute top-4 right-4 bg-cream rounded-full p-2 hover:bg-burgundy hover:text-cream transition-all transform hover:scale-110 z-10 shadow-lg"
                             >
-                                <X size={24} className="text-burgundy" />
+                                <X size={24} className="text-burgundy hover:text-cream transition-colors" />
                             </button>
                             <img
                                 src={selectedProduct.image}
@@ -151,7 +151,7 @@ export function FeaturedProducts() {
                                 </button>
                                 <button
                                     onClick={() => setSelectedProduct(null)}
-                                    className="flex-1 bg-gray-300 text-burgundy py-3 rounded-lg font-semibold hover:bg-gray-400 transition-all"
+                                    className="flex-1 bg-cream text-burgundy py-3 rounded-lg font-semibold hover:bg-burgundy hover:text-cream transition-all duration-300"
                                 >
                                     Close
                                 </button>

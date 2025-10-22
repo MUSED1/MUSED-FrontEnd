@@ -5,6 +5,7 @@ export default {
             fontFamily: {
                 sans: ['Kaldera Regular', 'system-ui', 'sans-serif'],
                 serif: ['Kaldera Regular', 'Georgia', 'serif'],
+                amandine: ['Amandine', 'cursive', 'serif'],
             },
             colors: {
                 burgundy: {

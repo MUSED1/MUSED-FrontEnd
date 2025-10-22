@@ -23,7 +23,7 @@ export function Categories() {
                             alt="Women's Collection"
                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-burgundy/80 to-transparent flex items-end p-6">
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#5B1B3A]/90 to-transparent flex items-end p-6">
                             <div className="text-cream">
                                 <h3 className="text-2xl font-bold mb-2">Dresses</h3>
                                 <button
@@ -41,7 +41,7 @@ export function Categories() {
                             alt="Men's Collection"
                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-burgundy/80 to-transparent flex items-end p-6">
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#5B1B3A]/90 to-transparent flex items-end p-6">
                             <div className="text-cream">
                                 <h3 className="text-2xl font-bold mb-2">Bottoms</h3>
                                 <button
@@ -59,7 +59,7 @@ export function Categories() {
                             alt="Accessories Collection"
                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-burgundy/80 to-transparent flex items-end p-6">
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#5B1B3A]/90 to-transparent flex items-end p-6">
                             <div className="text-cream">
                                 <h3 className="text-2xl font-bold mb-2">Accessories</h3>
                                 <button
