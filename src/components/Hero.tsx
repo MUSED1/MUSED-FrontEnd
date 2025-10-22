@@ -1,16 +1,43 @@
-import React, { useState, useEffect } from 'react'
+import  { useState, useEffect } from 'react'
 import { Button } from './Button'
 
 export function Hero() {
     const [currentSlide, setCurrentSlide] = useState(0)
+    const [timeLeft, setTimeLeft] = useState({
+        days: 0,
+        hours: 0,
+        minutes: 0,
+        seconds: 0
+    })
+
     const images = [
         "src/assets/first.jpg",
-        "src/assets/second.jpg",
-        "src/assets/third.jpg",
-        "src/assets/four.jpg",
-        "src/assets/fifth.jpg",
-        "src/assets/six.jpg"
     ]
+
+    // Event date: October 23, 2025 at 19:00
+    const eventDate = new Date('2025-10-23T19:00:00').getTime()
+
+    // Countdown timer
+    useEffect(() => {
+        const calculateTimeLeft = () => {
+            const now = new Date().getTime()
+            const difference = eventDate - now
+
+            if (difference > 0) {
+                setTimeLeft({
+                    days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+                    hours: Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+                    minutes: Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60)),
+                    seconds: Math.floor((difference % (1000 * 60)) / 1000)
+                })
+            }
+        }
+
+        const timer = setInterval(calculateTimeLeft, 1000)
+        calculateTimeLeft() // Initial call
+
+        return () => clearInterval(timer)
+    }, [eventDate])
 
     // Auto-slide functionality
     useEffect(() => {
@@ -35,6 +62,15 @@ export function Hero() {
                     <p className="text-plum/80 text-lg md:text-xl mb-8 max-w-md transform transition-all duration-700 delay-200 hover:translate-x-2 hover:text-plum">
                         Browse the collection Claim your look. Then join us for night one -the first gathering where this idea comes to life.An evening where style circulates. connections form and you witness the concept become reality
                     </p>
+
+                    {/* Minimalistic Countdown Timer */}
+                    <div className="mb-8 transform transition-all duration-700 delay-300">
+                        <h1 className="text-2xl md:text-3xl font-bold text-plum mb-4 transform transition-all duration-1000 ease-out hover:translate-x-2">
+                            {timeLeft.days}d : {timeLeft.hours}h : {timeLeft.minutes}m : {timeLeft.seconds}s
+                        </h1>
+
+                    </div>
+
                     <div className="flex space-x-4 transform transition-all duration-700 delay-300">
                         <Button variant="primary" className="transform transition-all duration-300 hover:scale-110 hover:shadow-2xl">
                             Reserve Now
