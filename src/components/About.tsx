@@ -100,23 +100,7 @@ export function About() {
                         </p>
                     </div>
 
-                    {/* Image Section */}
-                    <div className="max-w-6xl mx-auto mb-16">
-                        <div className="relative rounded-3xl overflow-hidden shadow-2xl transform transition-all duration-500 hover:scale-[1.02]">
-                            <img
-                                src="/t2.jpg"
-                                alt="Mused Community - Fashion Sharing Experience"
-                                className="w-full h-[800px] object-cover"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-plum/40 to-gold/20"></div>
-                            <div className="absolute bottom-8 left-8 right-8 text-cream">
-                                <h3 className="text-3xl font-bold mb-2">Join Our Fashion Community</h3>
-                                <p className="text-xl opacity-90">Where style meets sustainability and connection</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* About Concept Section */}
+                    {/* About Concept Section - MOVED BEFORE IMAGE */}
                     <div className="max-w-6xl mx-auto mb-16">
                         <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-lg">
                             <div className="text-center mb-8">
@@ -171,6 +155,22 @@ export function About() {
                                         </p>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Image Section - MOVED AFTER CONCEPT */}
+                    <div className="max-w-6xl mx-auto mb-16">
+                        <div className="relative rounded-3xl overflow-hidden shadow-2xl transform transition-all duration-500 hover:scale-[1.02]">
+                            <img
+                                src="/t2.jpg"
+                                alt="Mused Community - Fashion Sharing Experience"
+                                className="w-full h-[800px] object-cover"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-plum/40 to-gold/20"></div>
+                            <div className="absolute bottom-8 left-8 right-8 text-cream">
+                                <h3 className="text-3xl font-bold mb-2">Join Our Fashion Community</h3>
+                                <p className="text-xl opacity-90">Where style meets sustainability and connection</p>
                             </div>
                         </div>
                     </div>
