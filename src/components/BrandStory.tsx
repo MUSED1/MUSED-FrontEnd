@@ -54,7 +54,7 @@ export function BrandStory() {
                             {/* Main Image Container */}
                             <div className="relative aspect-[4/5] overflow-hidden rounded-2xl transform transition-all duration-700 ease-out group-hover:scale-105 group-hover:rotate-1 group-hover:shadow-2xl border-8 border-white shadow-xl">
                                 <img
-                                    src="../../public/t1.jpg"
+                                    src="/t1.jpg"
                                     alt="Mused atelier - Fashion inspiration and clothing rental"
                                     className="w-full h-full object-cover transform transition-all duration-800 ease-in-out group-hover:scale-110"
                                 />
