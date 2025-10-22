@@ -104,7 +104,7 @@ export function About() {
                     <div className="max-w-6xl mx-auto mb-16">
                         <div className="relative rounded-3xl overflow-hidden shadow-2xl transform transition-all duration-500 hover:scale-[1.02]">
                             <img
-                                src="src/assets/t2.jpg"
+                                src="/t2.jpg"
                                 alt="Mused Community - Fashion Sharing Experience"
                                 className="w-full h-[800px] object-cover"
                             />
