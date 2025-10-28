@@ -15,8 +15,8 @@ export function Diner() {
                             MUSED <span className="text-gold">Diner</span>
                         </h1>
                         <p className="text-xl text-plum/80 max-w-2xl mx-auto">
-                            Experience fashion in a whole new light. Our exclusive dining events combine
-                            style, community, and culinary excellence.
+                            Be Mused and meet your muse around a table.
+                            Mused is more than sharing style, it’s sharing an experience.
                         </p>
 
 
