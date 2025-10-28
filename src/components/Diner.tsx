@@ -1,6 +1,7 @@
 // components/Diner.tsx
 import { Header } from './Header'
 import { Footer } from './Footer'
+import { Link } from 'react-router-dom' // Add this import
 
 export function Diner() {
     return (
@@ -17,6 +18,9 @@ export function Diner() {
                             Experience fashion in a whole new light. Our exclusive dining events combine
                             style, community, and culinary excellence.
                         </p>
+
+
+
                     </div>
 
                     {/* Wear Something Borrowed Section */}
@@ -40,11 +44,19 @@ export function Diner() {
                                 <div className="text-center text-white">
                                     <h3 className="text-2xl font-bold mb-4">Next Event</h3>
                                     <p className="text-xl mb-2">Wear Something Borrowed</p>
-                                    <p className="text-3xl font-bold mb-4">Oct 23, 2025</p>
+                                    <p className="text-3xl font-bold mb-4">Nov 18, 2025</p>
                                     <p className="text-amber-100">7:00 PM - Central Hong Kong</p>
                                 </div>
                             </div>
                         </div>
+                    </div>
+                    <div className="text-center mb-16">
+                        <Link
+                            to="/first-dinner" // Use Link instead of button with navigate
+                            className="bg-gold text-plum px-8 py-3 rounded-full hover:bg-plum hover:text-cream transition-all duration-300 font-semibold inline-block"
+                        >
+                            First Dinner Pictures
+                        </Link>
                     </div>
 
                     {/* Past Events Section */}
