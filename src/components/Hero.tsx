@@ -15,7 +15,7 @@ export function Hero() {
     ]
 
     // Event date: October 23, 2025 at 19:00
-    const eventDate = new Date('2025-10-23T19:00:00').getTime()
+    const eventDate = new Date('2025-11-18T19:00:00').getTime()
 
     // Countdown timer
     useEffect(() => {

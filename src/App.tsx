@@ -12,6 +12,7 @@ import { LoadingScreen } from './components/LoadingScreen'
 import { Collections } from './components/Collections'
 import { Diner } from './components/Diner'
 import { About } from './components/About'
+import { FirstDinner } from './components/FirstDinner' // Add this import
 
 function HomePage() {
     return (
@@ -51,6 +52,7 @@ export function App() {
                 <Route path="/collections" element={<Collections />} />
                 <Route path="/diner" element={<Diner />} />
                 <Route path="/about" element={<About />} />
+                <Route path="/first-dinner" element={<FirstDinner />} /> {/* Add this route */}
             </Routes>
         </Router>
     )
