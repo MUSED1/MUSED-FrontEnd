@@ -66,7 +66,8 @@ export function ClothingUploadForm() {
             }
 
             // Enviar al backend
-            const response = await fetch('http://localhost:3000/api/clothing', {
+            const response = await fetch('https://mused-backend.onrender.com/api/clothing', {
+
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
