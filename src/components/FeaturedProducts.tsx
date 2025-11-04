@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 type Product = {
@@ -11,7 +10,6 @@ type Product = {
 
 export function FeaturedProducts() {
     const navigate = useNavigate()
-    const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
 
     const products: Product[] = [
         {
