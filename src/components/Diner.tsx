@@ -34,9 +34,9 @@ export function Diner() {
                                     style, share a moment.
                                 </p>
                                 <div className="flex justify-between items-center">
-                                    <span className="text-2xl font-bold text-gold">300 HKD</span>
+                                    <span className="text-2xl font-bold text-gold">250 HKD</span>
                                     <button className="bg-plum text-cream px-8 py-3 rounded-full hover:bg-gold transition-all duration-300 font-semibold">
-                                        Reserve Your Seat
+                                        PICK YOUR OUTFIT
                                     </button>
                                 </div>
                             </div>
@@ -61,54 +61,7 @@ export function Diner() {
 
                     {/* Past Events Section */}
 
-                    {/* Info Section */}
-                    <div className="bg-white rounded-2xl shadow-lg p-8 max-w-4xl mx-auto">
-                        <h2 className="text-3xl font-bold text-plum mb-6 text-center">About MUSED Diner</h2>
-                        <div className="grid md:grid-cols-2 gap-8">
-                            <div>
-                                <h3 className="text-xl font-semibold text-gold mb-4">What to Expect</h3>
-                                <ul className="space-y-3 text-plum/80">
-                                    <li className="flex items-center">
-                                        <span className="w-2 h-2 bg-gold rounded-full mr-3"></span>
-                                        Curated fashion presentations
-                                    </li>
-                                    <li className="flex items-center">
-                                        <span className="w-2 h-2 bg-gold rounded-full mr-3"></span>
-                                        Gourmet dining experience
-                                    </li>
-                                    <li className="flex items-center">
-                                        <span className="w-2 h-2 bg-gold rounded-full mr-3"></span>
-                                        Live styling consultations
-                                    </li>
-                                    <li className="flex items-center">
-                                        <span className="w-2 h-2 bg-gold rounded-full mr-3"></span>
-                                        Exclusive rental opportunities
-                                    </li>
-                                </ul>
-                            </div>
-                            <div>
-                                <h3 className="text-xl font-semibold text-gold mb-4">Location & Details</h3>
-                                <ul className="space-y-3 text-plum/80">
-                                    <li className="flex items-center">
-                                        <span className="w-2 h-2 bg-plum rounded-full mr-3"></span>
-                                        Central Hong Kong Location
-                                    </li>
-                                    <li className="flex items-center">
-                                        <span className="w-2 h-2 bg-plum rounded-full mr-3"></span>
-                                        Limited to 20 guests per event
-                                    </li>
-                                    <li className="flex items-center">
-                                        <span className="w-2 h-2 bg-plum rounded-full mr-3"></span>
-                                        Dress code: Creative Elegance
-                                    </li>
-                                    <li className="flex items-center">
-                                        <span className="w-2 h-2 bg-plum rounded-full mr-3"></span>
-                                        Reservations required 48h in advance
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
+
                 </div>
             </main>
             <Footer />

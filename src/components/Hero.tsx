@@ -58,7 +58,7 @@ export function Hero() {
                 {/* Text Content */}
                 <div className="w-full md:w-1/2 z-10 pt-16 md:pt-0">
                     <h2 className="text-4xl md:text-6xl font-bold text-plum mb-4 transform transition-all duration-1000 ease-out hover:translate-x-4 hover:text-burgundy">
-                        Coming <span className="text-burgundy transform transition-all duration-700 hover:text-gold hover:scale-110">Night</span>
+                        UPCOMING <span className="text-burgundy transform transition-all duration-700 hover:text-gold hover:scale-110">WSB DINNER</span>
                     </h2>
                     <p className="text-plum/80 text-lg md:text-xl mb-8 max-w-md transform transition-all duration-700 delay-200 hover:translate-x-2 hover:text-plum leading-relaxed">
                         Browse the collection Claim your look. Then join us for night one -the first gathering where this idea comes to life.An evening where style circulates. connections form and you witness the concept become reality
