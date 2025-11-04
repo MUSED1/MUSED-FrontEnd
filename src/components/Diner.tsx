@@ -14,13 +14,10 @@ export function Diner() {
                         <h1 className="text-5xl md:text-6xl font-bold text-plum mb-6">
                             MUSED <span className="text-gold">Diner</span>
                         </h1>
-                        <p className="text-xl text-plum/80 max-w-2xl mx-auto">
+                        <p className="text-xl text-plum/80 max-w-2xl mx-auto font-amandine">
                             Be Mused and meet your muse around a table.
-                            Mused is more than sharing style, it’s sharing an experience.
+                            Mused is more than sharing style, it's sharing an experience.
                         </p>
-
-
-
                     </div>
 
                     {/* Wear Something Borrowed Section */}
@@ -28,7 +25,7 @@ export function Diner() {
                         <div className="md:flex">
                             <div className="md:w-1/2 p-8">
                                 <h2 className="text-3xl font-bold text-plum mb-4">Wear Something Borrowed Dinner</h2>
-                                <p className="text-plum/80 mb-6 leading-relaxed">
+                                <p className="text-plum/80 mb-6 leading-relaxed font-amandine">
                                     Come to dinner wearing a borrowed piece from the dinner collection. This is where muses
                                     can meet the mused. Get to know who you are lending to and borrowing from. Share your
                                     style, share a moment.
@@ -60,8 +57,6 @@ export function Diner() {
                     </div>
 
                     {/* Past Events Section */}
-
-
                 </div>
             </main>
             <Footer />
