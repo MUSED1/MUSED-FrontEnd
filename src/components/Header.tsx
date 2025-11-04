@@ -42,7 +42,7 @@ export function Header() {
                                     to="/diner"
                                     className="text-cream hover:text-gold font-medium transition-all duration-300 ease-in-out transform hover:scale-105 hover:font-semibold"
                                 >
-                                    Diner
+                                    Dinner
                                 </Link>
                             </li>
                             <li>
@@ -100,7 +100,7 @@ export function Header() {
                                     className="block text-cream hover:text-gold font-medium transition-all duration-300 ease-in-out transform hover:translate-x-2 hover:font-semibold"
                                     onClick={() => setIsMenuOpen(false)}
                                 >
-                                    Diner
+                                    Dinner
                                 </Link>
                             </li>
                             <li>

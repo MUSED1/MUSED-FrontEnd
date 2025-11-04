@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Filter, X, Search, Ruler, Tag, Calendar, User, MapPin, Phone, Mail } from 'lucide-react';
+import { Header } from './Header';
+import { Footer } from './Footer';
 
 interface Outfit {
     id: number;
@@ -16,6 +18,7 @@ export function Collections() {
     const [selectedSize, setSelectedSize] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
+    const [activeCollection, setActiveCollection] = useState<'upcoming' | 'past'>('upcoming');
 
     const outfits: Outfit[] = [
         { id: 1, name: "Lyn's #1 Outfit", image: "/clothe1.jpg", description: "Deep red set (xs/s)", size: "XS/S", category: "Set" },
@@ -70,6 +73,36 @@ export function Collections() {
 
     return (
         <div className="min-h-screen bg-[#FFF0C8]">
+            <Header />
+
+            {/* Collection Type Selector */}
+            <div className="bg-[#5b1b3a] py-8">
+                <div className="container mx-auto px-4">
+                    <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6">
+                        <button
+                            onClick={() => setActiveCollection('upcoming')}
+                            className={`px-8 py-4 rounded-full font-bold text-lg transition-all duration-300 transform hover:scale-105 ${
+                                activeCollection === 'upcoming'
+                                    ? 'bg-[#AD7301] text-white shadow-2xl'
+                                    : 'bg-[#FFF0C8] text-[#5B1B3A] hover:bg-[#AD7301] hover:text-white'
+                            }`}
+                        >
+                            Upcoming Dinner Collection
+                        </button>
+                        <button
+                            onClick={() => setActiveCollection('past')}
+                            className={`px-8 py-4 rounded-full font-bold text-lg transition-all duration-300 transform hover:scale-105 ${
+                                activeCollection === 'past'
+                                    ? 'bg-[#AD7301] text-white shadow-2xl'
+                                    : 'bg-[#FFF0C8] text-[#5B1B3A] hover:bg-[#AD7301] hover:text-white'
+                            }`}
+                        >
+                            Past Dinner Collections
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             {/* Header - Matching Main Header Style */}
             <header className="bg-[#5b1b3a] w-full sticky top-0 z-50 shadow-sm transition-all duration-300 ease-in-out hover:shadow-md">
                 <div className="container mx-auto px-4 py-4">
@@ -89,7 +122,7 @@ export function Collections() {
                                 COLLECTIONS
                             </h1>
                             <div className="text-lg md:text-xl text-[#AD7301] font-light italic mt-1">
-                                First Dinner Collection
+                                {activeCollection === 'upcoming' ? 'Coming Soon' : 'First Dinner Collection'}
                             </div>
                         </div>
 
@@ -103,158 +136,180 @@ export function Collections() {
                         </button>
                     </div>
 
-                    {/* Search Bar */}
-                    <div className="relative max-w-2xl mx-auto">
-                        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#5B1B3A] transition-all duration-300" size={20} />
-                        <input
-                            type="text"
-                            placeholder="Search outfits by name or description..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-12 pr-4 py-3 rounded-full bg-[#FFF0C8] border-2 border-[#AD7301] focus:outline-none focus:border-[#891B81] focus:ring-2 focus:ring-[#AD7301]/30 text-[#5B1B3A] placeholder-[#5B1B3A]/60 transition-all duration-300 ease-in-out hover:shadow-lg"
-                        />
-                    </div>
+                    {/* Search Bar - Only show for past collections */}
+                    {activeCollection === 'past' && (
+                        <div className="relative max-w-2xl mx-auto">
+                            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#5B1B3A] transition-all duration-300" size={20} />
+                            <input
+                                type="text"
+                                placeholder="Search outfits by name or description..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full pl-12 pr-4 py-3 rounded-full bg-[#FFF0C8] border-2 border-[#AD7301] focus:outline-none focus:border-[#891B81] focus:ring-2 focus:ring-[#AD7301]/30 text-[#5B1B3A] placeholder-[#5B1B3A]/60 transition-all duration-300 ease-in-out hover:shadow-lg"
+                            />
+                        </div>
+                    )}
                 </div>
             </header>
 
-            {/* Filter Panel - Animated Slide Down */}
-            <div
-                className={`bg-[#891B81] text-white shadow-lg overflow-hidden transition-all duration-500 ease-in-out ${
-                    showFilters ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-                }`}
-            >
-                <div className="container mx-auto p-6">
-                    <div className="flex justify-between items-center mb-6">
-                        <h3 className="text-xl font-semibold transition-all duration-300 hover:text-[#AD7301]">Filter Outfits</h3>
-                        <div className="flex space-x-3">
+            {/* Filter Panel - Animated Slide Down - Only for past collections */}
+            {activeCollection === 'past' && (
+                <div
+                    className={`bg-[#891B81] text-white shadow-lg overflow-hidden transition-all duration-500 ease-in-out ${
+                        showFilters ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                    }`}
+                >
+                    <div className="container mx-auto p-6">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-xl font-semibold transition-all duration-300 hover:text-[#AD7301]">Filter Outfits</h3>
+                            <div className="flex space-x-3">
+                                {hasActiveFilters && (
+                                    <button
+                                        onClick={clearFilters}
+                                        className="bg-[#940000] text-white px-4 py-2 rounded-full hover:bg-[#AD7301] transition-all duration-300 font-medium transform hover:scale-105"
+                                    >
+                                        Clear All
+                                    </button>
+                                )}
+                                <button
+                                    onClick={() => setShowFilters(false)}
+                                    className="bg-white text-[#5B1B3A] px-4 py-2 rounded-full hover:bg-[#FFF0C8] transition-all duration-300 font-medium transform hover:scale-105"
+                                >
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="transform transition-all duration-300 hover:scale-105">
+                                <label className="block text-lg font-medium mb-3">Size</label>
+                                <select
+                                    value={selectedSize}
+                                    onChange={(e) => setSelectedSize(e.target.value)}
+                                    className="w-full bg-white text-[#5B1B3A] rounded-xl px-4 py-3 border-2 border-[#AD7301] focus:outline-none focus:border-[#4E4F06] focus:ring-2 focus:ring-[#AD7301]/30 transition-all duration-300"
+                                >
+                                    <option value="">All Sizes</option>
+                                    {sizes.map(size => (
+                                        <option key={size} value={size}>{size}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="transform transition-all duration-300 hover:scale-105">
+                                <label className="block text-lg font-medium mb-3">Category</label>
+                                <select
+                                    value={selectedCategory}
+                                    onChange={(e) => setSelectedCategory(e.target.value)}
+                                    className="w-full bg-white text-[#5B1B3A] rounded-xl px-4 py-3 border-2 border-[#AD7301] focus:outline-none focus:border-[#4E4F06] focus:ring-2 focus:ring-[#AD7301]/30 transition-all duration-300"
+                                >
+                                    <option value="">All Categories</option>
+                                    {categories.map(category => (
+                                        <option key={category} value={category}>{category}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Main Content */}
+            <div className="container mx-auto px-4 py-6">
+                {activeCollection === 'upcoming' ? (
+                    <div className="text-center py-16 animate-fadeIn">
+                        <div className="bg-white rounded-2xl p-12 shadow-2xl border-2 border-[#AD7301] max-w-2xl mx-auto">
+                            <h2 className="text-4xl font-bold text-[#5B1B3A] mb-6">Coming Soon</h2>
+                            <p className="text-xl text-[#891B81] mb-8 font-medium">
+                                Our next dinner collection will be available starting November 11th
+                            </p>
+                            <div className="bg-gradient-to-br from-[#FFF0C8] to-[#FFE8A5] p-6 rounded-xl border-2 border-[#AD7301]">
+                                <p className="text-lg text-[#5B1B3A] font-semibold">
+                                    Stay tuned for our exclusive new outfits and accessories!
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    <>
+                        <div className="flex justify-between items-center mb-6">
+                            <p className="text-[#5B1B3A] text-lg font-medium">
+                                Showing <span className="font-bold text-[#891B81]">{filteredOutfits.length}</span> of <span className="font-bold">{outfits.length}</span> outfits
+                                {hasActiveFilters && (
+                                    <span className="text-[#891B81] font-bold ml-2 animate-pulse">
+                                        (filtered)
+                                    </span>
+                                )}
+                            </p>
                             {hasActiveFilters && (
                                 <button
                                     onClick={clearFilters}
-                                    className="bg-[#940000] text-white px-4 py-2 rounded-full hover:bg-[#AD7301] transition-all duration-300 font-medium transform hover:scale-105"
+                                    className="text-[#940000] hover:text-[#891B81] font-medium transition-all duration-300 transform hover:scale-105"
                                 >
-                                    Clear All
+                                    Clear filters
                                 </button>
                             )}
-                            <button
-                                onClick={() => setShowFilters(false)}
-                                className="bg-white text-[#5B1B3A] px-4 py-2 rounded-full hover:bg-[#FFF0C8] transition-all duration-300 font-medium transform hover:scale-105"
-                            >
-                                Close
-                            </button>
                         </div>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="transform transition-all duration-300 hover:scale-105">
-                            <label className="block text-lg font-medium mb-3">Size</label>
-                            <select
-                                value={selectedSize}
-                                onChange={(e) => setSelectedSize(e.target.value)}
-                                className="w-full bg-white text-[#5B1B3A] rounded-xl px-4 py-3 border-2 border-[#AD7301] focus:outline-none focus:border-[#4E4F06] focus:ring-2 focus:ring-[#AD7301]/30 transition-all duration-300"
-                            >
-                                <option value="">All Sizes</option>
-                                {sizes.map(size => (
-                                    <option key={size} value={size}>{size}</option>
-                                ))}
-                            </select>
-                        </div>
-                        <div className="transform transition-all duration-300 hover:scale-105">
-                            <label className="block text-lg font-medium mb-3">Category</label>
-                            <select
-                                value={selectedCategory}
-                                onChange={(e) => setSelectedCategory(e.target.value)}
-                                className="w-full bg-white text-[#5B1B3A] rounded-xl px-4 py-3 border-2 border-[#AD7301] focus:outline-none focus:border-[#4E4F06] focus:ring-2 focus:ring-[#AD7301]/30 transition-all duration-300"
-                            >
-                                <option value="">All Categories</option>
-                                {categories.map(category => (
-                                    <option key={category} value={category}>{category}</option>
-                                ))}
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-            {/* Results Info */}
-            <div className="container mx-auto px-4 py-6">
-                <div className="flex justify-between items-center mb-6">
-                    <p className="text-[#5B1B3A] text-lg font-medium">
-                        Showing <span className="font-bold text-[#891B81]">{filteredOutfits.length}</span> of <span className="font-bold">{outfits.length}</span> outfits
-                        {hasActiveFilters && (
-                            <span className="text-[#891B81] font-bold ml-2 animate-pulse">
-                                (filtered)
-                            </span>
-                        )}
-                    </p>
-                    {hasActiveFilters && (
-                        <button
-                            onClick={clearFilters}
-                            className="text-[#940000] hover:text-[#891B81] font-medium transition-all duration-300 transform hover:scale-105"
-                        >
-                            Clear filters
-                        </button>
-                    )}
-                </div>
-
-                {/* Outfits Grid */}
-                {filteredOutfits.length === 0 ? (
-                    <div className="text-center py-16 animate-fadeIn">
-                        <div className="text-[#5B1B3A] text-xl mb-4 font-semibold">No outfits found</div>
-                        <button
-                            onClick={clearFilters}
-                            className="bg-[#891B81] text-white px-6 py-3 rounded-full hover:bg-[#940000] transition-all duration-300 font-medium transform hover:scale-105 shadow-lg hover:shadow-xl"
-                        >
-                            Clear all filters
-                        </button>
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                        {filteredOutfits.map((outfit, index) => (
-                            <div
-                                key={outfit.id}
-                                style={{
-                                    animation: `fadeInUp 0.5s ease-out ${index * 0.05}s both`
-                                }}
-                                className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 border-2 border-transparent hover:border-[#AD7301] group"
-                            >
-                                <div
-                                    className="h-80 bg-gray-200 relative overflow-hidden cursor-pointer"
-                                    onClick={() => setSelectedOutfit(outfit)}
+                        {/* Outfits Grid */}
+                        {filteredOutfits.length === 0 ? (
+                            <div className="text-center py-16 animate-fadeIn">
+                                <div className="text-[#5B1B3A] text-xl mb-4 font-semibold">No outfits found</div>
+                                <button
+                                    onClick={clearFilters}
+                                    className="bg-[#891B81] text-white px-6 py-3 rounded-full hover:bg-[#940000] transition-all duration-300 font-medium transform hover:scale-105 shadow-lg hover:shadow-xl"
                                 >
-                                    <img
-                                        src={outfit.image}
-                                        alt={outfit.name}
-                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                                    />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                                    <div className="absolute top-4 left-4 bg-[#5B1B3A] text-white px-3 py-1 rounded-full text-sm font-medium shadow-lg transform group-hover:scale-110 transition-transform duration-300">
-                                        {outfit.size}
-                                    </div>
-                                    <div className="absolute top-4 right-4 bg-[#AD7301] text-white px-3 py-1 rounded-full text-sm font-medium shadow-lg transform group-hover:scale-110 transition-transform duration-300">
-                                        {outfit.category}
-                                    </div>
-                                </div>
-                                <div className="p-6">
-                                    <h3 className="font-bold text-[#5B1B3A] text-lg mb-2 group-hover:text-[#891B81] transition-colors duration-300">
-                                        {outfit.name}
-                                    </h3>
-                                    <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                                        {outfit.description}
-                                    </p>
-                                    <button
-                                        onClick={() => setSelectedOutfit(outfit)}
-                                        className="w-full bg-[#891B81] text-white py-3 rounded-xl font-semibold hover:bg-[#940000] transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
-                                    >
-                                        Request This Outfit
-                                    </button>
-                                </div>
+                                    Clear all filters
+                                </button>
                             </div>
-                        ))}
-                    </div>
+                        ) : (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                                {filteredOutfits.map((outfit, index) => (
+                                    <div
+                                        key={outfit.id}
+                                        style={{
+                                            animation: `fadeInUp 0.5s ease-out ${index * 0.05}s both`
+                                        }}
+                                        className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 border-2 border-transparent hover:border-[#AD7301] group"
+                                    >
+                                        <div
+                                            className="h-80 bg-gray-200 relative overflow-hidden cursor-pointer"
+                                            onClick={() => setSelectedOutfit(outfit)}
+                                        >
+                                            <img
+                                                src={outfit.image}
+                                                alt={outfit.name}
+                                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                            />
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                            <div className="absolute top-4 left-4 bg-[#5B1B3A] text-white px-3 py-1 rounded-full text-sm font-medium shadow-lg transform group-hover:scale-110 transition-transform duration-300">
+                                                {outfit.size}
+                                            </div>
+                                            <div className="absolute top-4 right-4 bg-[#AD7301] text-white px-3 py-1 rounded-full text-sm font-medium shadow-lg transform group-hover:scale-110 transition-transform duration-300">
+                                                {outfit.category}
+                                            </div>
+                                        </div>
+                                        <div className="p-6">
+                                            <h3 className="font-bold text-[#5B1B3A] text-lg mb-2 group-hover:text-[#891B81] transition-colors duration-300">
+                                                {outfit.name}
+                                            </h3>
+                                            <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                                                {outfit.description}
+                                            </p>
+                                            <button
+                                                onClick={() => setSelectedOutfit(outfit)}
+                                                className="w-full bg-[#891B81] text-white py-3 rounded-xl font-semibold hover:bg-[#940000] transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
+                                            >
+                                                Request This Outfit
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </>
                 )}
             </div>
 
-            {/* Reservation Modal */}
-            {selectedOutfit && (
+            {/* Reservation Modal - Only for past collections */}
+            {selectedOutfit && activeCollection === 'past' && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 animate-fadeIn">
                     <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto transform animate-scaleIn">
                         <div className="relative">
@@ -303,6 +358,8 @@ export function Collections() {
                 </div>
             )}
 
+            <Footer />
+
             <style>{`
                 @keyframes fadeInUp {
                     from {
@@ -347,7 +404,7 @@ export function Collections() {
     );
 }
 
-// Reservation Form Component
+// Reservation Form Component (keep the same as before)
 function ReservationForm({ outfit, onClose }: { outfit: Outfit; onClose: () => void }) {
     const [formData, setFormData] = useState({
         name: '',

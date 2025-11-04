@@ -2,7 +2,7 @@
 import React, { useState } from 'react'
 import { Header } from './Header'
 import { Footer } from './Footer'
-import { ChevronDown, ChevronUp, Heart, Shirt, Users, DollarSign, Leaf, Clock, Truck, Shield, Sparkles, Star } from 'lucide-react'
+import { ChevronDown, ChevronUp, Heart, Shirt, Users, DollarSign, Leaf, Clock, Truck, Shield } from 'lucide-react'
 
 interface FAQItem {
     question: string
@@ -76,27 +76,14 @@ export function About() {
                 <div className="container mx-auto px-4 py-16">
                     {/* Hero Section */}
                     <div className="text-center mb-16">
-                        <div className="flex flex-col items-center gap-4 mb-6">
-                            <div className="flex items-center gap-2">
-                                <Sparkles className="text-gold" size={20} />
-                                <span className="bg-gradient-to-r from-plum to-gold text-cream px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider shadow-lg">
-                                    Above & Beyond Fashion
-                                </span>
-                                <Sparkles className="text-gold" size={20} />
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <Star className="text-plum" size={18} />
-                                <span className="bg-gradient-to-r from-gold to-plum text-cream px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider shadow-lg">
-                                    Style Without Limits
-                                </span>
-                                <Star className="text-plum" size={18} />
-                            </div>
-                        </div>
+
                         <h1 className="text-6xl md:text-7xl font-bold text-plum mb-6">
                             About <span className="text-gold">MUSED</span>
                         </h1>
                         <p className="text-2xl text-plum/80 max-w-3xl mx-auto leading-relaxed">
-                            Where Fashion Meets Connection • Sustainable Style Revolution • Your Closet, Expanded
+                            Where Fashion Meets Connection •
+                            Sustainable Style Revolution •
+                            Your Closet, Expanded
                         </p>
                     </div>
 
@@ -175,27 +162,6 @@ export function About() {
                         </div>
                     </div>
 
-                    {/* Stats Section */}
-                    <div className="max-w-6xl mx-auto mb-16">
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 text-center transform transition-all duration-500 hover:scale-105 hover:shadow-2xl">
-                                <div className="text-3xl md:text-4xl font-bold text-plum mb-2">500+</div>
-                                <div className="text-gold font-semibold">Active Members</div>
-                            </div>
-                            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 text-center transform transition-all duration-500 hover:scale-105 hover:shadow-2xl">
-                                <div className="text-3xl md:text-4xl font-bold text-plum mb-2">1K+</div>
-                                <div className="text-gold font-semibold">Pieces Shared</div>
-                            </div>
-                            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 text-center transform transition-all duration-500 hover:scale-105 hover:shadow-2xl">
-                                <div className="text-3xl md:text-4xl font-bold text-plum mb-2">85%</div>
-                                <div className="text-gold font-semibold">Repeat Users</div>
-                            </div>
-                            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 text-center transform transition-all duration-500 hover:scale-105 hover:shadow-2xl">
-                                <div className="text-3xl md:text-4xl font-bold text-plum mb-2">24h</div>
-                                <div className="text-gold font-semibold">Avg. Response</div>
-                            </div>
-                        </div>
-                    </div>
 
                     {/* FAQ Accordion Section */}
                     <div className="max-w-4xl mx-auto">
