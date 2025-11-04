@@ -13,7 +13,7 @@ export function ClothingUploadForm() {
     const [formData, setFormData] = useState({
         category: '',
         size: '',
-        color: '',
+        address: '', // ✅ Added address
         fullName: '',
         email: '',
         phoneNumber: '',
@@ -52,22 +52,21 @@ export function ClothingUploadForm() {
         setSubmitMessage(null)
 
         try {
-            // Convertir la imagen a base64 para enviarla al backend
+            // Convert image to base64 for backend
             let imageBase64 = ''
             if (selectedImage) {
                 imageBase64 = await convertToBase64(selectedImage)
             }
 
-            // Preparar los datos para enviar
+            // Prepare data for submission
             const submissionData = {
                 ...formData,
                 image: imageBase64,
-                phoneNumber: formData.phoneNumber // Asegurar que el nombre coincida con el backend
+                phoneNumber: formData.phoneNumber
             }
 
-            // Enviar al backend
+            // Send to backend
             const response = await fetch('https://mused-backend.onrender.com/api/clothing', {
-
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -80,14 +79,14 @@ export function ClothingUploadForm() {
             if (response.ok && result.success) {
                 setSubmitMessage({
                     type: 'success',
-                    message: '¡Ropa subida exitosamente! Te contactaremos pronto.'
+                    message: 'Clothing uploaded successfully! We will contact you soon.' // ✅ Updated message
                 })
 
-                // Resetear el formulario
+                // Reset form
                 setFormData({
                     category: '',
                     size: '',
-                    color: '',
+                    address: '', // ✅ Added address
                     fullName: '',
                     email: '',
                     phoneNumber: '',
@@ -99,27 +98,26 @@ export function ClothingUploadForm() {
             } else {
                 setSubmitMessage({
                     type: 'error',
-                    message: result.message || 'Error al subir la ropa. Por favor intenta nuevamente.'
+                    message: result.message || 'Error uploading clothing. Please try again.' // ✅ Updated message
                 })
             }
         } catch (error) {
             console.error('Error:', error)
             setSubmitMessage({
                 type: 'error',
-                message: 'Error de conexión. Por favor verifica tu internet e intenta nuevamente.'
+                message: 'Connection error. Please check your internet and try again.' // ✅ Updated message
             })
         } finally {
             setIsSubmitting(false)
         }
     }
 
-    // Función para convertir archivo a base64
+    // Function to convert file to base64
     const convertToBase64 = (file: File): Promise<string> => {
         return new Promise((resolve, reject) => {
             const reader = new FileReader()
             reader.readAsDataURL(file)
             reader.onload = () => {
-                // Remover el prefijo "data:image/jpeg;base64," si está presente
                 const base64 = reader.result as string
                 const base64Data = base64.split(',')[1] || base64
                 resolve(base64Data)
@@ -146,12 +144,6 @@ export function ClothingUploadForm() {
         'One Size'
     ]
 
-    const colors = [
-        'Black', 'White', 'Navy', 'Red', 'Blue', 'Green', 'Yellow',
-        'Pink', 'Purple', 'Orange', 'Brown', 'Gray', 'Beige', 'Cream',
-        'Burgundy', 'Gold', 'Rose', 'Plum', 'Multicolor'
-    ]
-
     return (
         <div className="font-sans">
             <Header />
@@ -168,7 +160,7 @@ export function ClothingUploadForm() {
                         </p>
                     </div>
 
-                    {/* Mensaje de estado */}
+                    {/* Status message */}
                     {submitMessage && (
                         <div className={`mb-6 p-4 rounded-xl ${
                             submitMessage.type === 'success'
@@ -232,30 +224,29 @@ export function ClothingUploadForm() {
                                 </div>
                             </div>
 
-                            {/* Category */}
-                            <div>
-                                <label className="block text-lg font-semibold text-plum mb-3">
-                                    Category *
-                                </label>
-                                <select
-                                    name="category"
-                                    value={formData.category}
-                                    onChange={handleInputChange}
-                                    className="w-full px-4 py-3 border-2 border-cream rounded-xl focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all duration-300 bg-cream/30 text-plum"
-                                    required
-                                    disabled={isSubmitting}
-                                >
-                                    <option value="">Select a category</option>
-                                    {categories.map(category => (
-                                        <option key={category} value={category}>
-                                            {category}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            {/* Size and Color */}
+                            {/* Category and Size */}
                             <div className="grid md:grid-cols-2 gap-6">
+                                <div>
+                                    <label className="block text-lg font-semibold text-plum mb-3">
+                                        Category *
+                                    </label>
+                                    <select
+                                        name="category"
+                                        value={formData.category}
+                                        onChange={handleInputChange}
+                                        className="w-full px-4 py-3 border-2 border-cream rounded-xl focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all duration-300 bg-cream/30 text-plum"
+                                        required
+                                        disabled={isSubmitting}
+                                    >
+                                        <option value="">Select a category</option>
+                                        {categories.map(category => (
+                                            <option key={category} value={category}>
+                                                {category}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
                                 <div>
                                     <label className="block text-lg font-semibold text-plum mb-3">
                                         Size *
@@ -276,27 +267,23 @@ export function ClothingUploadForm() {
                                         ))}
                                     </select>
                                 </div>
+                            </div>
 
-                                <div>
-                                    <label className="block text-lg font-semibold text-plum mb-3">
-                                        Color *
-                                    </label>
-                                    <select
-                                        name="color"
-                                        value={formData.color}
-                                        onChange={handleInputChange}
-                                        className="w-full px-4 py-3 border-2 border-cream rounded-xl focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all duration-300 bg-cream/30 text-plum"
-                                        required
-                                        disabled={isSubmitting}
-                                    >
-                                        <option value="">Select color</option>
-                                        {colors.map(color => (
-                                            <option key={color} value={color}>
-                                                {color}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
+                            {/* Address */}
+                            <div>
+                                <label className="block text-lg font-semibold text-plum mb-3">
+                                    Address *
+                                </label>
+                                <input
+                                    type="text"
+                                    name="address"
+                                    value={formData.address}
+                                    onChange={handleInputChange}
+                                    className="w-full px-4 py-3 border-2 border-cream rounded-xl focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all duration-300 bg-cream/30 text-plum placeholder-plum/40"
+                                    placeholder="Enter your full address for pickup"
+                                    required
+                                    disabled={isSubmitting}
+                                />
                             </div>
 
                             {/* Your Information Section */}
@@ -410,24 +397,23 @@ export function ClothingUploadForm() {
                         </form>
                     </div>
 
-                    {/* Additional Info */}
+                    {/* Updated "What happens next" Section */}
                     <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 text-center">
                         <h3 className="text-2xl font-bold text-plum mb-4">What happens next?</h3>
                         <div className="grid md:grid-cols-3 gap-6 text-plum/80">
                             <div className="space-y-2">
                                 <div className="w-8 h-8 bg-gold rounded-full flex items-center justify-center text-cream font-bold mx-auto mb-2">1</div>
-                                <p className="font-semibold">We'll review your submission</p>
-                                <p className="text-sm">Within 24 hours</p>
+                                <p className="font-semibold">We'll pick up your item at your selected time</p>
                             </div>
                             <div className="space-y-2">
                                 <div className="w-8 h-8 bg-gold rounded-full flex items-center justify-center text-cream font-bold mx-auto mb-2">2</div>
-                                <p className="font-semibold">Quality check & photography</p>
-                                <p className="text-sm">Professional photos if needed</p>
+                                <p className="font-semibold">Dinner collection launches November 11th</p>
+                                <p className="text-sm">choose your item then</p>
                             </div>
                             <div className="space-y-2">
                                 <div className="w-8 h-8 bg-gold rounded-full flex items-center justify-center text-cream font-bold mx-auto mb-2">3</div>
-                                <p className="font-semibold">Your piece goes live</p>
-                                <p className="text-sm">Start earning from your wardrobe</p>
+                                <p className="font-semibold">Receive your item</p>
+                                <p className="text-sm">and you're all set for dinner</p>
                             </div>
                         </div>
                     </div>
