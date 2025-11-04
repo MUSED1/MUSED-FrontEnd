@@ -76,11 +76,10 @@ export function About() {
                 <div className="container mx-auto px-4 py-16">
                     {/* Hero Section */}
                     <div className="text-center mb-16">
-
                         <h1 className="text-6xl md:text-7xl font-bold text-plum mb-6">
                             About <span className="text-gold">MUSED</span>
                         </h1>
-                        <p className="text-2xl text-plum/80 max-w-3xl mx-auto leading-relaxed">
+                        <p className="text-2xl text-plum/80 max-w-3xl mx-auto leading-relaxed font-amandine">
                             Where Fashion Meets Connection •
                             Sustainable Style Revolution •
                             Your Closet, Expanded
@@ -106,7 +105,7 @@ export function About() {
 
                             <div className="space-y-8">
                                 <div className="text-center">
-                                    <p className="text-xl text-plum/80 leading-relaxed max-w-4xl mx-auto">
+                                    <p className="text-xl text-plum/80 leading-relaxed max-w-4xl mx-auto font-amandine">
                                         Explore a rotating closet of handpicked finds. Mused is the platform that lets you lend and borrow clothes from each other. Mused connects you to friends and friends of friends. Let your clothes spark their creativity, and let theirs spark yours. Sharing clothes has never been this easy.
                                     </p>
                                 </div>
@@ -117,7 +116,7 @@ export function About() {
                                             <Users className="text-plum mx-auto mb-3" size={32} />
                                             <h3 className="text-2xl font-bold text-plum mb-2">1. Trust & Community</h3>
                                         </div>
-                                        <p className="text-plum/80 text-lg leading-relaxed">
+                                        <p className="text-plum/80 text-lg leading-relaxed font-amandine">
                                             Every piece is shared by real women in your city. Mused is about sharing with friends & friends of friends. Meet the people you borrow from and lend to by attending our "Wear Something Borrowed" dinners. Mused sharing is easy, personal, and social.
                                         </p>
                                     </div>
@@ -127,7 +126,7 @@ export function About() {
                                             <DollarSign className="text-plum mx-auto mb-3" size={32} />
                                             <h3 className="text-2xl font-bold text-plum mb-2">2. Monetize</h3>
                                         </div>
-                                        <p className="text-plum/80 text-lg leading-relaxed">
+                                        <p className="text-plum/80 text-lg leading-relaxed font-amandine">
                                             Just like you shouldn't let your money sleep in your bank account, your clothes shouldn't sleep in your closet! With Mused, you can earn by renting out pieces you're not wearing. Turn your personal style into a side hustle.
                                         </p>
                                     </div>
@@ -137,7 +136,7 @@ export function About() {
                                             <Leaf className="text-plum mx-auto mb-3" size={32} />
                                             <h3 className="text-2xl font-bold text-plum mb-2">3. Future For Fashion</h3>
                                         </div>
-                                        <p className="text-plum/80 text-lg leading-relaxed">
+                                        <p className="text-plum/80 text-lg leading-relaxed font-amandine">
                                             Refresh your wardrobe, reduce waste, and join a movement that's better for your closet, wallet, and the planet. Mused is building the future of fashion - one where you can try new trends and skip the pile-up. Join us to create a more sustainable, affordable and flexible way to shop.
                                         </p>
                                     </div>
@@ -157,11 +156,10 @@ export function About() {
                             <div className="absolute inset-0 bg-gradient-to-t from-plum/40 to-gold/20"></div>
                             <div className="absolute bottom-8 left-8 right-8 text-cream">
                                 <h3 className="text-3xl font-bold mb-2">Join Our Fashion Community</h3>
-                                <p className="text-xl opacity-90">Where style meets sustainability and connection</p>
+                                <p className="text-xl opacity-90 font-amandine">Where style meets sustainability and connection</p>
                             </div>
                         </div>
                     </div>
-
 
                     {/* FAQ Accordion Section */}
                     <div className="max-w-4xl mx-auto">
@@ -169,7 +167,7 @@ export function About() {
                             <h2 className="text-4xl md:text-5xl font-bold text-plum mb-4">
                                 Frequently Asked <span className="text-gold">Questions</span>
                             </h2>
-                            <p className="text-xl text-plum/70 max-w-2xl mx-auto">
+                            <p className="text-xl text-plum/70 max-w-2xl mx-auto font-amandine">
                                 Everything you need to know about lending, borrowing, and joining our community
                             </p>
                         </div>
@@ -204,7 +202,7 @@ export function About() {
                                     {openItems.includes(index) && (
                                         <div className="px-8 pb-6 animate-slideDown">
                                             <div className="pl-16 border-l-2 border-gold">
-                                                <p className="text-plum/80 text-lg leading-relaxed">
+                                                <p className="text-plum/80 text-lg leading-relaxed font-amandine">
                                                     {item.answer}
                                                 </p>
                                             </div>
@@ -219,7 +217,7 @@ export function About() {
                     <div className="max-w-2xl mx-auto mt-16 text-center">
                         <div className="bg-gradient-to-r from-plum to-gold rounded-2xl p-8 text-cream transform transition-all duration-500 hover:scale-105 hover:shadow-2xl">
                             <h3 className="text-3xl font-bold mb-4">Ready to Join the Movement?</h3>
-                            <p className="text-xl mb-6 opacity-90">
+                            <p className="text-xl mb-6 opacity-90 font-amandine">
                                 Start lending your pieces or discover amazing styles from our community today.
                             </p>
                             <div className="flex flex-col sm:flex-row gap-4 justify-center">
