@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { Header } from './Header'
 import { Footer } from './Footer'
-import { Upload, Plus, Trash2 } from 'lucide-react'
+import { Upload, Plus } from 'lucide-react'
 
 interface ClothingItem {
     image: string;
@@ -31,7 +31,7 @@ export function ClothingUploadForm() {
         specialInstructions: ''
     })
 
-    // Clothing items
+    // Clothing items - exactly 2 items, no more
     const [clothingItems, setClothingItems] = useState<ClothingItem[]>([
         { image: '', category: '', size: '' },
         { image: '', category: '', size: '' }
@@ -74,17 +74,6 @@ export function ClothingUploadForm() {
         }
     }
 
-    const removeClothingItem = (index: number) => {
-        if (clothingItems.length > 1) {
-            setClothingItems(prev => prev.filter((_, i) => i !== index))
-        }
-    }
-
-    const addClothingItem = () => {
-        if (clothingItems.length < 5) { // Limit to 5 items
-            setClothingItems(prev => [...prev, { image: '', category: '', size: '' }])
-        }
-    }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -117,6 +106,16 @@ export function ClothingUploadForm() {
             setSubmitMessage({
                 type: 'error',
                 message: 'Please add at least one complete clothing item'
+            })
+            setIsSubmitting(false)
+            return
+        }
+
+        // Validate that both items are completed
+        if (validItems.length < 2) {
+            setSubmitMessage({
+                type: 'error',
+                message: 'Please complete both clothing items'
             })
             setIsSubmitting(false)
             return
@@ -453,14 +452,9 @@ export function ClothingUploadForm() {
                             <div className="border-t border-cream pt-8">
                                 <div className="flex justify-between items-center mb-6">
                                     <h3 className="text-2xl font-bold text-plum">Your Clothing Items</h3>
-                                    <button
-                                        type="button"
-                                        onClick={addClothingItem}
-                                        className="bg-gold text-cream px-4 py-2 rounded-full font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-300 flex items-center space-x-2"
-                                    >
-                                        <Plus size={16} />
-                                        <span>Add Another Item</span>
-                                    </button>
+                                    <div className="text-plum/60 text-sm">
+                                        Exactly 2 items required
+                                    </div>
                                 </div>
 
                                 <div className="space-y-8">
@@ -468,15 +462,7 @@ export function ClothingUploadForm() {
                                         <div key={index} className="border-2 border-cream rounded-2xl p-6 bg-cream/20">
                                             <div className="flex justify-between items-center mb-4">
                                                 <h4 className="text-xl font-bold text-plum">Clothing {index + 1}</h4>
-                                                {clothingItems.length > 1 && (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => removeClothingItem(index)}
-                                                        className="text-red-500 hover:text-red-700 transition-colors"
-                                                    >
-                                                        <Trash2 size={16} />
-                                                    </button>
-                                                )}
+                                                {/* Remove button is hidden since we can't remove items */}
                                             </div>
 
                                             <div className="grid md:grid-cols-2 gap-6">
