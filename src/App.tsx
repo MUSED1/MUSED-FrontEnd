@@ -14,6 +14,7 @@ import { Diner } from './components/Diner'
 import { About } from './components/About'
 import { FirstDinner } from './components/FirstDinner' // Add this import
 import { ClothingUploadForm } from './components/ClothingUploadForm'
+import { AdminClothing } from './components/AdminClothing'
 
 function HomePage() {
     return (
@@ -55,6 +56,8 @@ export function App() {
                 <Route path="/about" element={<About />} />
                 <Route path="/first-dinner" element={<FirstDinner />} /> {/* Add this route */}
                 <Route path="/upload" element={<ClothingUploadForm />} />
+                <Route path="/admin/clothing" element={<AdminClothing />} />
+
             </Routes>
         </Router>
     )
