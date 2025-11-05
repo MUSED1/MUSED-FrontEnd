@@ -187,7 +187,6 @@ export function ClothingUploadForm() {
         'Bottoms',
         'Outerwear',
         'Accessories',
-        'Shoes',
         'Bags',
         'Jewelry'
     ]
@@ -341,7 +340,7 @@ export function ClothingUploadForm() {
                                                     required
                                                     disabled={isSubmitting}
                                                 />
-                                                <span className="text-plum">No, I'll need to hand it to you in person</span>
+                                                <span className="text-plum">No, I need to be present for pickup</span>
                                             </label>
                                         </div>
                                     </div>
@@ -349,24 +348,47 @@ export function ClothingUploadForm() {
                                     {/* Conditional fields based on pickup method */}
                                     {pickupInfo.pickupMethod === 'without' && (
                                         <div className="space-y-4 p-4 bg-cream/30 rounded-xl">
-                                            <div>
-                                                <label className="block text-lg font-semibold text-plum mb-3">
-                                                    When can we come by?
-                                                </label>
-                                                <select
-                                                    name="pickupTime"
-                                                    value={pickupInfo.pickupTime}
-                                                    onChange={handlePickupInfoChange}
-                                                    className="w-full px-4 py-3 border-2 border-cream rounded-xl focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all duration-300 bg-white text-plum"
-                                                    required
-                                                    disabled={isSubmitting}
-                                                >
-                                                    <option value="">Select time window</option>
-                                                    <option value="morning">Morning (8:00–11:00)</option>
-                                                    <option value="afternoon">Afternoon (12:00–16:00)</option>
-                                                    <option value="evening">Evening (17:00–20:00)</option>
-                                                    <option value="other">Other (custom time)</option>
-                                                </select>
+                                            <div className="grid md:grid-cols-2 gap-4">
+                                                <div>
+                                                    <label className="block text-lg font-semibold text-plum mb-3">
+                                                        Choose a day
+                                                    </label>
+                                                    <select
+                                                        name="pickupDay"
+                                                        value={pickupInfo.pickupDay}
+                                                        onChange={handlePickupInfoChange}
+                                                        className="w-full px-4 py-3 border-2 border-cream rounded-xl focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all duration-300 bg-white text-plum"
+                                                        required
+                                                        disabled={isSubmitting}
+                                                    >
+                                                        <option value="">Select day</option>
+                                                        <option value="9">9 November (Saturday)</option>
+                                                        <option value="10">10 November (Sunday)</option>
+                                                        <option value="11">11 November (Monday)</option>
+                                                    </select>
+                                                </div>
+                                                <div>
+                                                    <label className="block text-lg font-semibold text-plum mb-3">
+                                                        Choose a time window
+                                                    </label>
+                                                    <select
+                                                        name="pickupTime"
+                                                        value={pickupInfo.pickupTime}
+                                                        onChange={handlePickupInfoChange}
+                                                        className="w-full px-4 py-3 border-2 border-cream rounded-xl focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all duration-300 bg-white text-plum"
+                                                        required
+                                                        disabled={isSubmitting}
+                                                    >
+                                                        <option value="">Select time window</option>
+                                                        {pickupInfo.pickupDay && (
+                                                            <>
+                                                                <option value="morning">Morning (8:00–11:00)</option>
+                                                                <option value="afternoon">Afternoon (12:00–16:00)</option>
+                                                                <option value="evening">Evening (17:00–20:00)</option>
+                                                            </>
+                                                        )}
+                                                    </select>
+                                                </div>
                                             </div>
                                             <div>
                                                 <label className="block text-lg font-semibold text-plum mb-3">
