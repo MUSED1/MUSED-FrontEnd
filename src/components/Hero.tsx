@@ -61,7 +61,7 @@ export function Hero() {
                         UPCOMING <span className="text-burgundy transform transition-all duration-700 hover:text-gold hover:scale-110">WSB DINNER</span>
                     </h2>
                     <p className="text-plum/80 text-lg md:text-xl mb-8 max-w-md transform transition-all duration-700 delay-200 hover:translate-x-2 hover:text-plum leading-relaxed">
-                        Browse the collection Claim your look. Then join us for night one -the first gathering where this idea comes to life.An evening where style circulates. connections form and you witness the concept become reality
+                        Be Mused and meet your muse around a table. Mused is more than sharing style, it's sharing an experience.
                     </p>
 
                     {/* Minimalistic Countdown Timer */}
@@ -78,7 +78,7 @@ export function Hero() {
                             </Button>
                         </Link>
                         <Button variant="secondary" className="transform transition-all duration-300 hover:scale-110 hover:shadow-2xl font-amandine">
-                            Dinner collection dropping 10.11.25
+                            Dinner collection dropping 11.11.25
                         </Button>
                     </div>
                 </div>
