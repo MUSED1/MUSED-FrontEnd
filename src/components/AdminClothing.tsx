@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import { Header } from './Header'
 import { Footer } from './Footer'
-import { Edit, Trash2, Eye, Save, X, Image as ImageIcon } from 'lucide-react'
+import { Edit, Trash2, Eye, Save, X } from 'lucide-react'
 
 interface ClothingItem {
     _id: string;
@@ -22,18 +22,13 @@ interface ClothingItem {
     createdAt: string;
 }
 
-interface ClothingItemWithoutImages extends Omit<ClothingItem, 'images'> {
-    images?: string[];
-}
-
 export function AdminClothing() {
-    const [clothingItems, setClothingItems] = useState<ClothingItemWithoutImages[]>([])
+    const [clothingItems, setClothingItems] = useState<ClothingItem[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
     const [editingId, setEditingId] = useState<string | null>(null)
-    const [editForm, setEditForm] = useState<Partial<ClothingItemWithoutImages>>({})
-    const [previewImage, setPreviewImage] = useState<{url: string, itemId: string} | null>(null)
-    const [imageCache, setImageCache] = useState<{[key: string]: string[]}>({})
+    const [editForm, setEditForm] = useState<Partial<ClothingItem>>({})
+    const [previewImage, setPreviewImage] = useState<string | null>(null)
 
     const categories = [
         'Dresses', 'Tops', 'Bottoms', 'Outerwear', 'Accessories',
@@ -55,19 +50,24 @@ export function AdminClothing() {
         try {
             setLoading(true)
             setError('')
-            const response = await fetch('https://mused-backend.onrender.com/api/clothing/admin/all')
+
+            const response = await fetch('https://mused-backend.onrender.com/api/clothing/admin/all', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
 
             if (!response.ok) {
-                throw new Error(`Failed to fetch clothing items: ${response.status}`)
+                throw new Error(`Server error: ${response.status}`)
             }
 
             const result = await response.json()
 
             if (result.success) {
-                console.log('Fetched items:', result.data.length)
                 setClothingItems(result.data)
             } else {
-                throw new Error(result.message || 'Unknown error occurred')
+                throw new Error(result.message || 'Failed to fetch items')
             }
         } catch (err) {
             console.error('Fetch error:', err)
@@ -77,52 +77,7 @@ export function AdminClothing() {
         }
     }
 
-    const fetchItemImages = async (itemId: string) => {
-        // Check if images are already cached
-        if (imageCache[itemId]) {
-            return imageCache[itemId]
-        }
-
-        try {
-            const response = await fetch(`https://mused-backend.onrender.com/api/clothing/admin/${itemId}`)
-
-            if (!response.ok) {
-                throw new Error('Failed to fetch images')
-            }
-
-            const result = await response.json()
-
-            if (result.success && result.data.images) {
-                // Cache the images
-                setImageCache(prev => ({
-                    ...prev,
-                    [itemId]: result.data.images
-                }))
-                return result.data.images
-            }
-            return []
-        } catch (error) {
-            console.error('Error fetching images:', error)
-            return []
-        }
-    }
-
-    const handleImageClick = async (itemId: string, imageIndex: number) => {
-        try {
-            const images = await fetchItemImages(itemId)
-            if (images && images[imageIndex]) {
-                setPreviewImage({
-                    url: `data:image/jpeg;base64,${images[imageIndex]}`,
-                    itemId
-                })
-            }
-        } catch (error) {
-            console.error('Error loading image:', error)
-            setError('Failed to load image')
-        }
-    }
-
-    const handleEdit = (item: ClothingItemWithoutImages) => {
+    const handleEdit = (item: ClothingItem) => {
         setEditingId(item._id)
         setEditForm({ ...item })
     }
@@ -147,12 +102,10 @@ export function AdminClothing() {
                 )
                 setEditingId(null)
                 setEditForm({})
-                setError('')
             } else {
-                throw new Error(result.message || 'Failed to update item')
+                throw new Error(result.message)
             }
         } catch (err) {
-            console.error('Save error:', err)
             setError(err instanceof Error ? err.message : 'Error updating item')
         }
     }
@@ -171,18 +124,10 @@ export function AdminClothing() {
 
             if (response.ok && result.success) {
                 setClothingItems(prev => prev.filter(item => item._id !== id))
-                // Remove from image cache
-                setImageCache(prev => {
-                    const newCache = { ...prev }
-                    delete newCache[id]
-                    return newCache
-                })
-                setError('')
             } else {
-                throw new Error(result.message || 'Failed to delete item')
+                throw new Error(result.message)
             }
         } catch (err) {
-            console.error('Delete error:', err)
             setError(err instanceof Error ? err.message : 'Error deleting item')
         }
     }
@@ -192,7 +137,7 @@ export function AdminClothing() {
         setEditForm({})
     }
 
-    const handleInputChange = (field: keyof ClothingItemWithoutImages, value: string) => {
+    const handleInputChange = (field: keyof ClothingItem, value: string) => {
         setEditForm(prev => ({
             ...prev,
             [field]: value
@@ -252,28 +197,16 @@ export function AdminClothing() {
 
                     {/* Error Message */}
                     {error && (
-                        <div className="mb-6 p-4 bg-red-100 text-red-800 rounded-xl border border-red-300">
-                            <div className="flex justify-between items-center">
-                                <span>{error}</span>
-                                <button
-                                    onClick={() => setError('')}
-                                    className="text-red-800 hover:text-red-900"
-                                >
-                                    <X size={16} />
-                                </button>
-                            </div>
+                        <div className="mb-6 p-4 bg-red-100 text-red-800 rounded-xl border border-red-300 flex justify-between items-center">
+                            <span>{error}</span>
+                            <button
+                                onClick={() => setError('')}
+                                className="ml-4 underline hover:no-underline"
+                            >
+                                Dismiss
+                            </button>
                         </div>
                     )}
-
-                    {/* Refresh Button */}
-                    <div className="flex justify-end mb-6">
-                        <button
-                            onClick={fetchClothingItems}
-                            className="bg-plum text-white px-4 py-2 rounded-lg hover:bg-plum/90 transition-colors"
-                        >
-                            Refresh Data
-                        </button>
-                    </div>
 
                     {/* Clothing Items Grid */}
                     <div className="grid gap-6">
@@ -284,34 +217,33 @@ export function AdminClothing() {
                                     <div className="space-y-4">
                                         <h3 className="text-lg font-semibold text-plum">Images</h3>
                                         <div className="space-y-2">
-                                            {/* Placeholder for images - will load on click */}
-                                            {[0, 1, 2].map((index) => (
-                                                <div key={index} className="relative">
-                                                    <div
-                                                        className="w-full h-32 bg-gray-100 rounded-lg cursor-pointer hover:opacity-80 transition-opacity flex items-center justify-center"
-                                                        onClick={() => handleImageClick(item._id, index)}
-                                                    >
-                                                        <ImageIcon size={24} className="text-gray-400" />
-                                                    </div>
+                                            {item.images.map((imageUrl, index) => (
+                                                <div key={index} className="relative group">
+                                                    <img
+                                                        src={imageUrl}
+                                                        alt={`${item.category} ${index + 1}`}
+                                                        className="w-full h-32 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
+                                                        onClick={() => setPreviewImage(imageUrl)}
+                                                        onError={(e) => {
+                                                            e.currentTarget.src = 'https://via.placeholder.com/400x400?text=Image+Not+Found'
+                                                        }}
+                                                    />
                                                     <button
-                                                        onClick={() => handleImageClick(item._id, index)}
-                                                        className="absolute inset-0 w-full h-full flex items-center justify-center bg-black bg-opacity-0 hover:bg-opacity-20 transition-all"
+                                                        onClick={() => setPreviewImage(imageUrl)}
+                                                        className="absolute inset-0 w-full h-full flex items-center justify-center bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all"
                                                     >
-                                                        <Eye size={20} className="text-white opacity-0 hover:opacity-100" />
+                                                        <Eye size={20} className="text-white opacity-0 group-hover:opacity-100" />
                                                     </button>
                                                 </div>
                                             ))}
                                         </div>
-                                        <p className="text-xs text-gray-500">
-                                            Click to view images
-                                        </p>
                                     </div>
 
                                     {/* Item Details */}
                                     <div className="space-y-4">
                                         <h3 className="text-lg font-semibold text-plum">Item Details</h3>
                                         <div className="space-y-2">
-                                            <div className="flex justify-between">
+                                            <div className="flex justify-between items-center">
                                                 <span className="font-semibold text-plum/80">Category:</span>
                                                 {editingId === item._id ? (
                                                     <select
@@ -328,7 +260,7 @@ export function AdminClothing() {
                                                 )}
                                             </div>
 
-                                            <div className="flex justify-between">
+                                            <div className="flex justify-between items-center">
                                                 <span className="font-semibold text-plum/80">Size:</span>
                                                 {editingId === item._id ? (
                                                     <select
@@ -345,7 +277,7 @@ export function AdminClothing() {
                                                 )}
                                             </div>
 
-                                            <div className="flex justify-between">
+                                            <div className="flex justify-between items-center">
                                                 <span className="font-semibold text-plum/80">Status:</span>
                                                 {editingId === item._id ? (
                                                     <select
@@ -436,10 +368,31 @@ export function AdminClothing() {
                                                 <span className="block text-plum capitalize">{item.pickupMethod}</span>
                                             </div>
 
+                                            {item.pickupDay && (
+                                                <div>
+                                                    <span className="font-semibold text-plum/80">Pickup Day:</span>
+                                                    <span className="block text-plum">{item.pickupDay}</span>
+                                                </div>
+                                            )}
+
+                                            {item.pickupTime && (
+                                                <div>
+                                                    <span className="font-semibold text-plum/80">Pickup Time:</span>
+                                                    <span className="block text-plum">{item.pickupTime}</span>
+                                                </div>
+                                            )}
+
                                             {item.pickupInstructions && (
                                                 <div>
-                                                    <span className="font-semibold text-plum/80">Instructions:</span>
+                                                    <span className="font-semibold text-plum/80">Pickup Instructions:</span>
                                                     <span className="block text-plum">{item.pickupInstructions}</span>
+                                                </div>
+                                            )}
+
+                                            {item.specialInstructions && (
+                                                <div>
+                                                    <span className="font-semibold text-plum/80">Special Instructions:</span>
+                                                    <span className="block text-plum">{item.specialInstructions}</span>
                                                 </div>
                                             )}
                                         </div>
@@ -503,17 +456,20 @@ export function AdminClothing() {
                     className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
                     onClick={() => setPreviewImage(null)}
                 >
-                    <div
-                        className="relative max-w-4xl max-h-full"
-                        onClick={(e) => e.stopPropagation()}
-                    >
+                    <div className="relative max-w-4xl max-h-full">
                         <img
-                            src={previewImage.url}
+                            src={previewImage}
                             alt="Preview"
-                            className="max-w-full max-h-full object-contain"
+                            className="max-w-full max-h-[90vh] object-contain rounded-lg"
+                            onError={(e) => {
+                                e.currentTarget.src = 'https://via.placeholder.com/800x800?text=Image+Not+Found'
+                            }}
                         />
                         <button
-                            onClick={() => setPreviewImage(null)}
+                            onClick={(e) => {
+                                e.stopPropagation()
+                                setPreviewImage(null)
+                            }}
                             className="absolute top-4 right-4 text-white bg-black bg-opacity-50 rounded-full p-2 hover:bg-opacity-75 transition-all"
                         >
                             <X size={24} />
