@@ -493,26 +493,57 @@ export function ClothingUploadForm() {
                                                     <label className="block text-lg font-semibold text-plum mb-3">
                                                         Image *
                                                     </label>
-                                                    <div className="border-2 border-dashed border-gold/50 rounded-xl p-4 text-center hover:border-gold transition-all duration-300">
+                                                    <div className={`border-2 ${item.image ? 'border-solid border-green-500' : 'border-dashed border-gold/50'} rounded-xl p-6 text-center hover:border-gold transition-all duration-300`}>
                                                         <input
                                                             type="file"
                                                             accept="image/*"
                                                             onChange={(e) => handleImageUpload(index, e)}
                                                             className="hidden"
                                                             id={`image-upload-${index}`}
+                                                            disabled={isSubmitting}
                                                         />
                                                         <label htmlFor={`image-upload-${index}`} className="cursor-pointer">
-                                                            <div className="flex flex-col items-center justify-center space-y-2">
-                                                                <Upload className="text-gold" size={24} />
-                                                                <p className="text-plum font-semibold">
-                                                                    Upload Image
-                                                                </p>
-                                                                <p className="text-plum/60 text-sm">
-                                                                    PNG, JPG, JPEG up to 10MB
-                                                                </p>
-                                                            </div>
+                                                            {item.image ? (
+                                                                <div className="flex flex-col items-center justify-center space-y-4">
+                                                                    <div
+                                                                        className="w-80 h-80 bg-cover bg-center rounded-lg border-2 border-cream shadow-md"
+                                                                        style={{ backgroundImage: `url(data:image/jpeg;base64,${item.image})` }}
+                                                                    >
+                                                                    </div>
+                                                                    <div className="text-center">
+                                                                        <p className="text-green-600 font-semibold text-lg">
+                                                                            ✓ Image Uploaded
+                                                                        </p>
+                                                                        <p className="text-plum/60 text-sm mt-1">
+                                                                            Click to change image
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+                                                            ) : (
+                                                                <div className="flex flex-col items-center justify-center space-y-4 py-4">
+                                                                    <Upload className="text-gold" size={40} />
+                                                                    <div className="text-center">
+                                                                        <p className="text-plum font-semibold text-lg">
+                                                                            Upload Image for Item {index + 1}
+                                                                        </p>
+                                                                        <p className="text-plum/60 text-sm mt-1">
+                                                                            PNG, JPG, JPEG up to 10MB
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+                                                            )}
                                                         </label>
                                                     </div>
+                                                    {item.image && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleClothingItemChange(index, 'image', '')}
+                                                            className="mt-3 text-red-500 text-sm hover:text-red-700 disabled:opacity-50 flex items-center justify-center w-full"
+                                                            disabled={isSubmitting}
+                                                        >
+                                                            Remove Image
+                                                        </button>
+                                                    )}
                                                 </div>
 
                                                 {/* Category and Size */}
