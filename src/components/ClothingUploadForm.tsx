@@ -1,8 +1,8 @@
 // components/UploadClothing.tsx
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Header } from './Header'
 import { Footer } from './Footer'
-import { Upload, Plus } from 'lucide-react'
+import { Upload, Plus, AlertTriangle } from 'lucide-react'
 
 interface ClothingItem {
     image: string;
@@ -36,6 +36,13 @@ export function ClothingUploadForm() {
         { image: '', category: '', size: '' },
         { image: '', category: '', size: '' }
     ])
+
+    // Scroll to top when submit message changes
+    useEffect(() => {
+        if (submitMessage) {
+            window.scrollTo({ top: 0, behavior: 'smooth' })
+        }
+    }, [submitMessage])
 
     const handleUserInfoChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target
@@ -74,11 +81,13 @@ export function ClothingUploadForm() {
         }
     }
 
-
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setIsSubmitting(true)
         setSubmitMessage(null)
+
+        // Scroll to top immediately when submitting
+        window.scrollTo({ top: 0, behavior: 'smooth' })
 
         // Validate user info
         if (!userInfo.fullName || !userInfo.email || !userInfo.phoneNumber || !userInfo.address) {
@@ -220,14 +229,43 @@ export function ClothingUploadForm() {
                         </p>
                     </div>
 
+                    {/* Loading Overlay */}
+                    {isSubmitting && (
+                        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
+                            <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md mx-4 text-center">
+                                <div className="w-16 h-16 border-4 border-gold border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                                <h3 className="text-2xl font-bold text-plum mb-4">Uploading Your Items</h3>
+                                <p className="text-plum/80 mb-2">Please wait while we process your submission...</p>
+                                <p className="text-sm text-plum/60 flex items-center justify-center gap-2">
+                                    <AlertTriangle size={16} />
+                                    Don't close this window
+                                </p>
+                                <div className="mt-4 bg-cream rounded-full h-2">
+                                    <div className="bg-gradient-to-r from-plum to-gold h-2 rounded-full animate-pulse"></div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Status message */}
                     {submitMessage && (
-                        <div className={`mb-6 p-4 rounded-xl ${
+                        <div className={`mb-6 p-6 rounded-2xl ${
                             submitMessage.type === 'success'
-                                ? 'bg-green-100 text-green-800 border border-green-300'
-                                : 'bg-red-100 text-red-800 border border-red-300'
+                                ? 'bg-green-100 text-green-800 border-2 border-green-300'
+                                : 'bg-red-100 text-red-800 border-2 border-red-300'
                         }`}>
-                            {submitMessage.message}
+                            <div className="flex items-center gap-3">
+                                {submitMessage.type === 'success' ? (
+                                    <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-white">
+                                        ✓
+                                    </div>
+                                ) : (
+                                    <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white">
+                                        !
+                                    </div>
+                                )}
+                                <p className="text-lg font-semibold">{submitMessage.message}</p>
+                            </div>
                         </div>
                     )}
 
@@ -362,9 +400,10 @@ export function ClothingUploadForm() {
                                                         disabled={isSubmitting}
                                                     >
                                                         <option value="">Select day</option>
-                                                        <option value="9">9 November (Saturday)</option>
-                                                        <option value="10">10 November (Sunday)</option>
-                                                        <option value="11">11 November (Monday)</option>
+                                                        <option value="9">9 November (Sunday)</option>
+                                                        <option value="10">10 November (Monday)</option>
+                                                        <option value="11">11 November (Tuesday)</option>
+                                                        <option value="12">12 November (Wednesday)</option>
                                                     </select>
                                                 </div>
                                                 <div>
@@ -484,7 +523,6 @@ export function ClothingUploadForm() {
                                         <div key={index} className="border-2 border-cream rounded-2xl p-6 bg-cream/20">
                                             <div className="flex justify-between items-center mb-4">
                                                 <h4 className="text-xl font-bold text-plum">Clothing {index + 1}</h4>
-                                                {/* Remove button is hidden since we can't remove items */}
                                             </div>
 
                                             <div className="grid md:grid-cols-2 gap-6">
@@ -506,7 +544,7 @@ export function ClothingUploadForm() {
                                                             {item.image ? (
                                                                 <div className="flex flex-col items-center justify-center space-y-4">
                                                                     <div
-                                                                        className="w-80 h-80 bg-cover bg-center rounded-lg border-2 border-cream shadow-md"
+                                                                        className="w-32 h-32 bg-cover bg-center rounded-lg border-2 border-cream shadow-md"
                                                                         style={{ backgroundImage: `url(data:image/jpeg;base64,${item.image})` }}
                                                                     >
                                                                     </div>
@@ -521,7 +559,7 @@ export function ClothingUploadForm() {
                                                                 </div>
                                                             ) : (
                                                                 <div className="flex flex-col items-center justify-center space-y-4 py-4">
-                                                                    <Upload className="text-gold" size={40} />
+                                                                    <Upload className="text-gold" size={32} />
                                                                     <div className="text-center">
                                                                         <p className="text-plum font-semibold text-lg">
                                                                             Upload Image for Item {index + 1}
