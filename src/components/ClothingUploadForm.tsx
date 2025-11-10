@@ -462,9 +462,10 @@ export function ClothingUploadForm() {
                                                         disabled={isSubmitting}
                                                     >
                                                         <option value="">Select day</option>
-                                                        <option value="9">9 November (Saturday)</option>
-                                                        <option value="10">10 November (Sunday)</option>
-                                                        <option value="11">11 November (Monday)</option>
+                                                        <option value="9">9 November (Sunday)</option>
+                                                        <option value="10">10 November (Monday)</option>
+                                                        <option value="11">11 November (Tuesday)</option>
+                                                        <option value="12">12 November (Wednesday)</option>
                                                     </select>
                                                 </div>
                                                 <div>
