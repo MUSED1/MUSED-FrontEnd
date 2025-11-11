@@ -15,6 +15,7 @@ interface ReservationFormData {
     pickupMethod: string;
     deliveryDay?: string;
     deliveryTime?: string;
+    deliveryMethod?: string;
     agreeToTerms: boolean;
 }
 
@@ -84,11 +85,14 @@ export function Confirmation() {
 
     const completePendingReservation = async (formData: ReservationFormData, outfit: Outfit) => {
         try {
+            // Use deliveryMethod if available, otherwise fallback to pickupMethod
+            const pickupMethod = formData.deliveryMethod || formData.pickupMethod;
+
             const reservationData = {
                 fullName: formData.name,
                 email: formData.email,
                 phoneNumber: formData.phone,
-                pickupMethod: formData.pickupMethod,
+                pickupMethod: pickupMethod,
                 pickupTime: formData.deliveryTime || formData.pickupDate,
                 pickupDay: formData.deliveryDay || formData.pickupDate,
                 pickupInstructions: formData.instructions,
@@ -96,6 +100,16 @@ export function Confirmation() {
             }
 
             console.log('Completing pending reservation:', reservationData)
+
+            // Validate that all required fields are present
+            if (!reservationData.fullName || !reservationData.email || !reservationData.phoneNumber || !reservationData.pickupMethod) {
+                throw new Error('Missing required fields: ' + JSON.stringify({
+                    fullName: !!reservationData.fullName,
+                    email: !!reservationData.email,
+                    phoneNumber: !!reservationData.phoneNumber,
+                    pickupMethod: !!reservationData.pickupMethod
+                }));
+            }
 
             const API_BASE_URL = 'https://mused-backend.onrender.com/api/clothing'
             const response = await fetch(`${API_BASE_URL}/${outfit.id}/reserve`, {
@@ -210,6 +224,7 @@ export function Confirmation() {
             setReservationError(null)
         } catch (error) {
             console.error('Retry failed:', error)
+            setReservationError('Failed to complete reservation. Please contact support.')
         } finally {
             setIsLoading(false)
         }
@@ -271,6 +286,8 @@ export function Confirmation() {
                                             <p className="text-amber-700">Item: {recoveryData.outfit.name}</p>
                                             <p className="text-amber-700">Email: {recoveryData.formData.email}</p>
                                             <p className="text-amber-700">Size: {recoveryData.outfit.size}</p>
+                                            <p className="text-amber-700">Delivery Day: {recoveryData.formData.deliveryDay || 'Not specified'}</p>
+                                            <p className="text-amber-700">Delivery Time: {recoveryData.formData.deliveryTime || 'Not specified'}</p>
                                         </div>
                                     </div>
 
