@@ -13,6 +13,8 @@ interface ReservationFormData {
     instructions: string;
     pickupDate: string;
     pickupMethod: string;
+    deliveryDay?: string;
+    deliveryTime?: string;
     agreeToTerms: boolean;
 }
 
@@ -80,6 +82,58 @@ export function Confirmation() {
         return false;
     }
 
+    const completePendingReservation = async (formData: ReservationFormData, outfit: Outfit) => {
+        try {
+            const reservationData = {
+                fullName: formData.name,
+                email: formData.email,
+                phoneNumber: formData.phone,
+                pickupMethod: formData.pickupMethod,
+                pickupTime: formData.deliveryTime || formData.pickupDate,
+                pickupDay: formData.deliveryDay || formData.pickupDate,
+                pickupInstructions: formData.instructions,
+                specialInstructions: formData.instructions
+            }
+
+            console.log('Completing pending reservation:', reservationData)
+
+            const API_BASE_URL = 'https://mused-backend.onrender.com/api/clothing'
+            const response = await fetch(`${API_BASE_URL}/${outfit.id}/reserve`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(reservationData),
+            })
+
+            if (!response.ok) {
+                let errorData;
+                try {
+                    errorData = await response.json();
+                } catch {
+                    errorData = { message: `HTTP error: ${response.status}` };
+                }
+                throw new Error(errorData.message || `Failed to submit reservation: ${response.status}`)
+            }
+
+            const result = await response.json()
+
+            if (!result.success) {
+                throw new Error(result.message || 'Failed to submit reservation')
+            }
+
+            console.log('Pending reservation completed successfully')
+            // Clear pending reservation on success
+            localStorage.removeItem('pendingReservation')
+
+        } catch (error) {
+            console.error('Pending reservation completion error:', error)
+            const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred'
+            setReservationError(`Payment was successful but reservation failed: ${errorMessage}`)
+            throw error
+        }
+    }
+
     const checkReservationStatus = async () => {
         try {
             setIsLoading(true);
@@ -106,19 +160,26 @@ export function Confirmation() {
                     const paymentVerified = await verifyPaymentStatus(parsedReservation.sessionId);
 
                     if (paymentVerified) {
-                        await completePendingReservation(parsedReservation.formData, parsedReservation.outfit);
-                        setPaymentStatus('success');
+                        try {
+                            await completePendingReservation(parsedReservation.formData, parsedReservation.outfit);
+                            setPaymentStatus('success');
+                            localStorage.removeItem('pendingReservation');
+                        } catch (reservationError) {
+                            console.error('Reservation completion failed:', reservationError);
+                            setPaymentStatus('recovery');
+                            setReservationError('Reservation failed after payment. Please try completing it below.');
+                        }
                     } else {
                         setPaymentStatus('recovery');
                         setReservationError('Payment status could not be verified. Please complete your reservation below.');
                     }
                 } catch (err) {
-                    console.error('Failed to complete pending reservation:', err);
+                    console.error('Failed to process pending reservation:', err);
                     setReservationError('Failed to complete reservation after payment. Please contact support.');
                     setPaymentStatus('failed');
                 }
             } else {
-                // No, pending reservation found
+                // No pending reservation found
                 const urlParams = new URLSearchParams(window.location.search);
                 const paymentSuccess = urlParams.get('payment_success');
 
@@ -136,57 +197,6 @@ export function Confirmation() {
             setPaymentStatus('failed');
         } finally {
             setIsLoading(false);
-            // Clean up localStorage only on success
-            if (paymentStatus === 'success') {
-                localStorage.removeItem('pendingReservation');
-            }
-        }
-    }
-
-    const completePendingReservation = async (formData: ReservationFormData, outfit: Outfit) => {
-        try {
-            const reservationData = {
-                fullName: formData.name,
-                email: formData.email,
-                phoneNumber: formData.phone,
-                pickupMethod: formData.pickupMethod,
-                pickupTime: formData.pickupDate,
-                pickupDay: '',
-                pickupInstructions: formData.instructions,
-                specialInstructions: formData.instructions
-            }
-
-            console.log('Completing pending reservation:', reservationData)
-
-            const API_BASE_URL = 'https://mused-backend.onrender.com/api/clothing'
-            const response = await fetch(`${API_BASE_URL}/${outfit.id}/reserve`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(reservationData),
-            })
-
-            if (!response.ok) {
-                const errorData = await response.json()
-                throw new Error(errorData.message || `Failed to submit reservation: ${response.status}`)
-            }
-
-            const result = await response.json()
-
-            if (!result.success) {
-                throw new Error(result.message || 'Failed to submit reservation')
-            }
-
-            console.log('Pending reservation completed successfully')
-            // Clear pending reservation on success
-            localStorage.removeItem('pendingReservation')
-
-        } catch (error) {
-            console.error('Pending reservation completion error:', error)
-            const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred'
-            setReservationError(`Payment was successful but reservation failed: ${errorMessage}`)
-            throw error
         }
     }
 
@@ -260,6 +270,7 @@ export function Confirmation() {
                                             <p className="text-amber-800 font-semibold">Reservation Details:</p>
                                             <p className="text-amber-700">Item: {recoveryData.outfit.name}</p>
                                             <p className="text-amber-700">Email: {recoveryData.formData.email}</p>
+                                            <p className="text-amber-700">Size: {recoveryData.outfit.size}</p>
                                         </div>
                                     </div>
 
