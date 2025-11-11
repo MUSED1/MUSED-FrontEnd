@@ -38,8 +38,11 @@ interface ReservationFormData {
     phone: string;
     address: string;
     instructions: string;
+    deliveryDate: string;
+    deliveryMethod: string;
+    deliveryTime: string;
     pickupDate: string;
-    pickupMethod: string;
+    pickupTime: string;
     agreeToTerms: boolean;
 }
 
@@ -682,8 +685,11 @@ function ReservationForm({
         phone: '',
         address: '',
         instructions: '',
+        deliveryDate: '',
+        deliveryMethod: '',
+        deliveryTime: '',
         pickupDate: '',
-        pickupMethod: 'in-person',
+        pickupTime: '',
         agreeToTerms: false
     });
 
@@ -714,6 +720,30 @@ function ReservationForm({
             [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
         }));
     };
+
+    // Get available time slots based on selected delivery date
+    const getDeliveryTimeSlots = () => {
+        switch (formData.deliveryDate) {
+            case 'thursday':
+                return ['After 3pm'];
+            case 'friday':
+                return ['Morning (8:00-11:00)', 'Afternoon (12:00-16:00)', 'Evening (17:00-20:00)'];
+            case 'sunday':
+                return ['Morning (8:00-11:00)', 'Afternoon (12:00-16:00)', 'Evening (17:00-20:00)'];
+            case 'monday':
+                return ['After 4pm'];
+            default:
+                return [];
+        }
+    };
+
+    // Get available time slots for pickup (next day after event)
+    const getPickupTimeSlots = () => {
+        return ['Morning (8:00-11:00)', 'Afternoon (12:00-16:00)', 'Evening (17:00-20:00)'];
+    };
+
+    const deliveryTimeSlots = getDeliveryTimeSlots();
+    const pickupTimeSlots = getPickupTimeSlots();
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -783,33 +813,126 @@ function ReservationForm({
                 <div className="transform transition-all duration-300 hover:scale-105">
                     <label className="block text-sm font-semibold text-[#5B1B3A] mb-2 flex items-center">
                         <Calendar size={16} className="mr-2 text-[#891B81]" />
-                        Preferred Pickup Date *
+                        Preferred Delivery Date *
                     </label>
-                    <input
-                        type="date"
-                        name="pickupDate"
-                        value={formData.pickupDate}
+                    <select
+                        name="deliveryDate"
+                        value={formData.deliveryDate}
                         onChange={handleChange}
                         required
                         className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#891B81] focus:border-[#891B81] text-[#5B1B3A] transition-all duration-300"
-                    />
+                    >
+                        <option value="">Select delivery date</option>
+                        <option value="thursday">Thursday (After 3pm)</option>
+                        <option value="friday">Friday (Morning - Afternoon - Evening)</option>
+                        <option value="sunday">Sunday (Morning - Afternoon - Evening)</option>
+                        <option value="monday">Monday (After 4pm)</option>
+                    </select>
                 </div>
             </div>
 
+            {/* Delivery Time Slot - Only show if delivery date is selected */}
+            {formData.deliveryDate && (
+                <div className="transform transition-all duration-300 hover:scale-105">
+                    <label className="block text-sm font-semibold text-[#5B1B3A] mb-2">
+                        Preferred Delivery Time *
+                    </label>
+                    <select
+                        name="deliveryTime"
+                        value={formData.deliveryTime}
+                        onChange={handleChange}
+                        required
+                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#891B81] focus:border-[#891B81] text-[#5B1B3A] transition-all duration-300"
+                    >
+                        <option value="">Select delivery time</option>
+                        {deliveryTimeSlots.map((time, index) => (
+                            <option key={index} value={time}>
+                                {time}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+            )}
+
+            {/* Delivery Method */}
             <div className="transform transition-all duration-300 hover:scale-105">
                 <label className="block text-sm font-semibold text-[#5B1B3A] mb-2">
-                    Pickup Method *
+                    Delivery Method *
                 </label>
-                <select
-                    name="pickupMethod"
-                    value={formData.pickupMethod}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#891B81] focus:border-[#891B81] text-[#5B1B3A] transition-all duration-300"
-                >
-                    <option value="in-person">In-Person Pickup</option>
-                    <option value="without">Without Pickup (Specify in instructions)</option>
-                </select>
+                <div className="space-y-3">
+                    <label className="flex items-center space-x-3">
+                        <input
+                            type="radio"
+                            name="deliveryMethod"
+                            value="without"
+                            checked={formData.deliveryMethod === 'without'}
+                            onChange={handleChange}
+                            className="text-[#891B81] focus:ring-[#891B81]"
+                            required
+                        />
+                        <span className="text-[#5B1B3A]">I don't need to be there</span>
+                    </label>
+                    <label className="flex items-center space-x-3">
+                        <input
+                            type="radio"
+                            name="deliveryMethod"
+                            value="in-person"
+                            checked={formData.deliveryMethod === 'in-person'}
+                            onChange={handleChange}
+                            className="text-[#891B81] focus:ring-[#891B81]"
+                            required
+                        />
+                        <span className="text-[#5B1B3A]">I need to be there</span>
+                    </label>
+                </div>
+            </div>
+
+            {/* Pickup Section (Next Day After Event) */}
+            <div className="bg-gradient-to-br from-[#FFE8A5] to-[#FFD166] p-4 rounded-xl border-2 border-[#AD7301]">
+                <h4 className="text-lg font-bold text-[#5B1B3A] mb-3">Pickup Information (Next Day After Event)</h4>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="transform transition-all duration-300 hover:scale-105">
+                        <label className="block text-sm font-semibold text-[#5B1B3A] mb-2">
+                            Pickup Date *
+                        </label>
+                        <select
+                            name="pickupDate"
+                            value={formData.pickupDate}
+                            onChange={handleChange}
+                            required
+                            className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#891B81] focus:border-[#891B81] text-[#5B1B3A] transition-all duration-300"
+                        >
+                            <option value="">Select pickup date</option>
+                            <option value="wednesday">Wednesday</option>
+                            <option value="thursday">Thursday</option>
+                            <option value="friday">Friday</option>
+
+                        </select>
+                    </div>
+
+                    {formData.pickupDate && (
+                        <div className="transform transition-all duration-300 hover:scale-105">
+                            <label className="block text-sm font-semibold text-[#5B1B3A] mb-2">
+                                Pickup Time *
+                            </label>
+                            <select
+                                name="pickupTime"
+                                value={formData.pickupTime}
+                                onChange={handleChange}
+                                required
+                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#891B81] focus:border-[#891B81] text-[#5B1B3A] transition-all duration-300"
+                            >
+                                <option value="">Select pickup time</option>
+                                {pickupTimeSlots.map((time, index) => (
+                                    <option key={index} value={time}>
+                                        {time}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
+                </div>
             </div>
 
             <div className="transform transition-all duration-300 hover:scale-105">
