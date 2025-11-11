@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Filter, X, Search, Ruler, Tag, Calendar, User, MapPin, Phone, Mail, Loader2, EyeOff } from 'lucide-react';
+import { ArrowLeft, Filter, X, Search, Ruler, Tag, Calendar, User, MapPin, Phone, Mail, Loader2, EyeOff, CreditCard } from 'lucide-react';
 import { Header } from './Header';
 import { Footer } from './Footer';
 
@@ -43,6 +43,8 @@ interface ReservationFormData {
     agreeToTerms: boolean;
 }
 
+// Stripe configuration
+const STRIPE_PAYMENT_URL = 'https://buy.stripe.com/test_5kQ14mcsSdKi0Ml7Ayfw402';
 export function DinnerCollectionTwo() {
     const [selectedOutfit, setSelectedOutfit] = useState<Outfit | null>(null);
     const [showFilters, setShowFilters] = useState(false);
@@ -53,6 +55,8 @@ export function DinnerCollectionTwo() {
     const [clothingItems, setClothingItems] = useState<ClothingItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [, setReservationData] = useState<{formData: ReservationFormData, outfit: Outfit} | null>(null);
+    const [processingPayment, setProcessingPayment] = useState(false);
 
     const API_BASE_URL = 'https://mused-backend.onrender.com/api/clothing';
 
@@ -123,8 +127,90 @@ export function DinnerCollectionTwo() {
 
     const hasActiveFilters = selectedSize || selectedCategory || searchTerm;
 
-    // Handle reservation submission
+    // Handle reservation submission with payment flow
     const handleReservation = async (formData: ReservationFormData, outfit: Outfit) => {
+        try {
+            // Store reservation data for after payment
+            setReservationData({ formData, outfit });
+
+            // Process payment first
+            await processPayment(formData, outfit);
+
+        } catch (error) {
+            console.error('Reservation error:', error);
+            const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+            alert(`Failed to process reservation: ${errorMessage}`);
+            setProcessingPayment(false);
+        }
+    };
+
+    // Process payment via Stripe
+    const processPayment = async (formData: ReservationFormData, outfit: Outfit) => {
+        setProcessingPayment(true);
+
+        try {
+            // Create a unique session ID for this reservation
+            const sessionId = `reservation_${outfit.id}_${Date.now()}`;
+
+            // Store reservation data in localStorage for recovery after payment
+            const reservationSession = {
+                sessionId,
+                formData,
+                outfit,
+                timestamp: new Date().toISOString()
+            };
+            localStorage.setItem('pendingReservation', JSON.stringify(reservationSession));
+
+            // Redirect to Stripe payment with success URL parameters
+            const paymentUrl = `${STRIPE_PAYMENT_URL}?client_reference_id=${sessionId}&prefilled_email=${encodeURIComponent(formData.email)}`;
+
+            // Use window.location.replace to avoid issues with back button
+            window.location.replace(paymentUrl);
+
+        } catch (err) {
+            console.error('Payment processing error:', err);
+            setProcessingPayment(false);
+            throw new Error('Failed to process payment');
+        }
+    };
+
+    // Check for successful payment return and complete reservation
+    useEffect(() => {
+        const checkPaymentStatus = async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const paymentSuccess = urlParams.get('payment_success');
+            const sessionId = urlParams.get('session_id');
+
+            // Only process if we're coming from Stripe with success indication
+            if (paymentSuccess === 'true' && sessionId) {
+                // Try to get reservation data from localStorage
+                const pendingReservation = localStorage.getItem('pendingReservation');
+
+                if (pendingReservation) {
+                    try {
+                        const { formData, outfit } = JSON.parse(pendingReservation);
+                        await completeReservation(formData, outfit);
+
+                        // Clear the pending reservation
+                        localStorage.removeItem('pendingReservation');
+
+                        // Redirect to confirmation page if not already there
+                        if (window.location.pathname !== '/confirmation') {
+                            window.location.href = '/confirmation';
+                        }
+                    } catch (error) {
+                        console.error('Error completing reservation after payment:', error);
+                        alert('Payment was successful but reservation failed. Please contact support.');
+                    }
+                }
+            }
+        };
+
+        checkPaymentStatus();
+    }, []);
+
+    // Complete reservation after successful payment
+    const completeReservation = async (formData: ReservationFormData, outfit: Outfit) => {
         try {
             const reservationData = {
                 fullName: formData.name,
@@ -137,7 +223,7 @@ export function DinnerCollectionTwo() {
                 specialInstructions: formData.instructions
             };
 
-            console.log('Sending reservation data:', reservationData);
+            console.log('Completing reservation after payment:', reservationData);
 
             const response = await fetch(`${API_BASE_URL}/${outfit.id}/reserve`, {
                 method: 'POST',
@@ -156,16 +242,19 @@ export function DinnerCollectionTwo() {
             const result = await response.json();
 
             if (result.success) {
-                alert('Reservation submitted successfully! We will contact you soon.');
-                // Refresh the clothing items to update status
-                window.location.reload();
+                console.log('Reservation completed successfully after payment');
+                // The user is already on the confirmation page per Stripe configuration
+                // You can show a success message or let the confirmation page handle it
             } else {
                 throw new Error(result.message || 'Failed to submit reservation');
             }
         } catch (err) {
-            console.error('Reservation error:', err);
+            console.error('Reservation completion error:', err);
             const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
-            alert(`Failed to submit reservation: ${errorMessage}`);
+            alert(`Payment was successful but reservation failed: ${errorMessage}. Please contact support.`);
+        } finally {
+            setProcessingPayment(false);
+            setReservationData(null);
         }
     };
 
@@ -202,6 +291,22 @@ export function DinnerCollectionTwo() {
     return (
         <div className="min-h-screen bg-[#FFF0C8]">
             <Header />
+
+            {/* Payment Processing Overlay */}
+            {processingPayment && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fadeIn">
+                    <div className="bg-white rounded-2xl p-8 max-w-md mx-4 transform animate-scaleIn">
+                        <div className="text-center">
+                            <CreditCard className="w-16 h-16 text-[#5B1B3A] mx-auto mb-4 animate-pulse" />
+                            <h3 className="text-2xl font-bold text-[#5B1B3A] mb-4">Processing Payment</h3>
+                            <p className="text-gray-600 mb-6">
+                                You are being redirected to secure payment. Please wait...
+                            </p>
+                            <Loader2 className="w-8 h-8 text-[#891B81] animate-spin mx-auto" />
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Collection Type Selector */}
             <div className="bg-[#5b1b3a] py-8">
@@ -522,6 +627,7 @@ export function DinnerCollectionTwo() {
                                 outfit={selectedOutfit}
                                 onClose={() => setSelectedOutfit(null)}
                                 onSubmit={handleReservation}
+                                processing={processingPayment}
                             />
                         </div>
                     </div>
@@ -581,15 +687,17 @@ export function DinnerCollectionTwo() {
     );
 }
 
-// Updated Reservation Form Component
+// Updated Reservation Form Component with Payment Integration
 function ReservationForm({
                              outfit,
                              onClose,
-                             onSubmit
+                             onSubmit,
+                             processing
                          }: {
     outfit: Outfit;
     onClose: () => void;
     onSubmit: (formData: ReservationFormData, outfit: Outfit) => void;
+    processing: boolean;
 }) {
     const [formData, setFormData] = useState<ReservationFormData>({
         name: '',
@@ -606,17 +714,18 @@ function ReservationForm({
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!formData.agreeToTerms) return;
+        if (!formData.agreeToTerms) {
+            alert('Please agree to the terms and conditions');
+            return;
+        }
 
         setSubmitting(true);
         try {
             await onSubmit(formData, outfit);
-            onClose();
         } catch (error) {
             console.error('Reservation failed:', error);
             const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
             alert(`Reservation failed: ${errorMessage}`);
-        } finally {
             setSubmitting(false);
         }
     };
@@ -632,6 +741,19 @@ function ReservationForm({
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
             <h3 className="text-2xl font-bold text-[#5B1B3A] mb-2">Reserve This Item</h3>
+
+            {/* Payment Notice */}
+            <div className="bg-gradient-to-br from-[#FFE8A5] to-[#FFD166] p-4 rounded-xl border-2 border-[#AD7301]">
+                <div className="flex items-center space-x-3">
+                    <CreditCard className="text-[#5B1B3A] flex-shrink-0" size={24} />
+                    <div>
+                        <p className="text-[#5B1B3A] font-semibold">Payment Required</p>
+                        <p className="text-[#5B1B3A] text-sm">
+                            After submitting this form, you'll be redirected to secure payment to complete your reservation.
+                        </p>
+                    </div>
+                </div>
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="transform transition-all duration-300 hover:scale-105">
@@ -763,23 +885,26 @@ function ReservationForm({
                 <button
                     type="button"
                     onClick={onClose}
-                    disabled={submitting}
+                    disabled={submitting || processing}
                     className="flex-1 bg-[#FFF0C8] text-[#5B1B3A] py-4 rounded-xl font-semibold hover:bg-[#AD7301] hover:text-white transition-all duration-300 transform hover:scale-105 disabled:opacity-50"
                 >
                     Cancel
                 </button>
                 <button
                     type="submit"
-                    disabled={!formData.agreeToTerms || submitting}
+                    disabled={!formData.agreeToTerms || submitting || processing}
                     className="flex-1 bg-[#5B1B3A] text-white py-4 rounded-xl font-semibold hover:bg-[#891B81] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center"
                 >
-                    {submitting ? (
+                    {submitting || processing ? (
                         <>
                             <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                            Submitting...
+                            {processing ? 'Redirecting to Payment...' : 'Processing...'}
                         </>
                     ) : (
-                        'Submit Reservation'
+                        <>
+                            <CreditCard className="w-5 h-5 mr-2" />
+                            Proceed to Payment
+                        </>
                     )}
                 </button>
             </div>
