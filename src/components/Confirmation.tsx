@@ -16,6 +16,8 @@ interface ReservationFormData {
     deliveryDay?: string;
     deliveryTime?: string;
     deliveryMethod?: string;
+    returnDay?: string;
+    returnTime?: string;
     agreeToTerms: boolean;
 }
 
@@ -96,18 +98,21 @@ export function Confirmation() {
                 pickupTime: formData.deliveryTime || formData.pickupDate,
                 pickupDay: formData.deliveryDay || formData.pickupDate,
                 pickupInstructions: formData.instructions,
-                specialInstructions: formData.instructions
+                specialInstructions: formData.instructions,
+                returnDay: formData.returnDay || '',
+                returnTime: formData.returnTime || ''
             }
 
             console.log('Completing pending reservation:', reservationData)
 
             // Validate that all required fields are present
-            if (!reservationData.fullName || !reservationData.email || !reservationData.phoneNumber || !reservationData.pickupMethod) {
+            if (!reservationData.fullName || !reservationData.email || !reservationData.phoneNumber || !reservationData.pickupMethod || !reservationData.returnDay) {
                 throw new Error('Missing required fields: ' + JSON.stringify({
                     fullName: !!reservationData.fullName,
                     email: !!reservationData.email,
                     phoneNumber: !!reservationData.phoneNumber,
-                    pickupMethod: !!reservationData.pickupMethod
+                    pickupMethod: !!reservationData.pickupMethod,
+                    returnDay: !!reservationData.returnDay
                 }));
             }
 
@@ -288,6 +293,8 @@ export function Confirmation() {
                                             <p className="text-amber-700">Size: {recoveryData.outfit.size}</p>
                                             <p className="text-amber-700">Delivery Day: {recoveryData.formData.deliveryDay || 'Not specified'}</p>
                                             <p className="text-amber-700">Delivery Time: {recoveryData.formData.deliveryTime || 'Not specified'}</p>
+                                            <p className="text-amber-700">Return Day: {recoveryData.formData.returnDay || 'Not specified'}</p>
+                                            <p className="text-amber-700">Return Time: {recoveryData.formData.returnTime || 'Not specified'}</p>
                                         </div>
                                     </div>
 
