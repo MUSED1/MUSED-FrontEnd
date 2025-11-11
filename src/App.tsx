@@ -15,7 +15,8 @@ import { About } from './components/About'
 import { FirstDinner } from './components/FirstDinner'
 import { ClothingUploadForm } from './components/ClothingUploadForm'
 import { AdminClothing } from './components/AdminClothing'
-import { DinnerCollectionTwo } from './components/DinnerCollectionTwo' // Add this import
+import { DinnerCollectionTwo } from './components/DinnerCollectionTwo'
+import { Confirmation } from './components/Confirmation' // Add this import
 
 function HomePage() {
     return (
@@ -58,7 +59,8 @@ export function App() {
                 <Route path="/first-dinner" element={<FirstDinner />} />
                 <Route path="/upload" element={<ClothingUploadForm />} />
                 <Route path="/admin/clothing" element={<AdminClothing />} />
-                <Route path="/dinner-collection-two" element={<DinnerCollectionTwo />} /> {/* Add this route */}
+                <Route path="/dinner-collection-two" element={<DinnerCollectionTwo />} />
+                <Route path="/confirmation" element={<Confirmation />} /> {/* Add this route */}
             </Routes>
         </Router>
     )
