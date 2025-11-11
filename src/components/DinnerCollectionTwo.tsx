@@ -38,30 +38,10 @@ interface ReservationFormData {
     phone: string;
     address: string;
     instructions: string;
-    deliveryDate: string;
-    deliveryMethod: string;
+    deliveryDay: string;
     deliveryTime: string;
-    pickupDate: string;
-    pickupTime: string;
+    deliveryMethod: string;
     agreeToTerms: boolean;
-}
-
-interface ReservationPayload {
-    fullName: string;
-    email: string;
-    phoneNumber: string;
-    pickupMethod: string;
-    pickupTime: string;
-    pickupDay: string;
-    pickupInstructions: string;
-    specialInstructions: string;
-}
-
-interface PendingReservation {
-    sessionId: string;
-    formData: ReservationFormData;
-    outfit: Outfit;
-    timestamp: string;
 }
 
 // Stripe configuration
@@ -113,45 +93,6 @@ export function DinnerCollectionTwo() {
         fetchClothingItems();
     }, []);
 
-    // Function to complete pending reservation
-    const completePendingReservation = async (reservationData: PendingReservation): Promise<void> => {
-        try {
-            const { formData, outfit } = reservationData;
-
-            // Prepare the reservation data with ALL required fields
-            const reservationPayload: ReservationPayload = {
-                fullName: formData.name,
-                email: formData.email,
-                phoneNumber: formData.phone,
-                pickupMethod: formData.deliveryMethod || 'without',
-                pickupTime: formData.pickupTime || '',
-                pickupDay: formData.pickupDate || '',
-                pickupInstructions: formData.instructions || '',
-                specialInstructions: formData.instructions || ''
-            };
-
-            console.log('Completing reservation with payload:', reservationPayload);
-
-            const response = await fetch(`${API_BASE_URL}/${outfit.id}/reserve`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(reservationPayload)
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Failed to complete reservation');
-            }
-
-            await response.json();
-        } catch (error) {
-            console.error('Error completing reservation:', error);
-            throw error;
-        }
-    };
-
     // Check for successful payment return and complete reservation
     useEffect(() => {
         const checkPaymentStatus = async () => {
@@ -160,27 +101,8 @@ export function DinnerCollectionTwo() {
             const sessionId = urlParams.get('session_id');
 
             if (paymentSuccess === 'true' || sessionId) {
-                try {
-                    // Get the pending reservation from localStorage
-                    const pendingReservation = localStorage.getItem('pendingReservation');
-
-                    if (pendingReservation) {
-                        const reservationData: PendingReservation = JSON.parse(pendingReservation);
-
-                        // Complete the reservation with all required fields
-                        await completePendingReservation(reservationData);
-
-                        // Clear the pending reservation
-                        localStorage.removeItem('pendingReservation');
-                    }
-
-                    // Redirect to confirmation
-                    window.location.href = '/confirmation';
-                } catch (error) {
-                    console.error('Error completing reservation after payment:', error);
-                    // Still redirect to confirmation but show error message
-                    window.location.href = '/confirmation?error=reservation_failed';
-                }
+                // User is returning from payment, redirect to confirmation
+                window.location.href = '/confirmation';
             }
         };
 
@@ -236,7 +158,7 @@ export function DinnerCollectionTwo() {
     };
 
     // Process payment via Stripe with enhanced error handling
-    const processPayment = async (formData: ReservationFormData, outfit: Outfit): Promise<void> => {
+    const processPayment = async (formData: ReservationFormData, outfit: Outfit) => {
         setProcessingPayment(true);
 
         try {
@@ -244,7 +166,7 @@ export function DinnerCollectionTwo() {
             const sessionId = `reservation_${outfit.id}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
             // Store reservation data in localStorage for recovery
-            const reservationSession: PendingReservation = {
+            const reservationSession = {
                 sessionId,
                 formData,
                 outfit,
@@ -761,11 +683,9 @@ function ReservationForm({
         phone: '',
         address: '',
         instructions: '',
-        deliveryDate: '',
-        deliveryMethod: '',
+        deliveryDay: '',
         deliveryTime: '',
-        pickupDate: '',
-        pickupTime: '',
+        deliveryMethod: '',
         agreeToTerms: false
     });
 
@@ -775,14 +695,6 @@ function ReservationForm({
         e.preventDefault();
         if (!formData.agreeToTerms) {
             alert('Please agree to the terms and conditions');
-            return;
-        }
-
-        // Validate all required fields
-        if (!formData.name || !formData.email || !formData.phone || !formData.address ||
-            !formData.deliveryDate || !formData.deliveryTime || !formData.deliveryMethod ||
-            !formData.pickupDate || !formData.pickupTime) {
-            alert('Please fill in all required fields');
             return;
         }
 
@@ -805,15 +717,15 @@ function ReservationForm({
         }));
     };
 
-    // Get available time slots based on selected delivery date
-    const getDeliveryTimeSlots = () => {
-        switch (formData.deliveryDate) {
+    // Get available time slots based on selected delivery day
+    const getTimeSlots = () => {
+        switch (formData.deliveryDay) {
             case 'thursday':
                 return ['After 3pm'];
             case 'friday':
-                return ['Morning (8:00-11:00)', 'Afternoon (12:00-16:00)', 'Evening (17:00-20:00)'];
+                return ['Morning', 'Afternoon', 'Evening'];
             case 'sunday':
-                return ['Morning (8:00-11:00)', 'Afternoon (12:00-16:00)', 'Evening (17:00-20:00)'];
+                return ['Morning', 'Afternoon', 'Evening'];
             case 'monday':
                 return ['After 4pm'];
             default:
@@ -821,13 +733,7 @@ function ReservationForm({
         }
     };
 
-    // Get available time slots for pickup (next day after event)
-    const getPickupTimeSlots = () => {
-        return ['Morning (8:00-11:00)', 'Afternoon (12:00-16:00)', 'Evening (17:00-20:00)'];
-    };
-
-    const deliveryTimeSlots = getDeliveryTimeSlots();
-    const pickupTimeSlots = getPickupTimeSlots();
+    const timeSlots = getTimeSlots();
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -897,26 +803,26 @@ function ReservationForm({
                 <div className="transform transition-all duration-300 hover:scale-105">
                     <label className="block text-sm font-semibold text-[#5B1B3A] mb-2 flex items-center">
                         <Calendar size={16} className="mr-2 text-[#891B81]" />
-                        Preferred Delivery Date *
+                        Preferred Delivery Day *
                     </label>
                     <select
-                        name="deliveryDate"
-                        value={formData.deliveryDate}
+                        name="deliveryDay"
+                        value={formData.deliveryDay}
                         onChange={handleChange}
                         required
                         className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#891B81] focus:border-[#891B81] text-[#5B1B3A] transition-all duration-300"
                     >
-                        <option value="">Select delivery date</option>
-                        <option value="thursday">Thursday (After 3pm)</option>
-                        <option value="friday">Friday (Morning - Afternoon - Evening)</option>
-                        <option value="sunday">Sunday (Morning - Afternoon - Evening)</option>
-                        <option value="monday">Monday (After 4pm)</option>
+                        <option value="">Select delivery day</option>
+                        <option value="thursday">Thursday</option>
+                        <option value="friday">Friday</option>
+                        <option value="sunday">Sunday</option>
+                        <option value="monday">Monday</option>
                     </select>
                 </div>
             </div>
 
-            {/* Delivery Time Slot - Only show if delivery date is selected */}
-            {formData.deliveryDate && (
+            {/* Delivery Time Slot - Only show if delivery day is selected */}
+            {formData.deliveryDay && (
                 <div className="transform transition-all duration-300 hover:scale-105">
                     <label className="block text-sm font-semibold text-[#5B1B3A] mb-2">
                         Preferred Delivery Time *
@@ -929,7 +835,7 @@ function ReservationForm({
                         className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#891B81] focus:border-[#891B81] text-[#5B1B3A] transition-all duration-300"
                     >
                         <option value="">Select delivery time</option>
-                        {deliveryTimeSlots.map((time, index) => (
+                        {timeSlots.map((time, index) => (
                             <option key={index} value={time}>
                                 {time}
                             </option>
@@ -968,53 +874,6 @@ function ReservationForm({
                         />
                         <span className="text-[#5B1B3A]">I need to be there</span>
                     </label>
-                </div>
-            </div>
-
-            {/* Pickup Section (Next Day After Event) */}
-            <div className="bg-gradient-to-br from-[#FFE8A5] to-[#FFD166] p-4 rounded-xl border-2 border-[#AD7301]">
-                <h4 className="text-lg font-bold text-[#5B1B3A] mb-3">Pickup Information (Next Day After Event)</h4>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="transform transition-all duration-300 hover:scale-105">
-                        <label className="block text-sm font-semibold text-[#5B1B3A] mb-2">
-                            Pickup Date *
-                        </label>
-                        <select
-                            name="pickupDate"
-                            value={formData.pickupDate}
-                            onChange={handleChange}
-                            required
-                            className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#891B81] focus:border-[#891B81] text-[#5B1B3A] transition-all duration-300"
-                        >
-                            <option value="">Select pickup date</option>
-                            <option value="wednesday">Wednesday</option>
-                            <option value="thursday">Thursday</option>
-                            <option value="friday">Friday</option>
-                        </select>
-                    </div>
-
-                    {formData.pickupDate && (
-                        <div className="transform transition-all duration-300 hover:scale-105">
-                            <label className="block text-sm font-semibold text-[#5B1B3A] mb-2">
-                                Pickup Time *
-                            </label>
-                            <select
-                                name="pickupTime"
-                                value={formData.pickupTime}
-                                onChange={handleChange}
-                                required
-                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#891B81] focus:border-[#891B81] text-[#5B1B3A] transition-all duration-300"
-                            >
-                                <option value="">Select pickup time</option>
-                                {pickupTimeSlots.map((time, index) => (
-                                    <option key={index} value={time}>
-                                        {time}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                    )}
                 </div>
             </div>
 
