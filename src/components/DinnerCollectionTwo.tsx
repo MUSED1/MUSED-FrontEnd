@@ -46,6 +46,24 @@ interface ReservationFormData {
     agreeToTerms: boolean;
 }
 
+interface ReservationPayload {
+    fullName: string;
+    email: string;
+    phoneNumber: string;
+    pickupMethod: string;
+    pickupTime: string;
+    pickupDay: string;
+    pickupInstructions: string;
+    specialInstructions: string;
+}
+
+interface PendingReservation {
+    sessionId: string;
+    formData: ReservationFormData;
+    outfit: Outfit;
+    timestamp: string;
+}
+
 // Stripe configuration
 const STRIPE_PAYMENT_URL = 'https://buy.stripe.com/test_5kQ14mcsSdKi0Ml7Ayfw402';
 
@@ -95,6 +113,45 @@ export function DinnerCollectionTwo() {
         fetchClothingItems();
     }, []);
 
+    // Function to complete pending reservation
+    const completePendingReservation = async (reservationData: PendingReservation): Promise<void> => {
+        try {
+            const { formData, outfit } = reservationData;
+
+            // Prepare the reservation data with ALL required fields
+            const reservationPayload: ReservationPayload = {
+                fullName: formData.name,
+                email: formData.email,
+                phoneNumber: formData.phone,
+                pickupMethod: formData.deliveryMethod || 'without',
+                pickupTime: formData.pickupTime || '',
+                pickupDay: formData.pickupDate || '',
+                pickupInstructions: formData.instructions || '',
+                specialInstructions: formData.instructions || ''
+            };
+
+            console.log('Completing reservation with payload:', reservationPayload);
+
+            const response = await fetch(`${API_BASE_URL}/${outfit.id}/reserve`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(reservationPayload)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to complete reservation');
+            }
+
+            await response.json();
+        } catch (error) {
+            console.error('Error completing reservation:', error);
+            throw error;
+        }
+    };
+
     // Check for successful payment return and complete reservation
     useEffect(() => {
         const checkPaymentStatus = async () => {
@@ -103,8 +160,27 @@ export function DinnerCollectionTwo() {
             const sessionId = urlParams.get('session_id');
 
             if (paymentSuccess === 'true' || sessionId) {
-                // User is returning from payment, redirect to confirmation
-                window.location.href = '/confirmation';
+                try {
+                    // Get the pending reservation from localStorage
+                    const pendingReservation = localStorage.getItem('pendingReservation');
+
+                    if (pendingReservation) {
+                        const reservationData: PendingReservation = JSON.parse(pendingReservation);
+
+                        // Complete the reservation with all required fields
+                        await completePendingReservation(reservationData);
+
+                        // Clear the pending reservation
+                        localStorage.removeItem('pendingReservation');
+                    }
+
+                    // Redirect to confirmation
+                    window.location.href = '/confirmation';
+                } catch (error) {
+                    console.error('Error completing reservation after payment:', error);
+                    // Still redirect to confirmation but show error message
+                    window.location.href = '/confirmation?error=reservation_failed';
+                }
             }
         };
 
@@ -160,7 +236,7 @@ export function DinnerCollectionTwo() {
     };
 
     // Process payment via Stripe with enhanced error handling
-    const processPayment = async (formData: ReservationFormData, outfit: Outfit) => {
+    const processPayment = async (formData: ReservationFormData, outfit: Outfit): Promise<void> => {
         setProcessingPayment(true);
 
         try {
@@ -168,7 +244,7 @@ export function DinnerCollectionTwo() {
             const sessionId = `reservation_${outfit.id}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
             // Store reservation data in localStorage for recovery
-            const reservationSession = {
+            const reservationSession: PendingReservation = {
                 sessionId,
                 formData,
                 outfit,
@@ -702,6 +778,14 @@ function ReservationForm({
             return;
         }
 
+        // Validate all required fields
+        if (!formData.name || !formData.email || !formData.phone || !formData.address ||
+            !formData.deliveryDate || !formData.deliveryTime || !formData.deliveryMethod ||
+            !formData.pickupDate || !formData.pickupTime) {
+            alert('Please fill in all required fields');
+            return;
+        }
+
         setSubmitting(true);
         try {
             await onSubmit(formData, outfit);
@@ -907,7 +991,6 @@ function ReservationForm({
                             <option value="wednesday">Wednesday</option>
                             <option value="thursday">Thursday</option>
                             <option value="friday">Friday</option>
-
                         </select>
                     </div>
 
