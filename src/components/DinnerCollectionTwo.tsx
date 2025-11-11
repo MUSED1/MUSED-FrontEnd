@@ -45,8 +45,6 @@ interface ReservationFormData {
 
 // Stripe configuration
 const STRIPE_PAYMENT_URL = 'https://buy.stripe.com/test_5kQ14mcsSdKi0Ml7Ayfw402';
-const SUCCESS_URL = 'https://muse-gold.vercel.app/confirmation?payment_success=true';
-
 export function DinnerCollectionTwo() {
     const [selectedOutfit, setSelectedOutfit] = useState<Outfit | null>(null);
     const [showFilters, setShowFilters] = useState(false);
