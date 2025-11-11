@@ -3,7 +3,7 @@ import { Header } from './Header'
 import { Footer } from './Footer'
 import { Link } from 'react-router-dom'
 import { useEffect, useState } from 'react'
-import { AlertCircle, CheckCircle, XCircle } from 'lucide-react'
+import { AlertCircle, CheckCircle, XCircle, RefreshCw, Mail } from 'lucide-react'
 
 interface ReservationFormData {
     name: string;
@@ -36,50 +36,112 @@ interface PendingReservation {
 export function Confirmation() {
     const [reservationError, setReservationError] = useState<string | null>(null)
     const [isLoading, setIsLoading] = useState(true)
+    const [recoveryData, setRecoveryData] = useState<PendingReservation | null>(null)
+    const [paymentStatus, setPaymentStatus] = useState<'verifying' | 'success' | 'failed' | 'recovery'>('verifying')
 
     useEffect(() => {
-        // Scroll to top on component mount
         window.scrollTo(0, 0);
-
-        // Check for reservation completion status
         checkReservationStatus();
-    }, []);
+    }, [])
+
+    const verifyPaymentStatus = async (sessionId: string): Promise<boolean> => {
+        try {
+            // Try to verify payment with backend
+            const API_BASE_URL = 'https://mused-backend.onrender.com/api';
+            const response = await fetch(`${API_BASE_URL}/verify-payment/${sessionId}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                return result.paid === true;
+            }
+        } catch (error) {
+            console.warn('Payment verification failed, using fallback methods:', error);
+        }
+
+        // Fallback: Check URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const paymentSuccess = urlParams.get('payment_success');
+        const stripeSession = urlParams.get('session_id');
+
+        if (paymentSuccess === 'true' || stripeSession) {
+            return true;
+        }
+
+        // Fallback: Check if coming from Stripe
+        if (document.referrer.includes('stripe.com')) {
+            return true;
+        }
+
+        return false;
+    }
 
     const checkReservationStatus = async () => {
         try {
             setIsLoading(true);
+            setPaymentStatus('verifying');
 
-            // Check for any reservation errors from the payment flow
+            // Check for any reservation errors
             const error = localStorage.getItem('reservationError');
             const pendingReservation = localStorage.getItem('pendingReservation');
 
             if (error) {
                 console.error('Reservation error detected:', error);
                 setReservationError(error);
-
-                // Clear the error from storage
+                setPaymentStatus('failed');
                 localStorage.removeItem('reservationError');
-            } else if (pendingReservation) {
-                // If there's still a pending reservation, try to complete it
+                return;
+            }
+
+            if (pendingReservation) {
                 try {
                     const parsedReservation: PendingReservation = JSON.parse(pendingReservation);
-                    await completePendingReservation(parsedReservation.formData, parsedReservation.outfit);
+                    setRecoveryData(parsedReservation);
+
+                    // Verify payment status
+                    const paymentVerified = await verifyPaymentStatus(parsedReservation.sessionId);
+
+                    if (paymentVerified) {
+                        await completePendingReservation(parsedReservation.formData, parsedReservation.outfit);
+                        setPaymentStatus('success');
+                    } else {
+                        setPaymentStatus('recovery');
+                        setReservationError('Payment status could not be verified. Please complete your reservation below.');
+                    }
                 } catch (err) {
                     console.error('Failed to complete pending reservation:', err);
                     setReservationError('Failed to complete reservation after payment. Please contact support.');
+                    setPaymentStatus('failed');
+                }
+            } else {
+                // No, pending reservation found
+                const urlParams = new URLSearchParams(window.location.search);
+                const paymentSuccess = urlParams.get('payment_success');
+
+                if (paymentSuccess === 'true') {
+                    setPaymentStatus('success');
+                } else {
+                    setReservationError('No reservation data found. Please contact support with your payment details.');
+                    setPaymentStatus('failed');
                 }
             }
-
-            // Clean up any pending reservation data
-            localStorage.removeItem('pendingReservation');
 
         } catch (error) {
             console.error('Error checking reservation status:', error);
             setReservationError('Unable to verify reservation status. Please contact support.');
+            setPaymentStatus('failed');
         } finally {
             setIsLoading(false);
+            // Clean up localStorage only on success
+            if (paymentStatus === 'success') {
+                localStorage.removeItem('pendingReservation');
+            }
         }
-    };
+    }
 
     const completePendingReservation = async (formData: ReservationFormData, outfit: Outfit) => {
         try {
@@ -92,47 +154,64 @@ export function Confirmation() {
                 pickupDay: '',
                 pickupInstructions: formData.instructions,
                 specialInstructions: formData.instructions
-            };
+            }
 
-            console.log('Completing pending reservation:', reservationData);
+            console.log('Completing pending reservation:', reservationData)
 
-            const API_BASE_URL = 'https://mused-backend.onrender.com/api/clothing';
+            const API_BASE_URL = 'https://mused-backend.onrender.com/api/clothing'
             const response = await fetch(`${API_BASE_URL}/${outfit.id}/reserve`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(reservationData),
-            });
+            })
 
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || `Failed to submit reservation: ${response.status}`);
+                const errorData = await response.json()
+                throw new Error(errorData.message || `Failed to submit reservation: ${response.status}`)
             }
 
-            const result = await response.json();
+            const result = await response.json()
 
             if (!result.success) {
-                throw new Error(result.message || 'Failed to submit reservation');
+                throw new Error(result.message || 'Failed to submit reservation')
             }
 
-            console.log('Pending reservation completed successfully');
+            console.log('Pending reservation completed successfully')
+            // Clear pending reservation on success
+            localStorage.removeItem('pendingReservation')
 
         } catch (error) {
-            console.error('Pending reservation completion error:', error);
-            const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
-            setReservationError(`Payment was successful but reservation failed: ${errorMessage}`);
-            throw error;
+            console.error('Pending reservation completion error:', error)
+            const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred'
+            setReservationError(`Payment was successful but reservation failed: ${errorMessage}`)
+            throw error
         }
-    };
+    }
+
+    const handleRetryReservation = async () => {
+        if (!recoveryData) return
+
+        setIsLoading(true)
+        try {
+            await completePendingReservation(recoveryData.formData, recoveryData.outfit)
+            setPaymentStatus('success')
+            setReservationError(null)
+        } catch (error) {
+            console.error('Retry failed:', error)
+        } finally {
+            setIsLoading(false)
+        }
+    }
 
     const handleContactSupport = () => {
-        const subject = encodeURIComponent('Reservation Issue - Payment Successful but Reservation Failed');
+        const subject = encodeURIComponent('Reservation Issue - Payment Successful but Reservation Failed')
         const body = encodeURIComponent(
             `Hello Support Team,\n\nI recently made a payment for a reservation but encountered an issue with the reservation completion.\n\nError details: ${reservationError || 'Unknown error'}\n\nPlease assist me in resolving this issue.\n\nThank you.`
-        );
-        window.location.href = `mailto:support@mused.com?subject=${subject}&body=${body}`;
-    };
+        )
+        window.location.href = `mailto:support@mused.com?subject=${subject}&body=${body}`
+    }
 
     if (isLoading) {
         return (
@@ -142,11 +221,12 @@ export function Confirmation() {
                     <div className="text-center">
                         <div className="w-16 h-16 mx-auto mb-4 border-4 border-plum border-t-transparent rounded-full animate-spin"></div>
                         <p className="text-plum text-lg">Verifying your reservation...</p>
+                        <p className="text-plum/60 text-sm mt-2">Checking payment status and completing reservation</p>
                     </div>
                 </main>
                 <Footer />
             </div>
-        );
+        )
     }
 
     return (
@@ -154,18 +234,67 @@ export function Confirmation() {
             <Header />
             <main className="min-h-screen bg-gradient-to-br from-cream to-amber-50">
                 <div className="container mx-auto px-4 py-16">
-                    {/* Success Confirmation Section */}
                     <div className="max-w-2xl mx-auto text-center">
 
-                        {reservationError ? (
-                            // Error State
+                        {/* Recovery State - Payment verified but reservation incomplete */}
+                        {paymentStatus === 'recovery' && recoveryData && (
                             <>
-                                {/* Error Icon */}
+                                <div className="w-24 h-24 mx-auto mb-6 bg-amber-100 rounded-full flex items-center justify-center">
+                                    <RefreshCw className="w-12 h-12 text-amber-600" />
+                                </div>
+
+                                <h1 className="text-4xl md:text-5xl font-bold text-amber-600 mb-6">
+                                    Complete Your Reservation
+                                </h1>
+
+                                <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
+                                    <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 mb-6">
+                                        <div className="flex items-center justify-center space-x-3 mb-4">
+                                            <AlertCircle className="w-8 h-8 text-amber-600" />
+                                            <h2 className="text-2xl font-bold text-amber-600">Reservation Almost Complete</h2>
+                                        </div>
+                                        <p className="text-amber-700 text-lg mb-4">
+                                            Your payment was processed successfully, but we need to complete your reservation.
+                                        </p>
+                                        <div className="bg-white rounded-lg p-4 border border-amber-300">
+                                            <p className="text-amber-800 font-semibold">Reservation Details:</p>
+                                            <p className="text-amber-700">Item: {recoveryData.outfit.name}</p>
+                                            <p className="text-amber-700">Email: {recoveryData.formData.email}</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                                        <button
+                                            onClick={handleRetryReservation}
+                                            disabled={isLoading}
+                                            className="bg-amber-600 text-white px-8 py-3 rounded-full hover:bg-amber-700 transition-all duration-300 font-semibold text-center flex items-center justify-center space-x-2 disabled:opacity-50"
+                                        >
+                                            {isLoading ? (
+                                                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                            ) : (
+                                                <RefreshCw size={20} />
+                                            )}
+                                            <span>Complete Reservation</span>
+                                        </button>
+                                        <button
+                                            onClick={handleContactSupport}
+                                            className="bg-gray-600 text-white px-8 py-3 rounded-full hover:bg-gray-700 transition-all duration-300 font-semibold text-center flex items-center justify-center space-x-2"
+                                        >
+                                            <Mail size={20} />
+                                            <span>Contact Support</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </>
+                        )}
+
+                        {/* Error State */}
+                        {reservationError && paymentStatus === 'failed' && (
+                            <>
                                 <div className="w-24 h-24 mx-auto mb-6 bg-red-100 rounded-full flex items-center justify-center">
                                     <XCircle className="w-12 h-12 text-red-600" />
                                 </div>
 
-                                {/* Error Message */}
                                 <h1 className="text-4xl md:text-5xl font-bold text-red-600 mb-6">
                                     Payment Successful, Reservation Issue
                                 </h1>
@@ -191,7 +320,6 @@ export function Confirmation() {
                                     </div>
                                 </div>
 
-                                {/* Action Buttons for Error State */}
                                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                                     <button
                                         onClick={handleContactSupport}
@@ -208,15 +336,15 @@ export function Confirmation() {
                                     </Link>
                                 </div>
                             </>
-                        ) : (
-                            // Success State
+                        )}
+
+                        {/* Success State */}
+                        {!reservationError && paymentStatus === 'success' && (
                             <>
-                                {/* Success Icon */}
                                 <div className="w-24 h-24 mx-auto mb-6 bg-green-100 rounded-full flex items-center justify-center">
                                     <CheckCircle className="w-12 h-12 text-green-600" />
                                 </div>
 
-                                {/* Success Message */}
                                 <h1 className="text-4xl md:text-5xl font-bold text-plum mb-6">
                                     Payment Successful!
                                 </h1>
@@ -226,7 +354,6 @@ export function Confirmation() {
                                         Thank you for your reservation! Your payment has been processed successfully.
                                     </p>
 
-                                    {/* Order Details */}
                                     <div className="bg-cream rounded-xl p-6 mb-6 text-left">
                                         <h2 className="text-2xl font-bold text-plum mb-4">Reservation Details</h2>
                                         <div className="space-y-3 text-plum/80">
@@ -253,7 +380,6 @@ export function Confirmation() {
                                         </div>
                                     </div>
 
-                                    {/* Confirmation Message */}
                                     <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-6">
                                         <div className="flex items-center space-x-3">
                                             <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
@@ -268,7 +394,6 @@ export function Confirmation() {
                                     </div>
                                 </div>
 
-                                {/* Action Buttons */}
                                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                                     <Link
                                         to="/diner"
@@ -293,14 +418,12 @@ export function Confirmation() {
                             </p>
                             <button
                                 onClick={handleContactSupport}
-                                className="text-gold hover:text-plum transition-colors duration-300 font-semibold underline"
+                                className="text-gold hover:text-plum transition-colors duration-300 font-semibold underline flex items-center justify-center space-x-2 mx-auto"
                             >
-                                Contact Support
+                                <Mail size={16} />
+                                <span>Contact Support</span>
                             </button>
                         </div>
-
-                        {/* Debug Info (remove in production) */}
-
                     </div>
                 </div>
             </main>
