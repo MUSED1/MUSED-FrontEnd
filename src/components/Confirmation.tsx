@@ -87,7 +87,6 @@ export function Confirmation() {
 
     const completePendingReservation = async (formData: ReservationFormData, outfit: Outfit) => {
         try {
-            // Use deliveryMethod if available, otherwise fallback to pickupMethod
             const pickupMethod = formData.deliveryMethod || formData.pickupMethod;
 
             const reservationData = {
