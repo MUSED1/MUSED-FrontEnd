@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Filter, X, Search, Ruler, Tag, Calendar, User, MapPin, Phone, Mail, Loader2, EyeOff, CreditCard } from 'lucide-react';
+import { ArrowLeft, Filter, X, Search, Ruler, Tag, Calendar, User, MapPin, Phone, Mail, Loader2, EyeOff, CreditCard, Shield } from 'lucide-react';
 import { Header } from './Header';
 import { Footer } from './Footer';
 
@@ -45,6 +45,7 @@ interface ReservationFormData {
 
 // Stripe configuration
 const STRIPE_PAYMENT_URL = 'https://buy.stripe.com/test_5kQ14mcsSdKi0Ml7Ayfw402';
+
 export function DinnerCollectionTwo() {
     const [selectedOutfit, setSelectedOutfit] = useState<Outfit | null>(null);
     const [showFilters, setShowFilters] = useState(false);
@@ -55,8 +56,8 @@ export function DinnerCollectionTwo() {
     const [clothingItems, setClothingItems] = useState<ClothingItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [, setReservationData] = useState<{formData: ReservationFormData, outfit: Outfit} | null>(null);
     const [processingPayment, setProcessingPayment] = useState(false);
+    const [paymentError, setPaymentError] = useState<string | null>(null);
 
     const API_BASE_URL = 'https://mused-backend.onrender.com/api/clothing';
 
@@ -91,6 +92,22 @@ export function DinnerCollectionTwo() {
         fetchClothingItems();
     }, []);
 
+    // Check for successful payment return and complete reservation
+    useEffect(() => {
+        const checkPaymentStatus = async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const paymentSuccess = urlParams.get('payment_success');
+            const sessionId = urlParams.get('session_id');
+
+            if (paymentSuccess === 'true' || sessionId) {
+                // User is returning from payment, redirect to confirmation
+                window.location.href = '/confirmation';
+            }
+        };
+
+        checkPaymentStatus();
+    }, []);
+
     // Transform API data to outfit format
     const outfits: Outfit[] = clothingItems.map(item => ({
         id: item._id,
@@ -106,7 +123,6 @@ export function DinnerCollectionTwo() {
     const categories = [...new Set(outfits.map(outfit => outfit.category))];
 
     const filteredOutfits = outfits.filter(outfit => {
-        // Filter by collection type
         if (activeCollection === 'available' && outfit.status !== 'available') {
             return false;
         }
@@ -130,131 +146,76 @@ export function DinnerCollectionTwo() {
     // Handle reservation submission with payment flow
     const handleReservation = async (formData: ReservationFormData, outfit: Outfit) => {
         try {
-            // Store reservation data for after payment
-            setReservationData({ formData, outfit });
-
-            // Process payment first
+            setPaymentError(null);
             await processPayment(formData, outfit);
-
         } catch (error) {
             console.error('Reservation error:', error);
             const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
-            alert(`Failed to process reservation: ${errorMessage}`);
+            setPaymentError(`Failed to process reservation: ${errorMessage}`);
             setProcessingPayment(false);
         }
     };
 
-    // Process payment via Stripe
+    // Process payment via Stripe with enhanced error handling
     const processPayment = async (formData: ReservationFormData, outfit: Outfit) => {
         setProcessingPayment(true);
 
         try {
             // Create a unique session ID for this reservation
-            const sessionId = `reservation_${outfit.id}_${Date.now()}`;
+            const sessionId = `reservation_${outfit.id}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-            // Store reservation data in localStorage for recovery after payment
+            // Store reservation data in localStorage for recovery
             const reservationSession = {
                 sessionId,
                 formData,
                 outfit,
                 timestamp: new Date().toISOString()
             };
-            localStorage.setItem('pendingReservation', JSON.stringify(reservationSession));
 
-            // Redirect to Stripe payment with success URL parameters
-            const paymentUrl = `${STRIPE_PAYMENT_URL}?client_reference_id=${sessionId}&prefilled_email=${encodeURIComponent(formData.email)}`;
+            try {
+                localStorage.setItem('pendingReservation', JSON.stringify(reservationSession));
+            } catch {
+                console.warn('LocalStorage unavailable, proceeding without storage');
+            }
 
-            // Use window.location.replace to avoid issues with back button
-            window.location.replace(paymentUrl);
+            // Prepare payment URL with success parameters
+            const successParams = new URLSearchParams({
+                payment_success: 'true',
+                session_id: sessionId,
+                item_id: outfit.id
+            }).toString();
+
+            const paymentUrl = `${STRIPE_PAYMENT_URL}?${successParams}&client_reference_id=${sessionId}&prefilled_email=${encodeURIComponent(formData.email)}`;
+
+            // Open payment in new tab for better UX
+            const newWindow = window.open(paymentUrl, '_blank');
+
+            if (!newWindow) {
+                // Fallback to same window if popup blocked
+                window.location.href = paymentUrl;
+            } else {
+                // Check for payment completion every 2 seconds
+                const checkInterval = setInterval(() => {
+                    if (newWindow.closed) {
+                        clearInterval(checkInterval);
+                        // Redirect to confirmation page
+                        window.location.href = '/confirmation';
+                    }
+                }, 2000);
+            }
 
         } catch (err) {
             console.error('Payment processing error:', err);
             setProcessingPayment(false);
+
+            // Store error for recovery
+            try {
+                localStorage.setItem('reservationError', 'Payment processing failed. Please try again.');
+            } catch {
+                console.warn('Cannot store error in localStorage');
+            }
+
             throw new Error('Failed to process payment');
-        }
-    };
-
-    // Check for successful payment return and complete reservation
-    useEffect(() => {
-        const checkPaymentStatus = async () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const paymentSuccess = urlParams.get('payment_success');
-            const sessionId = urlParams.get('session_id');
-
-            // Only process if we're coming from Stripe with success indication
-            if (paymentSuccess === 'true' && sessionId) {
-                // Try to get reservation data from localStorage
-                const pendingReservation = localStorage.getItem('pendingReservation');
-
-                if (pendingReservation) {
-                    try {
-                        const { formData, outfit } = JSON.parse(pendingReservation);
-                        await completeReservation(formData, outfit);
-
-                        // Clear the pending reservation
-                        localStorage.removeItem('pendingReservation');
-
-                        // Redirect to confirmation page if not already there
-                        if (window.location.pathname !== '/confirmation') {
-                            window.location.href = '/confirmation';
-                        }
-                    } catch (error) {
-                        console.error('Error completing reservation after payment:', error);
-                        alert('Payment was successful but reservation failed. Please contact support.');
-                    }
-                }
-            }
-        };
-
-        checkPaymentStatus();
-    }, []);
-
-    // Complete reservation after successful payment
-    const completeReservation = async (formData: ReservationFormData, outfit: Outfit) => {
-        try {
-            const reservationData = {
-                fullName: formData.name,
-                email: formData.email,
-                phoneNumber: formData.phone,
-                pickupMethod: formData.pickupMethod,
-                pickupTime: formData.pickupDate,
-                pickupDay: '',
-                pickupInstructions: formData.instructions,
-                specialInstructions: formData.instructions
-            };
-
-            console.log('Completing reservation after payment:', reservationData);
-
-            const response = await fetch(`${API_BASE_URL}/${outfit.id}/reserve`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(reservationData),
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                console.error('Server error response:', errorData);
-                throw new Error(errorData.message || `Failed to submit reservation: ${response.status}`);
-            }
-
-            const result = await response.json();
-
-            if (result.success) {
-                console.log('Reservation completed successfully after payment');
-                // The user is already on the confirmation page per Stripe configuration
-                // You can show a success message or let the confirmation page handle it
-            } else {
-                throw new Error(result.message || 'Failed to submit reservation');
-            }
-        } catch (err) {
-            console.error('Reservation completion error:', err);
-            const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
-            alert(`Payment was successful but reservation failed: ${errorMessage}. Please contact support.`);
-        } finally {
-            setProcessingPayment(false);
-            setReservationData(null);
         }
     };
 
@@ -299,12 +260,36 @@ export function DinnerCollectionTwo() {
                         <div className="text-center">
                             <CreditCard className="w-16 h-16 text-[#5B1B3A] mx-auto mb-4 animate-pulse" />
                             <h3 className="text-2xl font-bold text-[#5B1B3A] mb-4">Processing Payment</h3>
-                            <p className="text-gray-600 mb-6">
-                                You are being redirected to secure payment. Please wait...
+                            <p className="text-gray-600 mb-4">
+                                You are being redirected to secure payment. Please complete the payment to reserve your item.
                             </p>
+                            <div className="flex items-center justify-center space-x-2 text-sm text-gray-500 mb-4">
+                                <Shield size={16} />
+                                <span>Secure payment by Stripe</span>
+                            </div>
                             <Loader2 className="w-8 h-8 text-[#891B81] animate-spin mx-auto" />
+                            <p className="text-sm text-gray-500 mt-4">
+                                Don't close this window. You'll be redirected back after payment.
+                            </p>
                         </div>
                     </div>
+                </div>
+            )}
+
+            {/* Payment Error Alert */}
+            {paymentError && (
+                <div className="fixed top-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl z-50 animate-fadeIn max-w-md">
+                    <div className="flex items-center space-x-2">
+                        <X className="w-5 h-5" />
+                        <span className="font-semibold">Payment Error</span>
+                    </div>
+                    <p className="text-sm mt-1">{paymentError}</p>
+                    <button
+                        onClick={() => setPaymentError(null)}
+                        className="text-red-600 hover:text-red-800 text-sm mt-2 font-medium"
+                    >
+                        Dismiss
+                    </button>
                 </div>
             )}
 
@@ -337,10 +322,9 @@ export function DinnerCollectionTwo() {
             </div>
 
             {/* Header */}
-            <header className="bg-[#5b1b3a] w-full sticky top-0 z-50 shadow-sm transition-all duration-300 ease-in-out hover:shadow-md">
+            <header className="bg-[#5b1b3a] w-full sticky top-0 z-40 shadow-sm transition-all duration-300 ease-in-out hover:shadow-md">
                 <div className="container mx-auto px-4 py-4">
                     <div className="flex items-center justify-between mb-4">
-                        {/* Back Button */}
                         <button
                             onClick={() => window.history.back()}
                             className="text-[#FFF0C8] hover:text-[#AD7301] transition-all duration-300 ease-in-out transform hover:scale-110 flex items-center space-x-2"
@@ -349,7 +333,6 @@ export function DinnerCollectionTwo() {
                             <span className="font-medium hidden sm:inline">Back</span>
                         </button>
 
-                        {/* Title */}
                         <div className="text-center">
                             <h1 className="text-2xl md:text-3xl font-bold tracking-wider text-[#FFF0C8] transition-all duration-300 ease-in-out hover:text-[#AD7301] hover:scale-105">
                                 CLOTHING COLLECTION
@@ -359,7 +342,6 @@ export function DinnerCollectionTwo() {
                             </div>
                         </div>
 
-                        {/* Filter Button */}
                         <button
                             onClick={() => setShowFilters(!showFilters)}
                             className="text-[#FFF0C8] hover:text-[#AD7301] transition-all duration-300 ease-in-out transform hover:scale-110 flex items-center space-x-2"
@@ -369,7 +351,6 @@ export function DinnerCollectionTwo() {
                         </button>
                     </div>
 
-                    {/* Search Bar */}
                     <div className="relative max-w-2xl mx-auto">
                         <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#5B1B3A] transition-all duration-300" size={20} />
                         <input
@@ -510,7 +491,6 @@ export function DinnerCollectionTwo() {
                                             : 'opacity-50 bg-gray-400'
                                     } transition-opacity duration-300`}></div>
 
-                                    {/* Size Badge */}
                                     <div className={`absolute top-4 left-4 px-3 py-1 rounded-full text-sm font-medium shadow-lg transform transition-transform duration-300 ${
                                         outfit.status === 'available'
                                             ? 'bg-[#5B1B3A] text-white group-hover:scale-110'
@@ -519,7 +499,6 @@ export function DinnerCollectionTwo() {
                                         {outfit.size}
                                     </div>
 
-                                    {/* Category Badge */}
                                     <div className={`absolute top-4 right-4 px-3 py-1 rounded-full text-sm font-medium shadow-lg transform transition-transform duration-300 ${
                                         outfit.status === 'available'
                                             ? 'bg-[#AD7301] text-white group-hover:scale-110'
@@ -528,7 +507,6 @@ export function DinnerCollectionTwo() {
                                         {outfit.category}
                                     </div>
 
-                                    {/* Reserved Overlay */}
                                     {outfit.status !== 'available' && (
                                         <>
                                             <div className="absolute inset-0 bg-gray-600 bg-opacity-60 flex items-center justify-center">
@@ -601,7 +579,6 @@ export function DinnerCollectionTwo() {
                             <h2 className="text-3xl font-bold text-[#5B1B3A] mb-3">{selectedOutfit.name}</h2>
                             <p className="text-gray-600 text-lg mb-6">{selectedOutfit.description}</p>
 
-                            {/* Size and Category Display */}
                             <div className="grid grid-cols-2 gap-4 mb-8">
                                 <div className="bg-gradient-to-br from-[#5B1B3A] to-[#891B81] p-4 rounded-xl text-white transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
                                     <div className="flex items-center space-x-3">
@@ -687,7 +664,7 @@ export function DinnerCollectionTwo() {
     );
 }
 
-// Updated Reservation Form Component with Payment Integration
+// Reservation Form Component
 function ReservationForm({
                              outfit,
                              onClose,
@@ -742,7 +719,6 @@ function ReservationForm({
         <form onSubmit={handleSubmit} className="space-y-6">
             <h3 className="text-2xl font-bold text-[#5B1B3A] mb-2">Reserve This Item</h3>
 
-            {/* Payment Notice */}
             <div className="bg-gradient-to-br from-[#FFE8A5] to-[#FFD166] p-4 rounded-xl border-2 border-[#AD7301]">
                 <div className="flex items-center space-x-3">
                     <CreditCard className="text-[#5B1B3A] flex-shrink-0" size={24} />
@@ -820,7 +796,6 @@ function ReservationForm({
                 </div>
             </div>
 
-            {/* Pickup Method Selection */}
             <div className="transform transition-all duration-300 hover:scale-105">
                 <label className="block text-sm font-semibold text-[#5B1B3A] mb-2">
                     Pickup Method *
