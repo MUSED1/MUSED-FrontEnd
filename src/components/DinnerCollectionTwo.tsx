@@ -41,6 +41,8 @@ interface ReservationFormData {
     deliveryDay: string;
     deliveryTime: string;
     deliveryMethod: string;
+    returnDay: string;
+    returnTime: string;
     agreeToTerms: boolean;
 }
 
@@ -686,6 +688,8 @@ function ReservationForm({
         deliveryDay: '',
         deliveryTime: '',
         deliveryMethod: '',
+        returnDay: '',
+        returnTime: '',
         agreeToTerms: false
     });
 
@@ -733,7 +737,24 @@ function ReservationForm({
         }
     };
 
+    // Get available time slots based on selected return day
+    const getReturnTimeSlots = () => {
+        switch (formData.returnDay) {
+            case 'thursday':
+                return ['After 3pm'];
+            case 'friday':
+                return ['Morning', 'Afternoon', 'Evening'];
+            case 'sunday':
+                return ['Morning', 'Afternoon', 'Evening'];
+            case 'monday':
+                return ['After 4pm'];
+            default:
+                return [];
+        }
+    };
+
     const timeSlots = getTimeSlots();
+    const returnTimeSlots = getReturnTimeSlots();
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -813,10 +834,10 @@ function ReservationForm({
                         className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#891B81] focus:border-[#891B81] text-[#5B1B3A] transition-all duration-300"
                     >
                         <option value="">Select delivery day</option>
-                        <option value="thursday">Thursday</option>
-                        <option value="friday">Friday</option>
-                        <option value="sunday">Sunday</option>
-                        <option value="monday">Monday</option>
+                        <option value="thursday">Thursday (Nov 13)</option>
+                        <option value="friday">Friday (Nov 14)</option>
+                        <option value="sunday">Sunday (Nov 15)</option>
+                        <option value="monday">Monday (Nov 16)</option>
                     </select>
                 </div>
             </div>
@@ -836,6 +857,48 @@ function ReservationForm({
                     >
                         <option value="">Select delivery time</option>
                         {timeSlots.map((time, index) => (
+                            <option key={index} value={time}>
+                                {time}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+            )}
+
+            {/* Return Day - For picking up clothes after the event */}
+            <div className="transform transition-all duration-300 hover:scale-105">
+                <label className="block text-sm font-semibold text-[#5B1B3A] mb-2 flex items-center">
+                    <Calendar size={16} className="mr-2 text-[#891B81]" />
+                    Preferred Return/Pickup Day *
+                </label>
+                <select
+                    name="returnDay"
+                    value={formData.returnDay}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#891B81] focus:border-[#891B81] text-[#5B1B3A] transition-all duration-300"
+                >
+                    <option value="">Select return day</option>
+                    <option value="thursday">Thursday (Nov 20)</option>
+
+                </select>
+            </div>
+
+            {/* Return Time Slot - Only show if return day is selected */}
+            {formData.returnDay && (
+                <div className="transform transition-all duration-300 hover:scale-105">
+                    <label className="block text-sm font-semibold text-[#5B1B3A] mb-2">
+                        Preferred Return/Pickup Time *
+                    </label>
+                    <select
+                        name="returnTime"
+                        value={formData.returnTime}
+                        onChange={handleChange}
+                        required
+                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#891B81] focus:border-[#891B81] text-[#5B1B3A] transition-all duration-300"
+                    >
+                        <option value="">Select return time</option>
+                        {returnTimeSlots.map((time, index) => (
                             <option key={index} value={time}>
                                 {time}
                             </option>
