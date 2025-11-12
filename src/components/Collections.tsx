@@ -232,7 +232,7 @@ export function Collections() {
                                     Discover our exclusive new outfits and accessories available for reservation
                                 </p>
 
-                                
+
 
                                 {/* Call to Action */}
                                 <div className="bg-gradient-to-br from-[#5B1B3A] to-[#891B81] p-8 rounded-xl border-2 border-[#AD7301] mb-6">
