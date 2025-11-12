@@ -385,7 +385,7 @@ export function Confirmation() {
 
                                 <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
                                     <p className="text-xl text-plum/80 mb-6 font-amandine">
-                                        Thank you for your reservation! Your payment has been processed successfully.
+                                        Thank you for your reservation! Your payment has been processed successfully.Check your mail and spam
                                     </p>
 
                                     <div className="bg-cream rounded-xl p-6 mb-6 text-left">
@@ -401,11 +401,11 @@ export function Confirmation() {
                                             </div>
                                             <div className="flex justify-between">
                                                 <span className="font-semibold">Time:</span>
-                                                <span>7:00 PM</span>
+                                                <span>8:00 PM</span>
                                             </div>
                                             <div className="flex justify-between">
                                                 <span className="font-semibold">Location:</span>
-                                                <span>Central Hong Kong</span>
+                                                <span>Pazta 10 Hollywood road, central Hong Kong </span>
                                             </div>
                                             <div className="flex justify-between text-lg font-bold text-gold mt-4 pt-4 border-t border-amber-200">
                                                 <span>Amount Paid:</span>
