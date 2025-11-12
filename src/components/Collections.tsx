@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Filter, X, Search, Ruler, Tag, Calendar, User, MapPin, Phone, Mail } from 'lucide-react';
+import { ArrowLeft, Filter, X, Search, Ruler, Tag, Calendar, User, MapPin, Phone, Mail, ArrowRight } from 'lucide-react';
 import { Header } from './Header';
 import { Footer } from './Footer';
+import { Link } from 'react-router-dom';
 
 interface Outfit {
     id: number;
@@ -87,7 +88,7 @@ export function Collections() {
                                     : 'bg-[#FFF0C8] text-[#5B1B3A] hover:bg-[#AD7301] hover:text-white'
                             }`}
                         >
-                            Upcoming Dinner Collection
+                            Live Dinner Collection
                         </button>
                         <button
                             onClick={() => setActiveCollection('past')}
@@ -122,18 +123,20 @@ export function Collections() {
                                 COLLECTIONS
                             </h1>
                             <div className="text-lg md:text-xl text-[#AD7301] font-light italic mt-1">
-                                {activeCollection === 'upcoming' ? 'Coming Soon' : 'First Dinner Collection'}
+                                {activeCollection === 'upcoming' ? 'Live Now!' : 'First Dinner Collection'}
                             </div>
                         </div>
 
-                        {/* Filter Button */}
-                        <button
-                            onClick={() => setShowFilters(!showFilters)}
-                            className="text-[#FFF0C8] hover:text-[#AD7301] transition-all duration-300 ease-in-out transform hover:scale-110 flex items-center space-x-2"
-                        >
-                            <Filter size={24} />
-                            <span className="font-medium hidden sm:inline">Filter</span>
-                        </button>
+                        {/* Filter Button - Solo mostrar para past collections */}
+                        {activeCollection === 'past' && (
+                            <button
+                                onClick={() => setShowFilters(!showFilters)}
+                                className="text-[#FFF0C8] hover:text-[#AD7301] transition-all duration-300 ease-in-out transform hover:scale-110 flex items-center space-x-2"
+                            >
+                                <Filter size={24} />
+                                <span className="font-medium hidden sm:inline">Filter</span>
+                            </button>
+                        )}
                     </div>
 
                     {/* Search Bar - Only show for past collections */}
@@ -215,15 +218,42 @@ export function Collections() {
             <div className="container mx-auto px-4 py-6">
                 {activeCollection === 'upcoming' ? (
                     <div className="text-center py-16 animate-fadeIn">
-                        <div className="bg-white rounded-2xl p-12 shadow-2xl border-2 border-[#AD7301] max-w-2xl mx-auto">
-                            <h2 className="text-4xl font-bold text-[#5B1B3A] mb-6">Coming Soon</h2>
-                            <p className="text-xl text-[#891B81] mb-8 font-medium">
-                                Our next dinner collection will be available starting November 11th
-                            </p>
-                            <div className="bg-gradient-to-br from-[#FFF0C8] to-[#FFE8A5] p-6 rounded-xl border-2 border-[#AD7301]">
-                                <p className="text-lg text-[#5B1B3A] font-semibold">
-                                    Stay tuned for our exclusive new outfits and accessories!
+                        <div className="bg-white rounded-2xl p-12 shadow-2xl border-2 border-[#AD7301] max-w-4xl mx-auto relative overflow-hidden">
+                            {/* Efecto de brillo */}
+                            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#AD7301] via-[#FFD166] to-[#AD7301] animate-pulse"></div>
+
+                            <div className="relative z-10">
+
+
+
+                                <h2 className="text-4xl font-bold text-[#5B1B3A] mb-6">Our New Collection is Live! </h2>
+
+                                <p className="text-xl text-[#891B81] mb-8 font-medium">
+                                    Discover our exclusive new outfits and accessories available for reservation
                                 </p>
+
+                                
+
+                                {/* Call to Action */}
+                                <div className="bg-gradient-to-br from-[#5B1B3A] to-[#891B81] p-8 rounded-xl border-2 border-[#AD7301] mb-6">
+                                    <p className="text-white text-lg mb-4 font-semibold">
+                                        Ready to find your perfect outfit for the dinner?
+                                    </p>
+                                    <Link
+                                        to="/dinner-collection-two"
+                                        className="inline-flex items-center bg-[#AD7301] text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-[#FFD166] hover:text-[#5B1B3A] transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                                    >
+                                        Explore Live Collection
+                                        <ArrowRight size={24} className="ml-2" />
+                                    </Link>
+                                </div>
+
+                                {/* Additional Info */}
+                                <div className="bg-[#FFF0C8] rounded-xl p-6 border-2 border-[#AD7301]">
+                                    <p className="text-[#5B1B3A] font-medium">
+                                        💫 <span className="font-bold">New Features:</span> Real-time availability, secure payment processing, and delivery scheduling
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -399,12 +429,19 @@ export function Collections() {
                 .animate-scaleIn {
                     animation: scaleIn 0.3s ease-out;
                 }
+
+                .line-clamp-2 {
+                    display: -webkit-box;
+                    -webkit-line-clamp: 2;
+                    -webkit-box-orient: vertical;
+                    overflow: hidden;
+                }
             `}</style>
         </div>
     );
 }
 
-// Reservation Form Component (keep the same as before)
+// Reservation Form Component
 function ReservationForm({ outfit, onClose }: { outfit: Outfit; onClose: () => void }) {
     const [formData, setFormData] = useState({
         name: '',
