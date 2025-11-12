@@ -1,6 +1,6 @@
-import  { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from './Button'
-import {Link} from "react-router-dom";
+import { Link } from "react-router-dom";
 
 export function Hero() {
     const [currentSlide, setCurrentSlide] = useState(0)
@@ -77,9 +77,11 @@ export function Hero() {
                                 Upload your piece
                             </Button>
                         </Link>
-                        <Button variant="secondary" className="transform transition-all duration-300 hover:scale-110 hover:shadow-2xl font-amandine">
-                            Dinner collection dropping 11.11.25
-                        </Button>
+                        <Link to="/collections">
+                            <Button variant="secondary" className="transform transition-all duration-300 hover:scale-110 hover:shadow-2xl font-amandine">
+                                Dinner collection dropping 11.11.25
+                            </Button>
+                        </Link>
                     </div>
                 </div>
 
