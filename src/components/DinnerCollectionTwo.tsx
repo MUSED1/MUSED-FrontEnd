@@ -47,7 +47,7 @@ interface ReservationFormData {
 }
 
 // Stripe configuration
-const STRIPE_PAYMENT_URL = 'https://buy.stripe.com/28E5kE3qX0Wb6Py4huew801';
+const STRIPE_PAYMENT_URL = 'https://buy.stripe.com/dRm3cw5z59sH1vedS4ew802';
 
 export function DinnerCollectionTwo() {
     const [selectedOutfit, setSelectedOutfit] = useState<Outfit | null>(null);

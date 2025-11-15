@@ -31,10 +31,13 @@ export function Diner() {
                                     style, share a moment.
                                 </p>
                                 <div className="flex justify-between items-center">
-                                    <span className="text-2xl font-bold text-gold">250 HKD</span>
-                                    <button className="bg-plum text-cream px-8 py-3 rounded-full hover:bg-gold transition-all duration-300 font-semibold">
+                                    <span className="text-2xl font-bold text-gold">270 HKD</span>
+                                    <Link
+                                        to="/dinner-collection-two"
+                                        className="bg-plum text-cream px-8 py-3 rounded-full hover:bg-gold transition-all duration-300 font-semibold"
+                                    >
                                         PICK YOUR OUTFIT
-                                    </button>
+                                    </Link>
                                 </div>
                             </div>
                             <div className="md:w-1/2 bg-gradient-to-br from-plum to-gold p-8 flex items-center justify-center">
@@ -42,7 +45,7 @@ export function Diner() {
                                     <h3 className="text-2xl font-bold mb-4">Next Event</h3>
                                     <p className="text-xl mb-2">Wear Something Borrowed</p>
                                     <p className="text-3xl font-bold mb-4">Nov 18, 2025</p>
-                                    <p className="text-amber-100">7:00 PM - Central Hong Kong</p>
+                                    <p className="text-amber-100">8:00 PM - Central Hong Kong</p>
                                 </div>
                             </div>
                         </div>
