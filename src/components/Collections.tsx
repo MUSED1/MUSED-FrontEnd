@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { ArrowLeft, Filter, X, Search, Ruler, Tag, Calendar, User, MapPin, Phone, Mail, ArrowRight } from 'lucide-react';
+import { useState } from 'react';
+import { ArrowLeft, Filter, X, Search, ArrowRight } from 'lucide-react';
 import { Header } from './Header';
 import { Footer } from './Footer';
 import { Link } from 'react-router-dom';
@@ -14,7 +14,6 @@ interface Outfit {
 }
 
 export function Collections() {
-    const [selectedOutfit, setSelectedOutfit] = useState<Outfit | null>(null);
     const [showFilters, setShowFilters] = useState(false);
     const [selectedSize, setSelectedSize] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('');
@@ -223,16 +222,11 @@ export function Collections() {
                             <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#AD7301] via-[#FFD166] to-[#AD7301] animate-pulse"></div>
 
                             <div className="relative z-10">
-
-
-
                                 <h2 className="text-4xl font-bold text-[#5B1B3A] mb-6">Our New Collection is Live! </h2>
 
                                 <p className="text-xl text-[#891B81] mb-8 font-medium">
                                     Discover our exclusive new outfits and accessories available for reservation
                                 </p>
-
-
 
                                 {/* Call to Action */}
                                 <div className="bg-gradient-to-br from-[#5B1B3A] to-[#891B81] p-8 rounded-xl border-2 border-[#AD7301] mb-6">
@@ -297,37 +291,46 @@ export function Collections() {
                                         style={{
                                             animation: `fadeInUp 0.5s ease-out ${index * 0.05}s both`
                                         }}
-                                        className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 border-2 border-transparent hover:border-[#AD7301] group"
+                                        className="bg-white rounded-2xl shadow-lg overflow-hidden border-2 border-gray-300 relative group"
                                     >
+                                        {/* Overlay de no disponible */}
+                                        <div className="absolute inset-0 bg-gray-800 bg-opacity-70 z-10 flex items-center justify-center rounded-2xl">
+                                            <div className="text-center text-white p-4">
+                                                <div className="bg-[#5B1B3A] rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
+                                                    <X size={32} />
+                                                </div>
+                                                <h3 className="text-xl font-bold mb-2">No Longer Available</h3>
+                                                <p className="text-gray-300 text-sm">This outfit was part of a past collection</p>
+                                            </div>
+                                        </div>
+
                                         <div
-                                            className="h-80 bg-gray-200 relative overflow-hidden cursor-pointer"
-                                            onClick={() => setSelectedOutfit(outfit)}
+                                            className="h-80 bg-gray-200 relative overflow-hidden"
                                         >
                                             <img
                                                 src={outfit.image}
                                                 alt={outfit.name}
-                                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                                className="w-full h-full object-cover filter grayscale"
                                             />
-                                            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                                            <div className="absolute top-4 left-4 bg-[#5B1B3A] text-white px-3 py-1 rounded-full text-sm font-medium shadow-lg transform group-hover:scale-110 transition-transform duration-300">
+                                            <div className="absolute top-4 left-4 bg-gray-600 text-white px-3 py-1 rounded-full text-sm font-medium shadow-lg">
                                                 {outfit.size}
                                             </div>
-                                            <div className="absolute top-4 right-4 bg-[#AD7301] text-white px-3 py-1 rounded-full text-sm font-medium shadow-lg transform group-hover:scale-110 transition-transform duration-300">
+                                            <div className="absolute top-4 right-4 bg-gray-600 text-white px-3 py-1 rounded-full text-sm font-medium shadow-lg">
                                                 {outfit.category}
                                             </div>
                                         </div>
                                         <div className="p-6">
-                                            <h3 className="font-bold text-[#5B1B3A] text-lg mb-2 group-hover:text-[#891B81] transition-colors duration-300">
+                                            <h3 className="font-bold text-gray-500 text-lg mb-2">
                                                 {outfit.name}
                                             </h3>
-                                            <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                                            <p className="text-gray-400 text-sm mb-4 line-clamp-2">
                                                 {outfit.description}
                                             </p>
                                             <button
-                                                onClick={() => setSelectedOutfit(outfit)}
-                                                className="w-full bg-[#891B81] text-white py-3 rounded-xl font-semibold hover:bg-[#940000] transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
+                                                disabled
+                                                className="w-full bg-gray-400 text-white py-3 rounded-xl font-semibold cursor-not-allowed transition-all duration-300 shadow-lg"
                                             >
-                                                Request This Outfit
+                                                Outfit No Longer Available
                                             </button>
                                         </div>
                                     </div>
@@ -337,56 +340,6 @@ export function Collections() {
                     </>
                 )}
             </div>
-
-            {/* Reservation Modal - Only for past collections */}
-            {selectedOutfit && activeCollection === 'past' && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 animate-fadeIn">
-                    <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto transform animate-scaleIn">
-                        <div className="relative">
-                            <img
-                                src={selectedOutfit.image}
-                                alt={selectedOutfit.name}
-                                className="w-full h-80 object-cover"
-                            />
-                            <button
-                                onClick={() => setSelectedOutfit(null)}
-                                className="absolute top-4 right-4 bg-white rounded-full p-2 hover:bg-gray-100 transition-all duration-300 transform hover:scale-110 hover:rotate-90 shadow-lg"
-                            >
-                                <X size={24} className="text-[#5B1B3A]" />
-                            </button>
-                        </div>
-
-                        <div className="p-8">
-                            <h2 className="text-3xl font-bold text-[#5B1B3A] mb-3">{selectedOutfit.name}</h2>
-                            <p className="text-gray-600 text-lg mb-6">{selectedOutfit.description}</p>
-
-                            {/* Elegant Size and Category Display */}
-                            <div className="grid grid-cols-2 gap-4 mb-8">
-                                <div className="bg-gradient-to-br from-[#5B1B3A] to-[#891B81] p-4 rounded-xl text-white transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
-                                    <div className="flex items-center space-x-3">
-                                        <Ruler className="text-[#AD7301]" size={24} />
-                                        <div>
-                                            <p className="text-sm font-semibold opacity-90">Size</p>
-                                            <p className="text-xl font-bold">{selectedOutfit.size}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="bg-gradient-to-br from-[#AD7301] to-[#FFD166] p-4 rounded-xl text-[#5B1B3A] transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
-                                    <div className="flex items-center space-x-3">
-                                        <Tag className="text-[#891B81]" size={24} />
-                                        <div>
-                                            <p className="text-sm font-semibold opacity-90">Category</p>
-                                            <p className="text-xl font-bold">{selectedOutfit.category}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <ReservationForm outfit={selectedOutfit} onClose={() => setSelectedOutfit(null)} />
-                        </div>
-                    </div>
-                </div>
-            )}
 
             <Footer />
 
@@ -436,167 +389,11 @@ export function Collections() {
                     -webkit-box-orient: vertical;
                     overflow: hidden;
                 }
+
+                .filter.grayscale {
+                    filter: grayscale(100%);
+                }
             `}</style>
         </div>
-    );
-}
-
-// Reservation Form Component
-function ReservationForm({ outfit, onClose }: { outfit: Outfit; onClose: () => void }) {
-    const [formData, setFormData] = useState({
-        name: '',
-        email: '',
-        phone: '',
-        address: '',
-        instructions: '',
-        pickupDate: '',
-        agreeToTerms: false
-    });
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        console.log('Reservation request:', { outfit, ...formData });
-        alert('Reservation request submitted successfully! We will contact you soon.');
-        onClose();
-    };
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const { name, value, type } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
-        }));
-    };
-
-    return (
-        <form onSubmit={handleSubmit} className="space-y-6">
-            <h3 className="text-2xl font-bold text-[#5B1B3A] mb-2">Reserve This Outfit</h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="transform transition-all duration-300 hover:scale-105">
-                    <label className="block text-sm font-semibold text-[#5B1B3A] mb-2 flex items-center">
-                        <User size={16} className="mr-2 text-[#891B81]" />
-                        Full Name *
-                    </label>
-                    <input
-                        type="text"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleChange}
-                        required
-                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#891B81] focus:border-[#891B81] text-[#5B1B3A] transition-all duration-300"
-                        placeholder="Enter your full name"
-                    />
-                </div>
-                <div className="transform transition-all duration-300 hover:scale-105">
-                    <label className="block text-sm font-semibold text-[#5B1B3A] mb-2 flex items-center">
-                        <Mail size={16} className="mr-2 text-[#891B81]" />
-                        Email *
-                    </label>
-                    <input
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        required
-                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#891B81] focus:border-[#891B81] text-[#5B1B3A] transition-all duration-300"
-                        placeholder="Enter your email"
-                    />
-                </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="transform transition-all duration-300 hover:scale-105">
-                    <label className="block text-sm font-semibold text-[#5B1B3A] mb-2 flex items-center">
-                        <Phone size={16} className="mr-2 text-[#891B81]" />
-                        Phone Number *
-                    </label>
-                    <input
-                        type="tel"
-                        name="phone"
-                        value={formData.phone}
-                        onChange={handleChange}
-                        required
-                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#891B81] focus:border-[#891B81] text-[#5B1B3A] transition-all duration-300"
-                        placeholder="Enter your phone number"
-                    />
-                </div>
-                <div className="transform transition-all duration-300 hover:scale-105">
-                    <label className="block text-sm font-semibold text-[#5B1B3A] mb-2 flex items-center">
-                        <Calendar size={16} className="mr-2 text-[#891B81]" />
-                        Preferred Pickup Date *
-                    </label>
-                    <input
-                        type="date"
-                        name="pickupDate"
-                        value={formData.pickupDate}
-                        onChange={handleChange}
-                        required
-                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#891B81] focus:border-[#891B81] text-[#5B1B3A] transition-all duration-300"
-                    />
-                </div>
-            </div>
-
-            <div className="transform transition-all duration-300 hover:scale-105">
-                <label className="block text-sm font-semibold text-[#5B1B3A] mb-2 flex items-center">
-                    <MapPin size={16} className="mr-2 text-[#891B81]" />
-                    Delivery Address *
-                </label>
-                <textarea
-                    name="address"
-                    value={formData.address}
-                    onChange={handleChange}
-                    required
-                    rows={3}
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#891B81] focus:border-[#891B81] text-[#5B1B3A] transition-all duration-300"
-                    placeholder="Enter your complete delivery address"
-                />
-            </div>
-
-            <div className="transform transition-all duration-300 hover:scale-105">
-                <label className="block text-sm font-semibold text-[#5B1B3A] mb-2">Special Instructions</label>
-                <textarea
-                    name="instructions"
-                    value={formData.instructions}
-                    onChange={handleChange}
-                    rows={2}
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#891B81] focus:border-[#891B81] text-[#5B1B3A] transition-all duration-300"
-                    placeholder="Any special requests, styling preferences, or instructions..."
-                />
-            </div>
-
-            <div className="bg-gradient-to-br from-[#FFF0C8] to-[#FFE8A5] p-6 rounded-xl border-2 border-[#AD7301] transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
-                <div className="flex items-start space-x-4">
-                    <input
-                        type="checkbox"
-                        name="agreeToTerms"
-                        checked={formData.agreeToTerms}
-                        onChange={handleChange}
-                        required
-                        className="mt-1 w-5 h-5 text-[#891B81] focus:ring-[#891B81] border-gray-300 rounded transition-all duration-300"
-                    />
-                    <label className="text-sm text-[#5B1B3A] font-medium">
-                        I agree to treat the borrowed item with care and cover any repair or replacement costs for damage beyond normal wear.
-                    </label>
-                </div>
-            </div>
-            <div className="flex space-x-4">
-                <button
-                    type="button"
-                    onClick={onClose}
-                    className="flex-1 bg-[#FFF0C8] text-[#5B1B3A] py-4 rounded-xl font-semibold hover:bg-[#AD7301] hover:text-white transition-all duration-300 transform hover:scale-105"
-                >
-                    Cancel
-                </button>
-                <button
-                    type="submit"
-                    disabled={!formData.agreeToTerms}
-                    className="flex-1 bg-[#5B1B3A] text-white py-4 rounded-xl font-semibold hover:bg-[#891B81] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
-                >
-                    Submit Reservation
-                </button>
-            </div>
-
-        </form>
     );
 }
