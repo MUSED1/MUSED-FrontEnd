@@ -1,7 +1,7 @@
 // components/Diner.tsx
 import { Header } from './Header'
 import { Footer } from './Footer'
-import { Link } from 'react-router-dom' // Add this import
+import { Link } from 'react-router-dom'
 
 export function Diner() {
     return (
@@ -50,12 +50,21 @@ export function Diner() {
                             </div>
                         </div>
                     </div>
-                    <div className="text-center mb-16">
+
+                    {/* Dinner Pictures Buttons */}
+                    <div className="text-center mb-16 flex justify-center space-x-6">
                         <Link
-                            to="/first-dinner" // Use Link instead of button with navigate
-                            className="bg-gold text-plum px-8 py-3 rounded-full hover:bg-plum hover:text-cream transition-all duration-300 font-semibold inline-block"
+                            to="/first-dinner"
+
+                            className="bg-plum text-cream px-8 py-3 rounded-full hover:bg-gold hover:text-plum transition-all duration-300 font-semibold inline-block"
                         >
                             First Dinner Pictures
+                        </Link>
+                        <Link
+                            to="/second-dinner"
+                            className="bg-gold text-plum px-8 py-3 rounded-full hover:bg-plum hover:text-cream transition-all duration-300 font-semibold inline-block"
+                        >
+                            Second Dinner Pictures
                         </Link>
                     </div>
 

@@ -58,7 +58,7 @@ export function Hero() {
                 {/* Text Content */}
                 <div className="w-full md:w-1/2 z-10 pt-16 md:pt-0">
                     <h2 className="text-4xl md:text-6xl font-bold text-plum mb-4 transform transition-all duration-1000 ease-out hover:translate-x-4 hover:text-burgundy">
-                        UPCOMING <span className="text-burgundy transform transition-all duration-700 hover:text-gold hover:scale-110">WSB DINNER</span>
+                        <span className="text-burgundy transform transition-all duration-700 hover:text-gold hover:scale-110">WSB DINNER</span>
                     </h2>
                     <p className="text-plum/80 text-lg md:text-xl mb-8 max-w-md transform transition-all duration-700 delay-200 hover:translate-x-2 hover:text-plum leading-relaxed">
                         Be Mused and meet your muse around a table. Mused is more than sharing style, it's sharing an experience.
@@ -77,9 +77,9 @@ export function Hero() {
                                 Upload your piece
                             </Button>
                         </Link>
-                        <Link to="/collections">
+                        <Link to="/second-dinner">
                             <Button variant="secondary" className="transform transition-all duration-300 hover:scale-110 hover:shadow-2xl font-amandine">
-                                Dinner collection dropping 11.11.25
+                                See Second Dinner Pictures
                             </Button>
                         </Link>
                     </div>
