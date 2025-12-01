@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Header } from './Header';
 import { Footer } from './Footer';
+import { Link } from 'react-router-dom';
 
 interface ImageData {
     _id: string;
@@ -47,8 +48,6 @@ export function SecondDinner() {
             const result = await response.json();
 
             if (result.success) {
-                // Filtrar imágenes por tags si es necesario (opcional)
-                // Por ahora mostramos todas las imágenes activas
                 setImages(result.data || []);
             } else {
                 throw new Error(result.message || 'Failed to fetch images');
@@ -61,47 +60,14 @@ export function SecondDinner() {
         }
     };
 
-    const downloadImage = (image: ImageData) => {
+    const downloadImage = (image: ImageData, index: number) => {
         const link = document.createElement('a');
         link.href = image.cloudinaryUrl;
-        link.download = `second-dinner-${image.originalName}`;
-        link.target = '_blank'; // Abrir en nueva pestaña para descargas grandes
+        link.download = `second-dinner-photo-${index + 1}`;
+        link.target = '_blank';
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-    };
-
-    const deleteImage = async (imageId: string) => {
-        if (!confirm('Are you sure you want to delete this image?')) return;
-
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/images/${imageId}`, {
-                method: 'DELETE',
-            });
-
-            if (!response.ok) {
-                throw new Error(`Error ${response.status}: ${response.statusText}`);
-            }
-
-            const result = await response.json();
-
-            if (result.success) {
-                // Remover la imagen eliminada de la lista
-                setImages(prevImages => prevImages.filter(img => img._id !== imageId));
-
-                // Si la imagen seleccionada fue eliminada, cerrar el modal
-                if (selectedImage && selectedImage._id === imageId) {
-                    setSelectedImage(null);
-                }
-
-                alert('Image deleted successfully');
-            } else {
-                throw new Error(result.message || 'Failed to delete image');
-            }
-        } catch (err) {
-            console.error('Error deleting image:', err);
-            alert(err instanceof Error ? err.message : 'Failed to delete image');
-        }
     };
 
     const getPreviousImage = () => {
@@ -144,7 +110,7 @@ export function SecondDinner() {
                             onClick={fetchImages}
                             className="bg-gold text-plum px-6 py-3 rounded-full hover:bg-plum hover:text-cream transition-all duration-300 font-semibold"
                         >
-                            Retry
+                            Try Again
                         </button>
                     </div>
                 </main>
@@ -164,25 +130,21 @@ export function SecondDinner() {
                             Second <span className="text-gold">Dinner</span>
                         </h1>
                         <p className="text-xl text-plum/80 max-w-2xl mx-auto">
-                            Browse through the gallery of our second MUSED Diner event.
-                            All images are fetched from our database in real-time.
+                            Relive the magic of our second MUSED Diner event.
+                            Browse through the gallery and download your favorite moments.
                         </p>
 
-                        {/* Stats */}
-                        <div className="mt-6 flex justify-center items-center gap-6">
-                            <div className="bg-white/50 backdrop-blur-sm rounded-xl px-6 py-3 shadow-lg">
-                                <span className="text-2xl font-bold text-plum">{images.length}</span>
-                                <span className="text-plum/80 ml-2">Images</span>
-                            </div>
-                            <button
-                                onClick={fetchImages}
-                                className="bg-plum text-cream px-4 py-2 rounded-full hover:bg-gold transition-all duration-300 font-semibold flex items-center gap-2"
+                        {/* Navigation to First Dinner */}
+                        <div className="mt-8">
+                            <Link
+                                to="/first-dinner"
+                                className="inline-flex items-center gap-2 bg-plum text-cream px-6 py-3 rounded-full hover:bg-gold hover:text-plum transition-all duration-300 font-semibold"
                             >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16l-4-4m0 0l4-4m-4 4h18" />
                                 </svg>
-                                Refresh
-                            </button>
+                                View First Dinner Gallery
+                            </Link>
                         </div>
                     </div>
 
@@ -190,20 +152,14 @@ export function SecondDinner() {
                     {images.length === 0 ? (
                         <div className="text-center py-20">
                             <div className="text-5xl mb-4">📷</div>
-                            <h3 className="text-2xl font-bold text-plum mb-2">No Images Found</h3>
-                            <p className="text-plum/80 mb-6">Upload some images to see them here!</p>
-                            <a
-                                href="/upload-images"
-                                className="bg-gold text-plum px-6 py-3 rounded-full hover:bg-plum hover:text-cream transition-all duration-300 font-semibold inline-block"
-                            >
-                                Go to Upload Page
-                            </a>
+                            <h3 className="text-2xl font-bold text-plum mb-2">No Images Yet</h3>
+                            <p className="text-plum/80 mb-6">Check back soon for photos from our second dinner event!</p>
                         </div>
                     ) : (
                         <>
                             {/* Gallery Grid */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-12">
-                                {images.map((image) => (
+                                {images.map((image, index) => (
                                     <div
                                         key={image._id}
                                         className="group relative bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-xl"
@@ -211,42 +167,17 @@ export function SecondDinner() {
                                     >
                                         <img
                                             src={image.cloudinaryUrl}
-                                            alt={image.originalName}
+                                            alt={`Photo ${index + 1}`}
                                             className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-110"
                                             loading="lazy"
                                             onError={(e) => {
                                                 (e.target as HTMLImageElement).src = '/placeholder-image.jpg';
                                             }}
                                         />
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-end p-4">
-                                            <span className="text-cream font-semibold text-center mb-2">
-                                                {image.originalName.length > 20
-                                                    ? `${image.originalName.substring(0, 20)}...`
-                                                    : image.originalName}
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center p-4">
+                                            <span className="text-cream font-semibold text-lg">
+                                                Photo {index + 1}
                                             </span>
-                                            <div className="flex gap-2">
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        downloadImage(image);
-                                                    }}
-                                                    className="bg-gold/80 hover:bg-gold text-plum px-3 py-1 rounded-full text-sm transition-all duration-300"
-                                                >
-                                                    Download
-                                                </button>
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        deleteImage(image._id);
-                                                    }}
-                                                    className="bg-red-500/80 hover:bg-red-600 text-white px-3 py-1 rounded-full text-sm transition-all duration-300"
-                                                >
-                                                    Delete
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <div className="absolute top-2 right-2 bg-black/50 text-cream text-xs px-2 py-1 rounded">
-                                            {image.format.split('/')[1]}
                                         </div>
                                     </div>
                                 ))}
@@ -265,13 +196,16 @@ export function SecondDinner() {
 
                                         <img
                                             src={selectedImage.cloudinaryUrl}
-                                            alt={selectedImage.originalName}
+                                            alt={`Photo ${images.findIndex(img => img._id === selectedImage._id) + 1}`}
                                             className="max-w-full max-h-[80vh] object-contain rounded-lg"
                                         />
 
-                                        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-4 flex-wrap justify-center">
+                                        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-4">
                                             <button
-                                                onClick={() => downloadImage(selectedImage)}
+                                                onClick={() => {
+                                                    const currentIndex = images.findIndex(img => img._id === selectedImage._id);
+                                                    downloadImage(selectedImage, currentIndex);
+                                                }}
                                                 className="bg-gold text-plum px-6 py-2 rounded-full hover:bg-plum hover:text-cream transition-all duration-300 font-semibold flex items-center gap-2"
                                             >
                                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -281,8 +215,7 @@ export function SecondDinner() {
                                             </button>
 
                                             <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
+                                                onClick={() => {
                                                     const prevImage = getPreviousImage();
                                                     if (prevImage) setSelectedImage(prevImage);
                                                 }}
@@ -292,8 +225,7 @@ export function SecondDinner() {
                                             </button>
 
                                             <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
+                                                onClick={() => {
                                                     const nextImage = getNextImage();
                                                     if (nextImage) setSelectedImage(nextImage);
                                                 }}
@@ -301,30 +233,10 @@ export function SecondDinner() {
                                             >
                                                 Next →
                                             </button>
-
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    deleteImage(selectedImage._id);
-                                                }}
-                                                className="bg-red-600 text-white px-4 py-2 rounded-full hover:bg-red-700 transition-all duration-300 font-semibold"
-                                            >
-                                                Delete Image
-                                            </button>
                                         </div>
 
-                                        <div className="text-cream text-center mt-4">
-                                            <div className="font-bold">
-                                                {selectedImage.originalName}
-                                            </div>
-                                            <div className="text-sm opacity-80">
-                                                Size: {(selectedImage.size / 1024 / 1024).toFixed(2)} MB •
-                                                Format: {selectedImage.format} •
-                                                Uploaded: {new Date(selectedImage.createdAt).toLocaleDateString()}
-                                            </div>
-                                            <div className="mt-2">
-                                                Photo {images.findIndex(img => img._id === selectedImage._id) + 1} of {images.length}
-                                            </div>
+                                        <div className="text-cream text-center mt-2">
+                                            Photo {images.findIndex(img => img._id === selectedImage._id) + 1} of {images.length}
                                         </div>
                                     </div>
                                 </div>
