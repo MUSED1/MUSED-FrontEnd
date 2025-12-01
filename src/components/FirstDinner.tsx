@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { Header } from './Header';
 import { Footer } from './Footer';
+import { Link } from 'react-router-dom'; // Añadir esta importación
 
 export function FirstDinner() {
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -34,6 +35,19 @@ export function FirstDinner() {
                             Relive the magic of our inaugural MUSED Diner event.
                             Browse through the gallery and download your favorite moments.
                         </p>
+
+                        {/* Botón para navegar a Second Dinner */}
+                        <div className="mt-8">
+                            <Link
+                                to="/second-dinner"
+                                className="inline-flex items-center gap-2 bg-gold text-plum px-6 py-3 rounded-full hover:bg-plum hover:text-cream transition-all duration-300 font-semibold"
+                            >
+                                View Second Dinner Gallery
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                                </svg>
+                            </Link>
+                        </div>
                     </div>
 
                     {/* Gallery Grid */}
