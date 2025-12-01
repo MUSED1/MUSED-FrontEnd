@@ -17,6 +17,8 @@ import { ClothingUploadForm } from './components/ClothingUploadForm'
 import { AdminClothing } from './components/AdminClothing'
 import { DinnerCollectionTwo } from './components/DinnerCollectionTwo'
 import { Confirmation } from './components/Confirmation' // Add this import
+import { SimpleImageUpload } from './components/SimpleImageUpload'
+
 
 function HomePage() {
     return (
@@ -61,6 +63,7 @@ export function App() {
                 <Route path="/admin/clothing" element={<AdminClothing />} />
                 <Route path="/dinner-collection-two" element={<DinnerCollectionTwo />} />
                 <Route path="/confirmation" element={<Confirmation />} /> {/* Add this route */}
+                <Route path="/upload-images" element={<SimpleImageUpload />} />
             </Routes>
         </Router>
     )
