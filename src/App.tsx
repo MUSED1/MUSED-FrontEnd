@@ -16,9 +16,9 @@ import { FirstDinner } from './components/FirstDinner'
 import { ClothingUploadForm } from './components/ClothingUploadForm'
 import { AdminClothing } from './components/AdminClothing'
 import { DinnerCollectionTwo } from './components/DinnerCollectionTwo'
-import { Confirmation } from './components/Confirmation' // Add this import
+import { Confirmation } from './components/Confirmation'
 import { SimpleImageUpload } from './components/SimpleImageUpload'
-
+import { SecondDinner } from './components/SecondDinner' // Add this import
 
 function HomePage() {
     return (
@@ -59,10 +59,11 @@ export function App() {
                 <Route path="/diner" element={<Diner />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/first-dinner" element={<FirstDinner />} />
+                <Route path="/second-dinner" element={<SecondDinner />} /> {/* Add this route */}
                 <Route path="/upload" element={<ClothingUploadForm />} />
                 <Route path="/admin/clothing" element={<AdminClothing />} />
                 <Route path="/dinner-collection-two" element={<DinnerCollectionTwo />} />
-                <Route path="/confirmation" element={<Confirmation />} /> {/* Add this route */}
+                <Route path="/confirmation" element={<Confirmation />} />
                 <Route path="/upload-images" element={<SimpleImageUpload />} />
             </Routes>
         </Router>
