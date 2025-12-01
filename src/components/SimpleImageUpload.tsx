@@ -20,7 +20,7 @@ export function SimpleImageUpload() {
     const [files, setFiles] = useState<File[]>([]); // Store File objects
 
     // API base URL - adjust this based on your environment
-    const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://mused-backend.onrender.com';
+    const API_BASE_URL = 'https://mused-backend.onrender.com';
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFiles = Array.from(e.target.files || []);
