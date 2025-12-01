@@ -4,7 +4,9 @@ import { Link } from "react-router-dom";
 
 export function Hero() {
     const [currentSlide, setCurrentSlide] = useState(0)
-    const [timeLeft, setTimeLeft] = useState({
+    // El guion bajo indica que esta variable no se usa intencionalmente
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const [_timeLeft, setTimeLeft] = useState({
         days: 0,
         hours: 0,
         minutes: 0,
@@ -64,19 +66,22 @@ export function Hero() {
                         Be Mused and meet your muse around a table. Mused is more than sharing style, it's sharing an experience.
                     </p>
 
-                    {/* Minimalistic Countdown Timer */}
-                    <div className="mb-8 transform transition-all duration-700 delay-300">
+                    {/* Minimalistic Countdown Timer - OCULTO */}
+                    {/* <div className="mb-8 transform transition-all duration-700 delay-300">
                         <h1 className="text-2xl md:text-3xl font-bold text-plum mb-4 transform transition-all duration-1000 ease-out hover:translate-x-2 tracking-tight">
-                            {timeLeft.days}d : {timeLeft.hours}h : {timeLeft.minutes}m : {timeLeft.seconds}s
+                            {_timeLeft.days}d : {_timeLeft.hours}h : {_timeLeft.minutes}m : {_timeLeft.seconds}s
                         </h1>
-                    </div>
+                    </div> */}
 
                     <div className="flex space-x-4 transform transition-all duration-700 delay-300">
-                        <Link to="/upload">
+                        {/* Botón "Upload your piece" OCULTO */}
+                        {/* <Link to="/upload">
                             <Button variant="primary" className="transform transition-all duration-300 hover:scale-110 hover:shadow-2xl font-amandine">
                                 Upload your piece
                             </Button>
-                        </Link>
+                        </Link> */}
+
+                        {/* Botón "See Second Dinner Pictures" (MANTENIDO) */}
                         <Link to="/second-dinner">
                             <Button variant="secondary" className="transform transition-all duration-300 hover:scale-110 hover:shadow-2xl font-amandine">
                                 See Second Dinner Pictures
