@@ -1,13 +1,42 @@
 <!doctype html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/icon.png" />
+
+    <!-- Favicon básico -->
+    <link rel="icon" type="image/png" href="/icon.png" />
+    <link rel="shortcut icon" href="/icon.png" type="image/png">
+
+    <!-- Apple Touch Icon (para iOS/macOS) -->
+    <link rel="apple-touch-icon" href="/icon.png">
+
+    <!-- Para Windows Metro -->
+    <meta name="msapplication-TileImage" content="/icon.png">
+    <meta name="msapplication-TileColor" content="#ffffff">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MUSED</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+
+    <!-- Meta tags importantes para SEO y preview -->
+    <title>mused - WSB DINNER. Be Mused and meet your muse around a table</title>
+    <meta name="description" content="Mused is more than sharing style, it's sharing an experience. See Second Dinner Pictures. Join our exclusive dinners and collections.">
+
+    <!-- Open Graph tags para redes sociales -->
+    <meta property="og:title" content="mused - WSB DINNER">
+    <meta property="og:description" content="Be Mused and meet your muse around a table. Mused is more than sharing style, it's sharing an experience.">
+    <meta property="og:image" content="/icon.png">
+    <meta property="og:url" content="http://mused852.com">
+    <meta property="og:type" content="website">
+
+    <!-- Twitter Card tags -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="mused - WSB DINNER">
+    <meta name="twitter:description" content="Be Mused and meet your muse around a table. Mused is more than sharing style, it's sharing an experience.">
+    <meta name="twitter:image" content="/icon.png">
+
+    <title>Mused</title>
+</head>
+<body>
+<div id="root"></div>
+<script type="module" src="/src/main.tsx"></script>
+</body>
 </html>
