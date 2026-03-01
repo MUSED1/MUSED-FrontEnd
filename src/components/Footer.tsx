@@ -1,4 +1,5 @@
-import { Instagram } from 'lucide-react'
+import { Instagram, Linkedin } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 export function Footer() {
     return (
@@ -7,126 +8,124 @@ export function Footer() {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                     <div>
                         <h3 className="text-xl font-bold mb-4">MUSED</h3>
-                        <p className="text-cream/70 mb-4">
-                            Join the future of Fashion Mused
-                        </p>
+
                         <div className="flex space-x-4">
                             <a
-                                href="#"
+                                href="https://www.linkedin.com/company/mused-852/"
                                 className="text-cream/70 hover:text-gold transition-colors"
+                                aria-label="LinkedIn"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                <Linkedin size={20} />
+                            </a>
+                            <a
+                                href="https://www.instagram.com/mused852/"
+                                className="text-cream/70 hover:text-gold transition-colors"
+                                aria-label="Instagram"
+                                target="_blank"
+                                rel="noopener noreferrer"
                             >
                                 <Instagram size={20} />
                             </a>
                         </div>
                     </div>
+
                     <div>
                         <h4 className="text-lg font-medium mb-4">Lend & Rent</h4>
                         <ul className="space-y-2">
                             <li>
-                                <a
-                                    href="#"
-                                    className="text-cream/70 hover:text-gold transition-colors"
-                                >
-                                    Dresses
-                                </a>
-                            </li>
-                            <li>
-                                <a
-                                    href="#"
-                                    className="text-cream/70 hover:text-gold transition-colors"
-                                >
-                                    Skirts
-                                </a>
-                            </li>
-                            <li>
-                                <a
-                                    href="#"
-                                    className="text-cream/70 hover:text-gold transition-colors"
-                                >
-                                    Accessories
-                                </a>
-                            </li>
-                            <li>
-                                <a
-                                    href="#"
+                                <Link
+                                    to="/collections"
                                     className="text-cream/70 hover:text-gold transition-colors"
                                 >
                                     New Arrivals
-                                </a>
+                                </Link>
                             </li>
                             <li>
-                                <a
-                                    href="#"
+                                <Link
+                                    to="/upload"
                                     className="text-cream/70 hover:text-gold transition-colors"
                                 >
                                     Upload
-                                </a>
+                                </Link>
                             </li>
                         </ul>
                     </div>
+
                     <div>
                         <h4 className="text-lg font-medium mb-4">Company</h4>
                         <ul className="space-y-2">
                             <li>
-                                <a
-                                    href="#"
+                                <Link
+                                    to="/about"
                                     className="text-cream/70 hover:text-gold transition-colors"
                                 >
                                     About Us
-                                </a>
+                                </Link>
                             </li>
                             <li>
-                                <a
-                                    href="#"
+                                <Link
+                                    to="/reachout"
                                     className="text-cream/70 hover:text-gold transition-colors"
                                 >
-                                    Sustainability
-                                </a>
+                                    Enquiries
+                                </Link>
                             </li>
                             <li>
-                                <a
-                                    href="#"
+                                <Link
+                                    to="/terms"
                                     className="text-cream/70 hover:text-gold transition-colors"
                                 >
-                                    Contact
-                                </a>
+                                    Terms & Conditions
+                                </Link>
+                            </li>
+                            <li>
+                                <Link
+                                    to="/privacy"
+                                    className="text-cream/70 hover:text-gold transition-colors"
+                                >
+                                    Privacy Policy
+                                </Link>
                             </li>
                         </ul>
                     </div>
+
                     <div>
-                        <h4 className="text-lg font-medium mb-4">Customer Service</h4>
+                        <h4 className="text-lg font-medium mb-4">Partner with us</h4>
                         <ul className="space-y-2">
                             <li>
-                                <a
-                                    href="#"
+                                <Link
+                                    to="/partner"
                                     className="text-cream/70 hover:text-gold transition-colors"
                                 >
-                                    Help Center
-                                </a>
+                                    Become a Partner
+                                </Link>
                             </li>
                             <li>
-                                <a
-                                    href="#"
+                                <Link
+                                    to="/events"
                                     className="text-cream/70 hover:text-gold transition-colors"
                                 >
-                                    Next Events
-                                </a>
+                                    Events
+                                </Link>
                             </li>
                         </ul>
                     </div>
                 </div>
+
                 <div className="border-t border-burgundy-light/20 mt-12 pt-8 text-center text-cream/50 text-sm">
-                    <p>© 2025 Mused. All rights reserved.</p>
+                    <p>© 2026 Mused. All rights reserved.</p>
                     <div className="mt-2 flex justify-center space-x-4">
-                        <a href="#" className="hover:text-gold transition-colors">
+                        <Link to="/privacy" className="hover:text-gold transition-colors">
                             Privacy Policy
-                        </a>
-                        <a href="#" className="hover:text-gold transition-colors">
+                        </Link>
+                        <Link to="/terms" className="hover:text-gold transition-colors">
                             Terms of Service
-                        </a>
-                        <a href="#" className="hover:text-gold transition-colors">
+                        </Link>
+                        <Link to="/cookies" className="hover:text-gold transition-colors">
                             Cookie Policy
-                        </a>
+                        </Link>
                     </div>
                 </div>
             </div>
