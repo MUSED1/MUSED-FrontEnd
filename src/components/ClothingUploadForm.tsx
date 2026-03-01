@@ -1,8 +1,10 @@
-// components/UploadClothing.tsx
-import { useState, useEffect } from 'react'
-import { Header } from './Header'
-import { Footer } from './Footer'
-import { Upload, Plus, AlertTriangle } from 'lucide-react'
+// components/ClothingUploadForm.tsx
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Header } from './Header';
+import { Footer } from './Footer';
+import { Upload, Plus, AlertTriangle } from 'lucide-react';
+import { useAuth } from '../hooks/useAuth';
 
 interface ClothingItem {
     image: string;
@@ -11,16 +13,33 @@ interface ClothingItem {
 }
 
 export function ClothingUploadForm() {
-    const [isSubmitting, setIsSubmitting] = useState(false)
-    const [submitMessage, setSubmitMessage] = useState<{type: 'success' | 'error', message: string} | null>(null)
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitMessage, setSubmitMessage] = useState<{type: 'success' | 'error', message: string} | null>(null);
+    const [isCheckingAuth, setIsCheckingAuth] = useState(true); // 👈 Nuevo estado
 
-    // User information
+    // 👇 Obtener usuario autenticado
+    const { user, isAuthenticated, loading } = useAuth(); // 👈 Usar loading del contexto
+    const navigate = useNavigate();
+
+    // 👇 REDIRIGIR SOLO CUANDO TERMINE DE CARGAR Y NO ESTÉ AUTENTICADO
+    useEffect(() => {
+        if (!loading) {
+            setIsCheckingAuth(false);
+            if (!isAuthenticated) {
+                navigate('/login', {
+                    state: { from: '/upload', message: 'Please login to upload clothing items' }
+                });
+            }
+        }
+    }, [isAuthenticated, loading, navigate]);
+
+    // User information - AUTOCOMPLETADO con datos del usuario
     const [userInfo, setUserInfo] = useState({
         fullName: '',
         email: '',
         phoneNumber: '',
         address: ''
-    })
+    });
 
     // Pickup information
     const [pickupInfo, setPickupInfo] = useState({
@@ -29,208 +48,217 @@ export function ClothingUploadForm() {
         pickupDay: '',
         pickupInstructions: '',
         specialInstructions: ''
-    })
+    });
 
     // Clothing items - exactly 2 items, no more
     const [clothingItems, setClothingItems] = useState<ClothingItem[]>([
         { image: '', category: '', size: '' },
         { image: '', category: '', size: '' }
-    ])
+    ]);
+
+    // Actualizar userInfo cuando cambie el usuario
+    useEffect(() => {
+        if (user) {
+            setUserInfo(prev => ({
+                ...prev,
+                fullName: user.name,
+                email: user.email
+            }));
+        }
+    }, [user]);
 
     // Scroll to top when submit message changes
     useEffect(() => {
         if (submitMessage) {
-            window.scrollTo({ top: 0, behavior: 'smooth' })
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
-    }, [submitMessage])
+    }, [submitMessage]);
+
+    // Si está cargando o verificando auth, mostrar loading
+    if (loading || isCheckingAuth) {
+        return (
+            <div className="font-sans">
+                <Header />
+                <main className="min-h-screen bg-gradient-to-br from-cream to-amber-50 py-8">
+                    <div className="container mx-auto px-4 max-w-4xl text-center">
+                        <div className="bg-white rounded-2xl shadow-lg p-12">
+                            <div className="w-16 h-16 border-4 border-gold border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                            <p className="text-plum">Loading...</p>
+                        </div>
+                    </div>
+                </main>
+                <Footer />
+            </div>
+        );
+    }
+
+    // Si no está autenticado, no renderizar nada (la redirección ya ocurrió)
+    if (!isAuthenticated || !user) {
+        return null;
+    }
 
     const handleUserInfoChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const { name, value } = e.target
-        setUserInfo(prev => ({
-            ...prev,
-            [name]: value
-        }))
-    }
+        const { name, value } = e.target;
+        if (name === 'fullName' || name === 'email') return;
+        setUserInfo(prev => ({ ...prev, [name]: value }));
+    };
 
     const handlePickupInfoChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-        const { name, value } = e.target
-        setPickupInfo(prev => ({
-            ...prev,
-            [name]: value
-        }))
-    }
+        const { name, value } = e.target;
+        setPickupInfo(prev => ({ ...prev, [name]: value }));
+    };
 
     const handleClothingItemChange = (index: number, field: keyof ClothingItem, value: string) => {
         setClothingItems(prev =>
-            prev.map((item, i) =>
-                i === index ? { ...item, [field]: value } : item
-            )
-        )
-    }
+            prev.map((item, i) => i === index ? { ...item, [field]: value } : item)
+        );
+    };
 
     const handleImageUpload = (index: number, event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0]
+        const file = event.target.files?.[0];
         if (file) {
-            const reader = new FileReader()
+            const reader = new FileReader();
             reader.onload = (e) => {
-                const base64Image = e.target?.result as string
-                const base64Data = base64Image.split(',')[1] || base64Image
-                handleClothingItemChange(index, 'image', base64Data)
-            }
-            reader.readAsDataURL(file)
+                const base64Image = e.target?.result as string;
+                const base64Data = base64Image.split(',')[1] || base64Image;
+                handleClothingItemChange(index, 'image', base64Data);
+            };
+            reader.readAsDataURL(file);
         }
-    }
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault()
-        setIsSubmitting(true)
-        setSubmitMessage(null)
+        e.preventDefault();
+        setIsSubmitting(true);
+        setSubmitMessage(null);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
 
-        // Scroll to top immediately when submitting
-        window.scrollTo({ top: 0, behavior: 'smooth' })
-
-        // Validate user info
-        if (!userInfo.fullName || !userInfo.email || !userInfo.phoneNumber || !userInfo.address) {
+        // Validaciones
+        if (!userInfo.phoneNumber || !userInfo.address) {
             setSubmitMessage({
                 type: 'error',
-                message: 'Please complete all user information fields'
-            })
-            setIsSubmitting(false)
-            return
+                message: 'Please complete phone number and address'
+            });
+            setIsSubmitting(false);
+            return;
         }
 
-        // Validate pickup method
         if (!pickupInfo.pickupMethod) {
             setSubmitMessage({
                 type: 'error',
                 message: 'Please select a pickup method'
-            })
-            setIsSubmitting(false)
-            return
+            });
+            setIsSubmitting(false);
+            return;
         }
 
-        // Validate clothing items
-        const validItems = clothingItems.filter(item => item.image && item.category && item.size)
+        const validItems = clothingItems.filter(item => item.image && item.category && item.size);
         if (validItems.length === 0) {
             setSubmitMessage({
                 type: 'error',
                 message: 'Please add at least one complete clothing item'
-            })
-            setIsSubmitting(false)
-            return
+            });
+            setIsSubmitting(false);
+            return;
         }
 
-        // Validate that both items are completed
         if (validItems.length < 2) {
             setSubmitMessage({
                 type: 'error',
                 message: 'Please complete both clothing items'
-            })
-            setIsSubmitting(false)
-            return
+            });
+            setIsSubmitting(false);
+            return;
         }
 
         try {
-            // Prepare data for submission
+            const token = localStorage.getItem('token');
             const submissionData = {
-                userInfo,
+                userInfo: {
+                    fullName: user.name,
+                    email: user.email,
+                    phoneNumber: userInfo.phoneNumber,
+                    address: userInfo.address
+                },
                 clothingItems: validItems,
                 ...pickupInfo
-            }
+            };
 
-            // Send to backend
-            const response = await fetch('https://mused-backend.onrender.com/api/clothing', {
+            const API_URL = import.meta.env.VITE_API_URL?.replace('/auth', '') || 'https://mused-backend.onrender.com/api';
+
+            const response = await fetch(`${API_URL}/clothing`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify(submissionData)
-            })
+            });
 
-            const result = await response.json()
+            const result = await response.json();
 
             if (response.ok && result.success) {
                 setSubmitMessage({
                     type: 'success',
                     message: 'Clothing items uploaded successfully! We will contact you soon.'
-                })
+                });
 
-                // Reset form
-                setUserInfo({
-                    fullName: '',
-                    email: '',
-                    phoneNumber: '',
-                    address: ''
-                })
+                setUserInfo(prev => ({ ...prev, phoneNumber: '', address: '' }));
                 setPickupInfo({
                     pickupMethod: '',
                     pickupTime: '',
                     pickupDay: '',
                     pickupInstructions: '',
                     specialInstructions: ''
-                })
+                });
                 setClothingItems([
                     { image: '', category: '', size: '' },
                     { image: '', category: '', size: '' }
-                ])
+                ]);
             } else {
                 setSubmitMessage({
                     type: 'error',
                     message: result.message || 'Error uploading clothing items. Please try again.'
-                })
+                });
             }
         } catch (error) {
-            console.error('Error:', error)
+            console.error('Error:', error);
             setSubmitMessage({
                 type: 'error',
                 message: 'Connection error. Please check your internet and try again.'
-            })
+            });
         } finally {
-            setIsSubmitting(false)
+            setIsSubmitting(false);
         }
-    }
+    };
 
-    const categories = [
-        'Dresses',
-        'Tops',
-        'Bottoms',
-        'Outerwear',
-        'Accessories',
-        'Bags',
-        'Jewelry'
-    ]
-
-    const sizes = [
-        'XS', 'S', 'M', 'L', 'XL',
-        'XXS', 'XXL',
-        '32', '34', '36', '38', '40', '42',
-        'One Size'
-    ]
+    const categories = ['Dresses', 'Tops', 'Bottoms', 'Outerwear', 'Accessories', 'Bags', 'Jewelry'];
+    const sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXS', 'XXL', '32', '34', '36', '38', '40', '42', 'One Size'];
 
     const timeSlots = {
         '9': ['21:00-23:00'],
         '10': ['16:00-19:00', '19:00-21:00', '21:00-23:00'],
         '11': ['8:00-10:00', '10:00-12:00', '16:00-18:00', '18:00-20:00', '20:00-22:00'],
-        '12': ['8:00-10:00', '10:00-12:00', '14:00-16:00', '16:00-18:00'] // Add time slots for day 12
-    }
+        '12': ['8:00-10:00', '10:00-12:00', '14:00-16:00', '16:00-18:00']
+    };
 
     return (
         <div className="font-sans">
             <Header />
             <main className="min-h-screen bg-gradient-to-br from-cream to-amber-50 py-8">
                 <div className="container mx-auto px-4 max-w-4xl">
-                    {/* Header */}
+                    {/* Header con mensaje personalizado */}
                     <div className="text-center mb-12">
                         <h1 className="text-5xl md:text-6xl font-bold text-plum mb-6">
                             Share Your <span className="text-gold">Style</span>
                         </h1>
                         <p className="text-xl text-plum/80 max-w-2xl mx-auto">
+                            Welcome back, <span className="font-bold text-gold">{user.name}</span>!
                             Upload your pieces and become part of the MUSED community.
-                            Share your style, earn from your wardrobe, and inspire others.
                         </p>
                     </div>
 
-                    {/* Loading Overlay */}
+                    {/* Loading Overlay y resto del formulario (igual que antes) */}
                     {isSubmitting && (
                         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
                             <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md mx-4 text-center">
@@ -257,20 +285,16 @@ export function ClothingUploadForm() {
                         }`}>
                             <div className="flex items-center gap-3">
                                 {submitMessage.type === 'success' ? (
-                                    <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-white">
-                                        ✓
-                                    </div>
+                                    <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-white">✓</div>
                                 ) : (
-                                    <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white">
-                                        !
-                                    </div>
+                                    <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white">!</div>
                                 )}
                                 <p className="text-lg font-semibold">{submitMessage.message}</p>
                             </div>
                         </div>
                     )}
 
-                    {/* Upload Form */}
+                    {/* El resto del formulario se mantiene IGUAL */}
                     <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
                         <form onSubmit={handleSubmit} className="space-y-8">
                             {/* Your Information Section */}
@@ -278,42 +302,36 @@ export function ClothingUploadForm() {
                                 <h3 className="text-2xl font-bold text-plum mb-6">Your Information</h3>
                                 <div className="space-y-6">
                                     <div>
-                                        <label className="block text-lg font-semibold text-plum mb-3">
-                                            Full Name *
-                                        </label>
+                                        <label className="block text-lg font-semibold text-plum mb-3">Full Name *</label>
                                         <input
                                             type="text"
                                             name="fullName"
                                             value={userInfo.fullName}
-                                            onChange={handleUserInfoChange}
-                                            className="w-full px-4 py-3 border-2 border-cream rounded-xl focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all duration-300 bg-cream/30 text-plum placeholder-plum/40"
-                                            placeholder="Enter your full name"
+                                            className="w-full px-4 py-3 border-2 border-cream rounded-xl bg-cream/30 text-plum cursor-not-allowed"
                                             required
-                                            disabled={isSubmitting}
+                                            disabled={true}
+                                            readOnly
                                         />
+                                        <p className="text-sm text-plum/60 mt-1">Your name from account</p>
                                     </div>
 
                                     <div className="grid md:grid-cols-2 gap-6">
                                         <div>
-                                            <label className="block text-lg font-semibold text-plum mb-3">
-                                                Email *
-                                            </label>
+                                            <label className="block text-lg font-semibold text-plum mb-3">Email *</label>
                                             <input
                                                 type="email"
                                                 name="email"
                                                 value={userInfo.email}
-                                                onChange={handleUserInfoChange}
-                                                className="w-full px-4 py-3 border-2 border-cream rounded-xl focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all duration-300 bg-cream/30 text-plum placeholder-plum/40"
-                                                placeholder="your@email.com"
+                                                className="w-full px-4 py-3 border-2 border-cream rounded-xl bg-cream/30 text-plum cursor-not-allowed"
                                                 required
-                                                disabled={isSubmitting}
+                                                disabled={true}
+                                                readOnly
                                             />
+                                            <p className="text-sm text-plum/60 mt-1">Your email from account</p>
                                         </div>
 
                                         <div>
-                                            <label className="block text-lg font-semibold text-plum mb-3">
-                                                Phone Number *
-                                            </label>
+                                            <label className="block text-lg font-semibold text-plum mb-3">Phone Number *</label>
                                             <input
                                                 type="tel"
                                                 name="phoneNumber"
@@ -328,9 +346,7 @@ export function ClothingUploadForm() {
                                     </div>
 
                                     <div>
-                                        <label className="block text-lg font-semibold text-plum mb-3">
-                                            Address *
-                                        </label>
+                                        <label className="block text-lg font-semibold text-plum mb-3">Address *</label>
                                         <input
                                             type="text"
                                             name="address"
@@ -345,10 +361,9 @@ export function ClothingUploadForm() {
                                 </div>
                             </div>
 
-                            {/* Pickup Method Section */}
+                            {/* Pickup Method Section - IGUAL */}
                             <div className="border-t border-cream pt-8">
                                 <h3 className="text-2xl font-bold text-plum mb-6">Pickup Method</h3>
-
                                 <div className="space-y-4">
                                     <div>
                                         <label className="block text-lg font-semibold text-plum mb-3">
@@ -384,14 +399,12 @@ export function ClothingUploadForm() {
                                         </div>
                                     </div>
 
-                                    {/* Conditional fields based on pickup method */}
+                                    {/* Resto de las opciones de pickup (igual que antes) */}
                                     {pickupInfo.pickupMethod === 'without' && (
                                         <div className="space-y-4 p-4 bg-cream/30 rounded-xl">
                                             <div className="grid md:grid-cols-2 gap-4">
                                                 <div>
-                                                    <label className="block text-lg font-semibold text-plum mb-3">
-                                                        Choose a day
-                                                    </label>
+                                                    <label className="block text-lg font-semibold text-plum mb-3">Choose a day</label>
                                                     <select
                                                         name="pickupDay"
                                                         value={pickupInfo.pickupDay}
@@ -408,9 +421,7 @@ export function ClothingUploadForm() {
                                                     </select>
                                                 </div>
                                                 <div>
-                                                    <label className="block text-lg font-semibold text-plum mb-3">
-                                                        Choose a time window
-                                                    </label>
+                                                    <label className="block text-lg font-semibold text-plum mb-3">Choose a time window</label>
                                                     <select
                                                         name="pickupTime"
                                                         value={pickupInfo.pickupTime}
@@ -431,9 +442,7 @@ export function ClothingUploadForm() {
                                                 </div>
                                             </div>
                                             <div>
-                                                <label className="block text-lg font-semibold text-plum mb-3">
-                                                    Any pickup instructions?
-                                                </label>
+                                                <label className="block text-lg font-semibold text-plum mb-3">Any pickup instructions?</label>
                                                 <textarea
                                                     name="pickupInstructions"
                                                     value={pickupInfo.pickupInstructions}
@@ -451,9 +460,7 @@ export function ClothingUploadForm() {
                                         <div className="space-y-4 p-4 bg-cream/30 rounded-xl">
                                             <div className="grid md:grid-cols-2 gap-4">
                                                 <div>
-                                                    <label className="block text-lg font-semibold text-plum mb-3">
-                                                        Choose a day
-                                                    </label>
+                                                    <label className="block text-lg font-semibold text-plum mb-3">Choose a day</label>
                                                     <select
                                                         name="pickupDay"
                                                         value={pickupInfo.pickupDay}
@@ -470,9 +477,7 @@ export function ClothingUploadForm() {
                                                     </select>
                                                 </div>
                                                 <div>
-                                                    <label className="block text-lg font-semibold text-plum mb-3">
-                                                        Choose a time slot
-                                                    </label>
+                                                    <label className="block text-lg font-semibold text-plum mb-3">Choose a time slot</label>
                                                     <select
                                                         name="pickupTime"
                                                         value={pickupInfo.pickupTime}
@@ -483,9 +488,7 @@ export function ClothingUploadForm() {
                                                     >
                                                         <option value="">Select time</option>
                                                         {pickupInfo.pickupDay && timeSlots[pickupInfo.pickupDay as keyof typeof timeSlots]?.map((time, index) => (
-                                                            <option key={index} value={time}>
-                                                                {time}
-                                                            </option>
+                                                            <option key={index} value={time}>{time}</option>
                                                         ))}
                                                     </select>
                                                 </div>
@@ -497,9 +500,7 @@ export function ClothingUploadForm() {
 
                             {/* Special Instructions */}
                             <div>
-                                <label className="block text-lg font-semibold text-plum mb-3">
-                                    Special Instructions (Optional)
-                                </label>
+                                <label className="block text-lg font-semibold text-plum mb-3">Special Instructions (Optional)</label>
                                 <textarea
                                     name="specialInstructions"
                                     value={pickupInfo.specialInstructions}
@@ -511,13 +512,11 @@ export function ClothingUploadForm() {
                                 />
                             </div>
 
-                            {/* Clothing Items Section */}
+                            {/* Clothing Items Section - IGUAL */}
                             <div className="border-t border-cream pt-8">
                                 <div className="flex justify-between items-center mb-6">
                                     <h3 className="text-2xl font-bold text-plum">Your Clothing Items</h3>
-                                    <div className="text-plum/60 text-sm">
-                                        Exactly 2 items required
-                                    </div>
+                                    <div className="text-plum/60 text-sm">Exactly 2 items required</div>
                                 </div>
 
                                 <div className="space-y-8">
@@ -530,9 +529,7 @@ export function ClothingUploadForm() {
                                             <div className="grid md:grid-cols-2 gap-6">
                                                 {/* Image Upload */}
                                                 <div>
-                                                    <label className="block text-lg font-semibold text-plum mb-3">
-                                                        Image *
-                                                    </label>
+                                                    <label className="block text-lg font-semibold text-plum mb-3">Image *</label>
                                                     <div className={`border-2 ${item.image ? 'border-solid border-green-500' : 'border-dashed border-gold/50'} rounded-xl p-6 text-center hover:border-gold transition-all duration-300`}>
                                                         <input
                                                             type="file"
@@ -548,27 +545,18 @@ export function ClothingUploadForm() {
                                                                     <div
                                                                         className="w-32 h-32 bg-cover bg-center rounded-lg border-2 border-cream shadow-md"
                                                                         style={{ backgroundImage: `url(data:image/jpeg;base64,${item.image})` }}
-                                                                    >
-                                                                    </div>
+                                                                    />
                                                                     <div className="text-center">
-                                                                        <p className="text-green-600 font-semibold text-lg">
-                                                                            ✓ Image Uploaded
-                                                                        </p>
-                                                                        <p className="text-plum/60 text-sm mt-1">
-                                                                            Click to change image
-                                                                        </p>
+                                                                        <p className="text-green-600 font-semibold text-lg">✓ Image Uploaded</p>
+                                                                        <p className="text-plum/60 text-sm mt-1">Click to change image</p>
                                                                     </div>
                                                                 </div>
                                                             ) : (
                                                                 <div className="flex flex-col items-center justify-center space-y-4 py-4">
                                                                     <Upload className="text-gold" size={32} />
                                                                     <div className="text-center">
-                                                                        <p className="text-plum font-semibold text-lg">
-                                                                            Upload Image for Item {index + 1}
-                                                                        </p>
-                                                                        <p className="text-plum/60 text-sm mt-1">
-                                                                            PNG, JPG, JPEG up to 10MB
-                                                                        </p>
+                                                                        <p className="text-plum font-semibold text-lg">Upload Image for Item {index + 1}</p>
+                                                                        <p className="text-plum/60 text-sm mt-1">PNG, JPG, JPEG up to 10MB</p>
                                                                     </div>
                                                                 </div>
                                                             )}
@@ -589,9 +577,7 @@ export function ClothingUploadForm() {
                                                 {/* Category and Size */}
                                                 <div className="space-y-4">
                                                     <div>
-                                                        <label className="block text-lg font-semibold text-plum mb-3">
-                                                            Category *
-                                                        </label>
+                                                        <label className="block text-lg font-semibold text-plum mb-3">Category *</label>
                                                         <select
                                                             value={item.category}
                                                             onChange={(e) => handleClothingItemChange(index, 'category', e.target.value)}
@@ -601,17 +587,13 @@ export function ClothingUploadForm() {
                                                         >
                                                             <option value="">Select a category</option>
                                                             {categories.map(category => (
-                                                                <option key={category} value={category}>
-                                                                    {category}
-                                                                </option>
+                                                                <option key={category} value={category}>{category}</option>
                                                             ))}
                                                         </select>
                                                     </div>
 
                                                     <div>
-                                                        <label className="block text-lg font-semibold text-plum mb-3">
-                                                            Size *
-                                                        </label>
+                                                        <label className="block text-lg font-semibold text-plum mb-3">Size *</label>
                                                         <select
                                                             value={item.size}
                                                             onChange={(e) => handleClothingItemChange(index, 'size', e.target.value)}
@@ -621,9 +603,7 @@ export function ClothingUploadForm() {
                                                         >
                                                             <option value="">Select size</option>
                                                             {sizes.map(size => (
-                                                                <option key={size} value={size}>
-                                                                    {size}
-                                                                </option>
+                                                                <option key={size} value={size}>{size}</option>
                                                             ))}
                                                         </select>
                                                     </div>
@@ -681,5 +661,5 @@ export function ClothingUploadForm() {
             </main>
             <Footer />
         </div>
-    )
+    );
 }
