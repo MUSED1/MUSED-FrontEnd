@@ -30,7 +30,7 @@ export function MyUploads() {
         const fetchItems = async () => {
             try {
                 const token = localStorage.getItem('token');
-                const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+                const API_URL = import.meta.env.VITE_API_URL || 'https://mused-backend.onrender.com/api';
 
                 const response = await axios.get(
                     `${API_URL}/clothing/my-items`,

@@ -61,7 +61,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const [error, setError] = useState<string | null>(null);
 
     // Get API URL from environment variable
-    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/auth';
+    const API_URL = import.meta.env.VITE_API_URL || 'https://mused-backend.onrender.com/api';
 
     // Set auth token in axios headers
     const setAuthToken = (token: string | null): void => {
