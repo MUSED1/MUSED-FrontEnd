@@ -59,13 +59,13 @@ export const Login: React.FC = () => {
     };
 
     const handleGoogleLogin = () => {
-        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/auth';
+        const API_URL = import.meta.env.VITE_API_URL || 'https://mused-backend.onrender.com/api';
         const BASE_URL = API_URL.replace('/auth', '');
         window.location.href = `${BASE_URL}/auth/google`;
     };
 
     const handleFacebookLogin = () => {
-        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/auth';
+        const API_URL = import.meta.env.VITE_API_URL || 'https://mused-backend.onrender.com/api';
         const BASE_URL = API_URL.replace('/auth', '');
         window.location.href = `${BASE_URL}/auth/facebook`;
     };
