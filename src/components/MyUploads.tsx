@@ -52,11 +52,11 @@ export function MyUploads() {
     }
 
     return (
-        <div className="font-sans">
+        <div className="font-inter">
             <Header />
             <main className="min-h-screen bg-gradient-to-br from-cream to-amber-50 py-8">
                 <div className="container mx-auto px-4 max-w-6xl">
-                    <h1 className="text-4xl font-bold text-plum mb-8">My Uploaded Items</h1>
+                    <h1 className="text-4xl font-kaldera text-plum mb-8">My Uploaded Items</h1>
 
                     {loading ? (
                         <div className="text-center py-12">
@@ -83,7 +83,7 @@ export function MyUploads() {
                                     <div className="p-6">
                                         <div className="flex justify-between items-start mb-4">
                                             <div>
-                                                <h3 className="text-xl font-bold text-plum">{item.category}</h3>
+                                                <h3 className="text-xl font-kaldera text-plum">{item.category}</h3>
                                                 <p className="text-plum/60">Size: {item.size}</p>
                                             </div>
                                             <span className={`px-3 py-1 rounded-full text-sm font-semibold ${

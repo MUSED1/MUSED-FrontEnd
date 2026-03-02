@@ -1,297 +1,270 @@
 import React from 'react';
 import { Header } from './Header';
 import { Footer } from './Footer';
+import { useNavigate } from 'react-router-dom';
 
 export const Terms: React.FC = () => {
+    const navigate = useNavigate();
+
     return (
-        <div className="font-sans min-h-screen flex flex-col">
+        <div className="min-h-screen flex flex-col bg-gradient-to-br from-cream via-cream to-rose/30">
             <Header />
-            <main className="flex-grow bg-cream py-12 px-4 sm:px-6 lg:px-8">
-                <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-8">
-                    <h1 className="text-3xl font-serif text-burgundy mb-6">
-                        Terms & Conditions
-                    </h1>
-                    <p className="text-plum/60 mb-8">
-                        Wear Something Borrowed Dinner – MUSED 852
-                        <br />
-                        Last updated: 28/02/2026
-                    </p>
+            <main className="flex-grow py-12 px-4 sm:px-6 lg:px-8 relative">
+                {/* Back Button */}
+                <button
+                    onClick={() => navigate(-1)}
+                    className="absolute top-6 left-6 md:top-8 md:left-8 flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full shadow-md hover:shadow-lg transition-all duration-200 border border-gold/20 group z-10"
+                    style={{ fontFamily: 'Inter, sans-serif' }}
+                >
+                    <svg
+                        className="w-5 h-5 text-burgundy group-hover:-translate-x-1 transition-transform"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                    <span className="text-sm font-medium text-plum">Back</span>
+                </button>
 
-                    {/* Section 1 - Introduction */}
-                    <section className="mb-8">
-                        <h2 className="text-xl font-semibold text-plum mb-4">1. Introduction</h2>
-                        <p className="text-plum/80 mb-4">
-                            These Terms & Conditions govern participation in the Wear Something Borrowed Dinner
-                            organized by MUSED 852.
-                        </p>
-                        <p className="text-plum/80 mb-2">By:</p>
-                        <ul className="list-disc pl-6 mb-4 text-plum/80 space-y-1">
-                            <li>Creating a profile on our platform,</li>
-                            <li>Uploading items for lending,</li>
-                            <li>Borrowing an item,</li>
-                            <li>Attending the Event,</li>
-                        </ul>
-                        <p className="text-plum/80">
-                            you agree to be bound by these Terms. If you do not agree, please do not participate.
-                        </p>
-                    </section>
+                {/* Close Button (Alternative) */}
+                <button
+                    onClick={() => navigate('/signup')}
+                    className="absolute top-6 right-6 md:top-8 md:right-8 w-10 h-10 bg-white/80 backdrop-blur-sm rounded-full shadow-md hover:shadow-lg transition-all duration-200 border border-gold/20 flex items-center justify-center group z-10"
+                    aria-label="Close"
+                >
+                    <svg
+                        className="w-5 h-5 text-plum group-hover:text-burgundy group-hover:rotate-90 transition-all duration-200"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
 
-                    {/* Section 2 - Eligibility */}
-                    <section className="mb-8">
-                        <h2 className="text-xl font-semibold text-plum mb-4">2. Eligibility</h2>
-                        <p className="text-plum/80 mb-4">Participants must:</p>
-                        <ul className="list-disc pl-6 mb-4 text-plum/80 space-y-1">
-                            <li>Be at least 18 years old</li>
-                            <li>Provide accurate and complete registration information</li>
-                            <li>Have legal authority to lend the items uploaded</li>
-                        </ul>
-                        <p className="text-plum/80">
-                            We reserve the right to refuse participation at our discretion.
-                        </p>
-                    </section>
+                <div className="max-w-4xl mx-auto">
+                    {/* Decorative element */}
+                    <div className="absolute top-0 left-0 w-full h-64 bg-burgundy/5 -z-10" />
 
-                    {/* Section 3 - Account Creation & Data Protection */}
-                    <section className="mb-8">
-                        <h2 className="text-xl font-semibold text-plum mb-4">3. Account Creation & Data Protection</h2>
+                    <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-8 md:p-12 border border-gold/20">
+                        <div className="text-center mb-10">
+                            <h1 className="font-serif text-5xl md:text-6xl text-burgundy mb-4 tracking-tight">
+                                Terms & Conditions
+                            </h1>
+                            <p className="text-plum/60 text-sm" style={{ fontFamily: 'Inter, sans-serif' }}>
+                                Wear Something Borrowed Dinner – MUSED 852
+                                <br />
+                                Last updated: 28/02/2026
+                            </p>
+                        </div>
 
-                        <h3 className="text-lg font-medium text-plum mb-2">3.1 Profile Creation</h3>
-                        <p className="text-plum/80 mb-4">
-                            To participate, users must create a profile including:
-                        </p>
-                        <ul className="list-disc pl-6 mb-4 text-plum/80 space-y-1">
-                            <li>Full name</li>
-                            <li>Contact details (email, phone)</li>
-                            <li>Size information</li>
-                            <li>Address for pickup/delivery</li>
-                            <li>Payment details</li>
-                        </ul>
-                        <p className="text-plum/80 mb-4">
-                            You agree that all information provided is accurate.
-                        </p>
-
-                        <h3 className="text-lg font-medium text-plum mb-2">3.2 Data Protection & Privacy</h3>
-                        <p className="text-plum/80 mb-4">
-                            We collect and process personal data for:
-                        </p>
-                        <ul className="list-disc pl-6 mb-4 text-plum/80 space-y-1">
-                            <li>Event coordination</li>
-                            <li>Item pickup & delivery</li>
-                            <li>Platform functionality</li>
-                            <li>Marketing (if consented)</li>
-                            <li>Photography and promotion (see Section 8)</li>
-                        </ul>
-                        <p className="text-plum/80 mb-4">Your data will:</p>
-                        <ul className="list-disc pl-6 mb-4 text-plum/80 space-y-1">
-                            <li>Be stored securely</li>
-                            <li>Not be sold to third parties</li>
-                            <li>Be shared only with necessary service providers (e.g., delivery partners, payment processors)</li>
-                        </ul>
-                        <p className="text-plum/80">You may request:</p>
-                        <ul className="list-disc pl-6 mb-4 text-plum/80 space-y-1">
-                            <li>Access to your data</li>
-                            <li>Correction</li>
-                            <li>Deletion (subject to legal obligations)</li>
-                        </ul>
-                    </section>
-
-                    {/* Section 4 - Lending Items */}
-                    <section className="mb-8">
-                        <h2 className="text-xl font-semibold text-plum mb-4">4. Lending Items</h2>
-                        <p className="text-plum/80 mb-4">
-                            To participate as a lender, you must:
-                        </p>
-                        <ul className="list-disc pl-6 mb-4 text-plum/80 space-y-1">
-                            <li>Upload at least two (2) items</li>
-                            <li>Provide accurate information:
-                                <ul className="list-circle pl-6 mt-2 space-y-1">
-                                    <li>Original price</li>
-                                    <li>Size</li>
-                                    <li>Condition</li>
-                                    <li>Photos</li>
-                                    <li>Any existing damage</li>
+                        <div className="space-y-8" style={{ fontFamily: 'Inter, sans-serif' }}>
+                            {/* Section 1 - Introduction */}
+                            <section className="bg-gray-50 rounded-2xl p-6 border border-gold/10">
+                                <h2 className="text-2xl font-semibold text-burgundy mb-4">1. Introduction</h2>
+                                <p className="text-plum/80 mb-4 leading-relaxed">
+                                    These Terms & Conditions govern participation in the Wear Something Borrowed Dinner
+                                    organized by MUSED 852.
+                                </p>
+                                <p className="text-plum/80 mb-3 font-medium">By:</p>
+                                <ul className="list-disc pl-6 mb-4 text-plum/80 space-y-2 leading-relaxed">
+                                    <li>Creating a profile on our platform,</li>
+                                    <li>Uploading items for lending,</li>
+                                    <li>Borrowing an item,</li>
+                                    <li>Attending the Event,</li>
                                 </ul>
-                            </li>
-                        </ul>
+                                <p className="text-plum/80 leading-relaxed">
+                                    you agree to be bound by these Terms. If you do not agree, please do not participate.
+                                </p>
+                            </section>
 
-                        <h3 className="text-lg font-medium text-plum mb-2">4.1 Ownership</h3>
-                        <p className="text-plum/80 mb-4">
-                            You confirm that:
-                        </p>
-                        <ul className="list-disc pl-6 mb-4 text-plum/80 space-y-1">
-                            <li>You legally own the item</li>
-                            <li>The item is not stolen</li>
-                            <li>The item is not counterfeit</li>
-                        </ul>
+                            {/* Section 2 - Eligibility */}
+                            <section className="bg-gray-50 rounded-2xl p-6 border border-gold/10">
+                                <h2 className="text-2xl font-semibold text-burgundy mb-4">2. Eligibility</h2>
+                                <p className="text-plum/80 mb-4 font-medium">Participants must:</p>
+                                <ul className="list-disc pl-6 mb-4 text-plum/80 space-y-2 leading-relaxed">
+                                    <li>Be at least 18 years old</li>
+                                    <li>Provide accurate and complete registration information</li>
+                                    <li>Have legal authority to lend the items uploaded</li>
+                                </ul>
+                                <p className="text-plum/80 leading-relaxed">
+                                    We reserve the right to refuse participation at our discretion.
+                                </p>
+                            </section>
 
-                        <h3 className="text-lg font-medium text-plum mb-2">4.2 Condition of Items</h3>
-                        <p className="text-plum/80 mb-4">
-                            Items must be:
-                        </p>
-                        <ul className="list-disc pl-6 mb-4 text-plum/80 space-y-1">
-                            <li>Clean</li>
-                            <li>Free of excessive damage</li>
-                            <li>Safe to wear</li>
-                            <li>Authentic</li>
-                        </ul>
-                        <p className="text-plum/80 mb-4">
-                            We reserve the right to reject items that do not meet our standards.
-                        </p>
+                            {/* Section 3 - Account Creation & Data Protection */}
+                            <section className="bg-gray-50 rounded-2xl p-6 border border-gold/10">
+                                <h2 className="text-2xl font-semibold text-burgundy mb-4">3. Account Creation & Data Protection</h2>
 
-                        <h3 className="text-lg font-medium text-plum mb-2">4.3 Pickup Authorization</h3>
-                        <p className="text-plum/80 mb-4">
-                            By submitting items for lending, you authorize MUSED to:
-                        </p>
-                        <ul className="list-disc pl-6 mb-4 text-plum/80 space-y-1">
-                            <li>Collect the item at the time and location specified</li>
-                            <li>Transport and temporarily store the item</li>
-                            <li>Deliver it to the borrower for the Event</li>
-                        </ul>
-                        <p className="text-plum/80">
-                            MUSED is not responsible for minor wear consistent with normal use during the Event.
-                        </p>
-                    </section>
+                                <h3 className="text-xl font-medium text-plum mb-3">3.1 Profile Creation</h3>
+                                <p className="text-plum/80 mb-4 leading-relaxed">
+                                    To participate, users must create a profile including:
+                                </p>
+                                <ul className="list-disc pl-6 mb-6 text-plum/80 space-y-2 leading-relaxed">
+                                    <li>Full name</li>
+                                    <li>Contact details (email, phone)</li>
+                                    <li>Size information</li>
+                                    <li>Address for pickup/delivery</li>
+                                    <li>Payment details</li>
+                                </ul>
 
-                    {/* Section 5 - Borrowing Items */}
-                    <section className="mb-8">
-                        <h2 className="text-xl font-semibold text-plum mb-4">5. Borrowing Items</h2>
-                        <p className="text-plum/80 mb-4">
-                            Borrowers agree to:
-                        </p>
-                        <ul className="list-disc pl-6 mb-4 text-plum/80 space-y-1">
-                            <li>Wear the item only for the Event</li>
-                            <li>Treat the item with reasonable care</li>
-                            <li>Return the item at the specified time/location</li>
-                            <li>Not alter, wash, or modify the item</li>
-                        </ul>
-                        <p className="text-plum/80 mb-4">
-                            You are financially responsible for:
-                        </p>
-                        <ul className="list-disc pl-6 mb-4 text-plum/80 space-y-1">
-                            <li>Significant damage beyond normal wear</li>
-                            <li>Loss of the item</li>
-                            <li>Theft while in your possession</li>
-                        </ul>
-                        <p className="text-plum/80">
-                            Damage assessments will be made reasonably and in good faith.
-                        </p>
-                    </section>
+                                <h3 className="text-xl font-medium text-plum mb-3">3.2 Data Protection & Privacy</h3>
+                                <p className="text-plum/80 mb-4 leading-relaxed">
+                                    We collect and process personal data for:
+                                </p>
+                                <ul className="list-disc pl-6 mb-6 text-plum/80 space-y-2 leading-relaxed">
+                                    <li>Event coordination</li>
+                                    <li>Item pickup & delivery</li>
+                                    <li>Platform functionality</li>
+                                    <li>Marketing (if consented)</li>
+                                    <li>Photography and promotion (see Section 8)</li>
+                                </ul>
+                                <p className="text-plum/80 mb-4 font-medium">Your data will:</p>
+                                <ul className="list-disc pl-6 mb-4 text-plum/80 space-y-2 leading-relaxed">
+                                    <li>Be stored securely</li>
+                                    <li>Not be sold to third parties</li>
+                                    <li>Be shared only with necessary service providers</li>
+                                </ul>
+                            </section>
 
-                    {/* Continue with remaining sections... */}
+                            {/* Section 4 - Lending Items */}
+                            <section className="bg-gray-50 rounded-2xl p-6 border border-gold/10">
+                                <h2 className="text-2xl font-semibold text-burgundy mb-4">4. Lending Items</h2>
+                                <p className="text-plum/80 mb-4 leading-relaxed">
+                                    To participate as a lender, you must:
+                                </p>
+                                <ul className="list-disc pl-6 mb-4 text-plum/80 space-y-2 leading-relaxed">
+                                    <li>Upload at least two (2) items</li>
+                                    <li>Provide accurate information including original price, size, condition, photos, and any existing damage</li>
+                                </ul>
 
-                    {/* Section 6 - Event Participation */}
-                    <section className="mb-8">
-                        <h2 className="text-xl font-semibold text-plum mb-4">6. Event Participation</h2>
-                        <p className="text-plum/80 mb-4">
-                            By attending the Wear Something Borrowed Dinner:
-                        </p>
-                        <ul className="list-disc pl-6 mb-4 text-plum/80 space-y-1">
-                            <li>You agree to comply with event rules</li>
-                            <li>You behave respectfully toward other participants</li>
-                            <li>You understand this is a community-based experience</li>
-                        </ul>
-                        <p className="text-plum/80">
-                            MUSED reserves the right to remove participants for misconduct.
-                        </p>
-                    </section>
+                                <h3 className="text-xl font-medium text-plum mb-3">4.1 Ownership</h3>
+                                <p className="text-plum/80 mb-4 leading-relaxed">
+                                    You confirm that you legally own the item and it is not stolen or counterfeit.
+                                </p>
 
-                    {/* Section 7 - Cleaning & Handling */}
-                    <section className="mb-8">
-                        <h2 className="text-xl font-semibold text-plum mb-4">7. Cleaning & Handling</h2>
-                        <p className="text-plum/80 mb-4">
-                            Cleaning logistics may be:
-                        </p>
-                        <ul className="list-disc pl-6 mb-4 text-plum/80 space-y-1">
-                            <li>Included in the participation fee, or</li>
-                            <li>Handled directly by MUSED</li>
-                        </ul>
-                        <p className="text-plum/80 mb-4">Participants agree that:</p>
-                        <ul className="list-disc pl-6 mb-4 text-plum/80 space-y-1">
-                            <li>Items may undergo professional cleaning</li>
-                            <li>MUSED is not liable for minor changes due to standard cleaning processes</li>
-                        </ul>
-                    </section>
+                                <h3 className="text-xl font-medium text-plum mb-3">4.2 Condition of Items</h3>
+                                <p className="text-plum/80 mb-4 leading-relaxed">
+                                    Items must be clean, free of excessive damage, safe to wear, and authentic.
+                                    We reserve the right to reject items that do not meet our standards.
+                                </p>
 
-                    {/* Section 8 - Photography & Media Release */}
-                    <section className="mb-8">
-                        <h2 className="text-xl font-semibold text-plum mb-4">8. Photography & Media Release</h2>
-                        <p className="text-plum/80 mb-4">
-                            <strong>This is extremely important for you.</strong>
-                        </p>
-                        <p className="text-plum/80 mb-4">
-                            By attending the Event and wearing a borrowed item:
-                        </p>
-                        <p className="text-plum/80 mb-4">You grant MUSED the irrevocable right to:</p>
-                        <ul className="list-disc pl-6 mb-4 text-plum/80 space-y-1">
-                            <li>Take photographs and videos during the Event</li>
-                            <li>Use images featuring you and/or the borrowed item</li>
-                            <li>Publish content for marketing, social media, website, and press</li>
-                            <li>Use content without additional compensation</li>
-                        </ul>
-                        <p className="text-plum/80 mb-4">
-                            If a participant does not wish to be photographed, they must inform MUSED in writing before the Event.
-                        </p>
-                        <p className="text-plum/80">
-                            You waive any right to inspect or approve final images.
-                        </p>
-                    </section>
+                                <h3 className="text-xl font-medium text-plum mb-3">4.3 Pickup Authorization</h3>
+                                <p className="text-plum/80 leading-relaxed">
+                                    By submitting items for lending, you authorize MUSED to collect, transport, temporarily store,
+                                    and deliver the item to the borrower for the Event.
+                                </p>
+                            </section>
 
-                    {/* Section 9 - Liability Limitation */}
-                    <section className="mb-8">
-                        <h2 className="text-xl font-semibold text-plum mb-4">9. Liability Limitation</h2>
-                        <p className="text-plum/80 mb-4">
-                            To the fullest extent permitted by law:
-                        </p>
-                        <p className="text-plum/80 mb-4">MUSED is not liable for:</p>
-                        <ul className="list-disc pl-6 mb-4 text-plum/80 space-y-1">
-                            <li>Loss of personal belongings</li>
-                            <li>Indirect or consequential damages</li>
-                            <li>Minor wear from normal use</li>
-                            <li>Actions between participants</li>
-                        </ul>
-                        <p className="text-plum/80">
-                            Total liability, if any, is limited to the amount paid for participation.
-                        </p>
-                    </section>
+                            {/* Section 5 - Borrowing Items */}
+                            <section className="bg-gray-50 rounded-2xl p-6 border border-gold/10">
+                                <h2 className="text-2xl font-semibold text-burgundy mb-4">5. Borrowing Items</h2>
+                                <p className="text-plum/80 mb-4 leading-relaxed">
+                                    Borrowers agree to:
+                                </p>
+                                <ul className="list-disc pl-6 mb-4 text-plum/80 space-y-2 leading-relaxed">
+                                    <li>Wear the item only for the Event</li>
+                                    <li>Treat the item with reasonable care</li>
+                                    <li>Return the item at the specified time/location</li>
+                                    <li>Not alter, wash, or modify the item</li>
+                                </ul>
+                                <p className="text-plum/80 leading-relaxed">
+                                    You are financially responsible for significant damage beyond normal wear, loss, or theft while in your possession.
+                                </p>
+                            </section>
 
-                    {/* Section 10 - Assumption of Risk */}
-                    <section className="mb-8">
-                        <h2 className="text-xl font-semibold text-plum mb-4">10. Assumption of Risk</h2>
-                        <p className="text-plum/80 mb-4">
-                            Participants acknowledge that:
-                        </p>
-                        <ul className="list-disc pl-6 mb-4 text-plum/80 space-y-1">
-                            <li>Wearing borrowed clothing involves inherent risk</li>
-                            <li>Events may involve food, movement, public spaces</li>
-                        </ul>
-                        <p className="text-plum/80">
-                            You participate voluntarily and assume associated risks.
-                        </p>
-                    </section>
+                            {/* Section 6 - Event Participation */}
+                            <section className="bg-gray-50 rounded-2xl p-6 border border-gold/10">
+                                <h2 className="text-2xl font-semibold text-burgundy mb-4">6. Event Participation</h2>
+                                <p className="text-plum/80 mb-4 leading-relaxed">
+                                    By attending the Wear Something Borrowed Dinner:
+                                </p>
+                                <ul className="list-disc pl-6 mb-4 text-plum/80 space-y-2 leading-relaxed">
+                                    <li>You agree to comply with event rules</li>
+                                    <li>You behave respectfully toward other participants</li>
+                                    <li>You understand this is a community-based experience</li>
+                                </ul>
+                                <p className="text-plum/80 leading-relaxed">
+                                    MUSED reserves the right to remove participants for misconduct.
+                                </p>
+                            </section>
 
-                    {/* Section 11 - Dispute Resolution */}
-                    <section className="mb-8">
-                        <h2 className="text-xl font-semibold text-plum mb-4">11. Dispute Resolution</h2>
-                        <p className="text-plum/80 mb-4">
-                            Any disputes arising under these Terms shall:
-                        </p>
-                        <ul className="list-disc pl-6 mb-4 text-plum/80 space-y-1">
-                            <li>First be attempted to resolve amicably</li>
-                            <li>Be governed by the laws of Hong Kong</li>
-                            <li>Be subject to the jurisdiction of Hong Kong courts</li>
-                        </ul>
-                    </section>
+                            {/* Section 7 - Cleaning & Handling */}
+                            <section className="bg-gray-50 rounded-2xl p-6 border border-gold/10">
+                                <h2 className="text-2xl font-semibold text-burgundy mb-4">7. Cleaning & Handling</h2>
+                                <p className="text-plum/80 mb-4 leading-relaxed">
+                                    Cleaning logistics may be included in the participation fee or handled directly by MUSED.
+                                    Items may undergo professional cleaning, and MUSED is not liable for minor changes due to standard cleaning processes.
+                                </p>
+                            </section>
 
-                    {/* Contact Information */}
-                    <section className="mt-12 pt-8 border-t border-gold/30">
-                        <h2 className="text-xl font-semibold text-plum mb-4">Contact Us</h2>
-                        <p className="text-plum/80 mb-2">
-                            If you have any questions about these Terms, please contact us:
-                        </p>
-                        <ul className="text-plum/80 space-y-1">
-                            <li>Email: legal@mused852.com</li>
-                            <li>Address: [Your Hong Kong Address]</li>
-                        </ul>
-                    </section>
+                            {/* Section 8 - Photography & Media Release - Highlighted as important */}
+                            <section className="bg-rose/10 rounded-2xl p-6 border-2 border-burgundy/20">
+                                <h2 className="text-2xl font-semibold text-burgundy mb-4">8. Photography & Media Release</h2>
+                                <p className="text-plum/80 mb-4 font-semibold text-burgundy">
+                                    This is extremely important for you.
+                                </p>
+                                <p className="text-plum/80 mb-4 leading-relaxed">
+                                    By attending the Event and wearing a borrowed item, you grant MUSED the irrevocable right to:
+                                </p>
+                                <ul className="list-disc pl-6 mb-4 text-plum/80 space-y-2 leading-relaxed">
+                                    <li>Take photographs and videos during the Event</li>
+                                    <li>Use images featuring you and/or the borrowed item</li>
+                                    <li>Publish content for marketing, social media, website, and press</li>
+                                    <li>Use content without additional compensation</li>
+                                </ul>
+                                <p className="text-plum/80 leading-relaxed">
+                                    If a participant does not wish to be photographed, they must inform MUSED in writing before the Event.
+                                </p>
+                            </section>
+
+                            {/* Section 9 - Liability Limitation */}
+                            <section className="bg-gray-50 rounded-2xl p-6 border border-gold/10">
+                                <h2 className="text-2xl font-semibold text-burgundy mb-4">9. Liability Limitation</h2>
+                                <p className="text-plum/80 mb-4 leading-relaxed">
+                                    To the fullest extent permitted by law, MUSED is not liable for loss of personal belongings,
+                                    indirect damages, minor wear from normal use, or actions between participants.
+                                    Total liability, if any, is limited to the amount paid for participation.
+                                </p>
+                            </section>
+
+                            {/* Section 10 - Assumption of Risk */}
+                            <section className="bg-gray-50 rounded-2xl p-6 border border-gold/10">
+                                <h2 className="text-2xl font-semibold text-burgundy mb-4">10. Assumption of Risk</h2>
+                                <p className="text-plum/80 leading-relaxed">
+                                    Participants acknowledge that wearing borrowed clothing involves inherent risk.
+                                    Events may involve food, movement, and public spaces. You participate voluntarily and assume associated risks.
+                                </p>
+                            </section>
+
+                            {/* Section 11 - Dispute Resolution */}
+                            <section className="bg-gray-50 rounded-2xl p-6 border border-gold/10">
+                                <h2 className="text-2xl font-semibold text-burgundy mb-4">11. Dispute Resolution</h2>
+                                <p className="text-plum/80 leading-relaxed">
+                                    Any disputes arising under these Terms shall first be attempted to resolve amicably,
+                                    be governed by the laws of Hong Kong, and be subject to the jurisdiction of Hong Kong courts.
+                                </p>
+                            </section>
+                        </div>
+
+                        {/* Back to Signup Button at bottom (optional) */}
+                        <div className="mt-10 text-center">
+                            <button
+                                onClick={() => navigate('/signup')}
+                                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-burgundy to-burgundy-light text-white rounded-xl hover:from-burgundy-dark hover:to-burgundy transition-all duration-200 shadow-md hover:shadow-lg"
+                                style={{ fontFamily: 'Inter, sans-serif' }}
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                                </svg>
+                                Back to Sign Up
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Decorative element */}
+                    <div className="absolute bottom-0 right-0 w-64 h-64 bg-gold/5 rounded-full blur-3xl -z-10" />
                 </div>
             </main>
             <Footer />

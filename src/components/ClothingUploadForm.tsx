@@ -15,10 +15,10 @@ interface ClothingItem {
 export function ClothingUploadForm() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitMessage, setSubmitMessage] = useState<{type: 'success' | 'error', message: string} | null>(null);
-    const [isCheckingAuth, setIsCheckingAuth] = useState(true); // 👈 Nuevo estado
+    const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
     // 👇 Obtener usuario autenticado
-    const { user, isAuthenticated, loading } = useAuth(); // 👈 Usar loading del contexto
+    const { user, isAuthenticated, loading } = useAuth();
     const navigate = useNavigate();
 
     // 👇 REDIRIGIR SOLO CUANDO TERMINE DE CARGAR Y NO ESTÉ AUTENTICADO
@@ -38,7 +38,8 @@ export function ClothingUploadForm() {
         fullName: '',
         email: '',
         phoneNumber: '',
-        address: ''
+        address: '',
+        university: ''
     });
 
     // Pickup information
@@ -56,13 +57,25 @@ export function ClothingUploadForm() {
         { image: '', category: '', size: '' }
     ]);
 
+    // University options
+    const universities = [
+        { value: 'HKU', label: 'HKU' },
+        { value: 'CUHK', label: 'CUHK' },
+        { value: 'PolyU', label: 'PolyU' },
+        { value: 'HKUST', label: 'HKUST' },
+        { value: 'Baptist', label: 'Baptist' },
+        { value: 'NA', label: 'NA' }
+    ];
+
     // Actualizar userInfo cuando cambie el usuario
     useEffect(() => {
         if (user) {
             setUserInfo(prev => ({
                 ...prev,
                 fullName: user.name,
-                email: user.email
+                email: user.email,
+                // Auto-complete phone number if it exists in user object
+                phoneNumber: user.phone || prev.phoneNumber || ''
             }));
         }
     }, [user]);
@@ -97,7 +110,7 @@ export function ClothingUploadForm() {
         return null;
     }
 
-    const handleUserInfoChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const handleUserInfoChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         if (name === 'fullName' || name === 'email') return;
         setUserInfo(prev => ({ ...prev, [name]: value }));
@@ -134,10 +147,10 @@ export function ClothingUploadForm() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
 
         // Validaciones
-        if (!userInfo.phoneNumber || !userInfo.address) {
+        if (!userInfo.phoneNumber || !userInfo.address || !userInfo.university) {
             setSubmitMessage({
                 type: 'error',
-                message: 'Please complete phone number and address'
+                message: 'Please complete phone number, address, and university'
             });
             setIsSubmitting(false);
             return;
@@ -178,7 +191,8 @@ export function ClothingUploadForm() {
                     fullName: user.name,
                     email: user.email,
                     phoneNumber: userInfo.phoneNumber,
-                    address: userInfo.address
+                    address: userInfo.address,
+                    university: userInfo.university
                 },
                 clothingItems: validItems,
                 ...pickupInfo
@@ -198,12 +212,19 @@ export function ClothingUploadForm() {
             const result = await response.json();
 
             if (response.ok && result.success) {
+                // Show success message briefly then redirect to profile
                 setSubmitMessage({
                     type: 'success',
-                    message: 'Clothing items uploaded successfully! We will contact you soon.'
+                    message: 'Clothing items uploaded successfully! Redirecting to your profile...'
                 });
 
-                setUserInfo(prev => ({ ...prev, phoneNumber: '', address: '' }));
+                // Reset form
+                setUserInfo(prev => ({
+                    ...prev,
+                    phoneNumber: '',
+                    address: '',
+                    university: ''
+                }));
                 setPickupInfo({
                     pickupMethod: '',
                     pickupTime: '',
@@ -215,11 +236,17 @@ export function ClothingUploadForm() {
                     { image: '', category: '', size: '' },
                     { image: '', category: '', size: '' }
                 ]);
+
+                // Redirect to profile after 2 seconds
+                setTimeout(() => {
+                    navigate('/profile');
+                }, 2000);
             } else {
                 setSubmitMessage({
                     type: 'error',
                     message: result.message || 'Error uploading clothing items. Please try again.'
                 });
+                setIsSubmitting(false);
             }
         } catch (error) {
             console.error('Error:', error);
@@ -227,7 +254,6 @@ export function ClothingUploadForm() {
                 type: 'error',
                 message: 'Connection error. Please check your internet and try again.'
             });
-        } finally {
             setIsSubmitting(false);
         }
     };
@@ -235,24 +261,30 @@ export function ClothingUploadForm() {
     const categories = ['Dresses', 'Tops', 'Bottoms', 'Outerwear', 'Accessories', 'Bags', 'Jewelry'];
     const sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXS', 'XXL', '32', '34', '36', '38', '40', '42', 'One Size'];
 
+    // 👇 UPDATED: New pickup dates and time slots
+    const pickupDays = [
+        { value: 'tuesday', label: 'Tuesday, March 10' },
+        { value: 'wednesday', label: 'Wednesday, March 11' },
+        { value: 'thursday', label: 'Thursday, March 12' }
+    ];
+
     const timeSlots = {
-        '9': ['21:00-23:00'],
-        '10': ['16:00-19:00', '19:00-21:00', '21:00-23:00'],
-        '11': ['8:00-10:00', '10:00-12:00', '16:00-18:00', '18:00-20:00', '20:00-22:00'],
-        '12': ['8:00-10:00', '10:00-12:00', '14:00-16:00', '16:00-18:00']
+        'tuesday': ['12:00 PM - 3:00 PM', '3:00 PM - 6:00 PM', '6:00 PM - 9:00 PM'],
+        'wednesday': ['10:00 AM - 12:00 PM', '12:00 PM - 3:00 PM', '5:00 PM - 7:00 PM'],
+        'thursday': ['12:00 PM - 3:00 PM', '3:00 PM - 6:00 PM']
     };
 
     return (
-        <div className="font-sans">
+        <div className="font-sans" style={{ fontFamily: '"Inter", sans-serif' }}>
             <Header />
             <main className="min-h-screen bg-gradient-to-br from-cream to-amber-50 py-8">
                 <div className="container mx-auto px-4 max-w-4xl">
-                    {/* Header con mensaje personalizado */}
+                    {/* Header con mensaje personalizado - Only title in Kaldera */}
                     <div className="text-center mb-12">
-                        <h1 className="text-5xl md:text-6xl font-bold text-plum mb-6">
+                        <h1 className="text-5xl md:text-6xl font-bold text-plum mb-6" style={{ fontFamily: 'Kaldera, serif' }}>
                             Share Your <span className="text-gold">Style</span>
                         </h1>
-                        <p className="text-xl text-plum/80 max-w-2xl mx-auto">
+                        <p className="text-xl text-plum/80 max-w-2xl mx-auto inter-regular">
                             Welcome back, <span className="font-bold text-gold">{user.name}</span>!
                             Upload your pieces and become part of the MUSED community.
                         </p>
@@ -358,6 +390,24 @@ export function ClothingUploadForm() {
                                             disabled={isSubmitting}
                                         />
                                     </div>
+
+                                    {/* 👇 NEW UNIVERSITY FIELD */}
+                                    <div>
+                                        <label className="block text-lg font-semibold text-plum mb-3">University *</label>
+                                        <select
+                                            name="university"
+                                            value={userInfo.university}
+                                            onChange={handleUserInfoChange}
+                                            className="w-full px-4 py-3 border-2 border-cream rounded-xl focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all duration-300 bg-cream/30 text-plum"
+                                            required
+                                            disabled={isSubmitting}
+                                        >
+                                            <option value="">Select your university</option>
+                                            {universities.map(uni => (
+                                                <option key={uni.value} value={uni.value}>{uni.label}</option>
+                                            ))}
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
 
@@ -399,7 +449,7 @@ export function ClothingUploadForm() {
                                         </div>
                                     </div>
 
-                                    {/* Resto de las opciones de pickup (igual que antes) */}
+                                    {/* 👇 UPDATED: Resto de las opciones de pickup con nuevas fechas y horarios */}
                                     {pickupInfo.pickupMethod === 'without' && (
                                         <div className="space-y-4 p-4 bg-cream/30 rounded-xl">
                                             <div className="grid md:grid-cols-2 gap-4">
@@ -414,10 +464,9 @@ export function ClothingUploadForm() {
                                                         disabled={isSubmitting}
                                                     >
                                                         <option value="">Select day</option>
-                                                        <option value="9">9 November (Sunday)</option>
-                                                        <option value="10">10 November (Monday)</option>
-                                                        <option value="11">11 November (Tuesday)</option>
-                                                        <option value="12">12 November (Wednesday)</option>
+                                                        {pickupDays.map(day => (
+                                                            <option key={day.value} value={day.value}>{day.label}</option>
+                                                        ))}
                                                     </select>
                                                 </div>
                                                 <div>
@@ -470,10 +519,9 @@ export function ClothingUploadForm() {
                                                         disabled={isSubmitting}
                                                     >
                                                         <option value="">Select day</option>
-                                                        <option value="9">9 November (Sunday)</option>
-                                                        <option value="10">10 November (Monday)</option>
-                                                        <option value="11">11 November (Tuesday)</option>
-                                                        <option value="12">12 November (Wednesday)</option>
+                                                        {pickupDays.map(day => (
+                                                            <option key={day.value} value={day.value}>{day.label}</option>
+                                                        ))}
                                                     </select>
                                                 </div>
                                                 <div>

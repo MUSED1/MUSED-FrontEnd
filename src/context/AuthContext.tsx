@@ -7,6 +7,7 @@ interface User {
     id: string;
     name: string;
     email: string;
+    phone?: string; // 👈 AÑADIMOS PHONE OPCIONAL
     role: 'user' | 'admin';
     avatar?: string;
     provider?: 'local' | 'google' | 'facebook';
@@ -27,6 +28,7 @@ interface AuthContextType {
 interface SignupData {
     name: string;
     email: string;
+    phone: string; // 👈 AÑADIMOS PHONE REQUERIDO
     password: string;
 }
 
