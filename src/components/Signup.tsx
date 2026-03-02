@@ -73,7 +73,8 @@ export const Signup: React.FC = () => {
         });
 
         if (result.success) {
-            navigate('/');
+            // Redirigir al perfil en lugar de home
+            navigate('/profile');
         } else {
             setLocalError(result.error || 'Signup failed');
         }
