@@ -1,5 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap'); /* index.css */
 @font-face {
-    font-family: 'Kaldera Regular';
+    font-family: 'Kaldera';
     src: url('./assets/fonts/Kaldera-Regular.otf') format('opentype');
     font-weight: normal;
     font-style: normal;
@@ -12,11 +13,28 @@
     font-style: normal;
 }
 
+/* Import Inter from Google Fonts */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Your other styles here */
-body {
-    @apply font-sans;
+@layer base {
+    body {
+        font-family: 'Inter', sans-serif;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+        font-family: 'Kaldera', serif;
+    }
+}
+
+@layer components {
+    .font-kaldera {
+        font-family: 'Kaldera', serif;
+    }
+
+    .font-inter {
+        font-family: 'Inter', sans-serif;
+    }
 }
