@@ -96,7 +96,7 @@ export function ClothingUploadForm() {
                 <main className="min-h-screen bg-gradient-to-br from-cream to-amber-50 py-8">
                     <div className="container mx-auto px-4 max-w-4xl text-center">
                         <div className="bg-white rounded-2xl shadow-lg p-12">
-                            <div className="w-16 h-16 border-4 border-gold border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                            <div className="w-16 h-16 border-4 border-burgundy border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
                             <p className="text-plum">Loading...</p>
                         </div>
                     </div>
@@ -287,19 +287,19 @@ export function ClothingUploadForm() {
                     {/* Header con mensaje personalizado - Only title in Kaldera */}
                     <div className="text-center mb-12">
                         <h1 className="text-5xl md:text-6xl font-bold text-plum mb-6" style={{ fontFamily: 'Kaldera, serif' }}>
-                            Share Your <span className="text-gold">Style</span>
+                            Share Your <span className="text-burgundy">Style</span>
                         </h1>
                         <p className="text-xl text-plum/80 max-w-2xl mx-auto inter-regular">
-                            Welcome back, <span className="font-bold text-gold">{user.name}</span>!
+                            Welcome back, <span className="font-bold text-burgundy">{user.name}</span>!
                             Upload your pieces and become part of the MUSED community.
                         </p>
                     </div>
 
-                    {/* Loading Overlay y resto del formulario (igual que antes) */}
+                    {/* Loading Overlay */}
                     {isSubmitting && (
                         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
                             <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md mx-4 text-center">
-                                <div className="w-16 h-16 border-4 border-gold border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                                <div className="w-16 h-16 border-4 border-burgundy border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
                                 <h3 className="text-2xl font-bold text-plum mb-4">Uploading Your Items</h3>
                                 <p className="text-plum/80 mb-2">Please wait while we process your submission...</p>
                                 <p className="text-sm text-plum/60 flex items-center justify-center gap-2">
@@ -307,7 +307,7 @@ export function ClothingUploadForm() {
                                     Don't close this window
                                 </p>
                                 <div className="mt-4 bg-cream rounded-full h-2">
-                                    <div className="bg-gradient-to-r from-plum to-gold h-2 rounded-full animate-pulse"></div>
+                                    <div className="bg-gradient-to-r from-plum to-burgundy h-2 rounded-full animate-pulse"></div>
                                 </div>
                             </div>
                         </div>
@@ -331,7 +331,7 @@ export function ClothingUploadForm() {
                         </div>
                     )}
 
-                    {/* El resto del formulario se mantiene IGUAL */}
+                    {/* Form */}
                     <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
                         <form onSubmit={handleSubmit} className="space-y-8">
                             {/* Your Information Section */}
@@ -386,7 +386,7 @@ export function ClothingUploadForm() {
                                             name="address"
                                             value={userInfo.address}
                                             onChange={handleUserInfoChange}
-                                            className="w-full px-4 py-3 border-2 border-cream rounded-xl focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all duration-300 bg-cream/30 text-plum placeholder-plum/40"
+                                            className="w-full px-4 py-3 border-2 border-cream rounded-xl focus:border-burgundy focus:ring-2 focus:ring-burgundy/20 transition-all duration-300 bg-cream/30 text-plum placeholder-plum/40"
                                             placeholder="Enter your full address for pickup"
                                             required
                                             disabled={isSubmitting}
@@ -400,7 +400,7 @@ export function ClothingUploadForm() {
                                             name="university"
                                             value={userInfo.university}
                                             onChange={handleUserInfoChange}
-                                            className="w-full px-4 py-3 border-2 border-cream rounded-xl focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all duration-300 bg-cream/30 text-plum"
+                                            className="w-full px-4 py-3 border-2 border-cream rounded-xl focus:border-burgundy focus:ring-2 focus:ring-burgundy/20 transition-all duration-300 bg-cream/30 text-plum"
                                             required
                                             disabled={isSubmitting}
                                         >
@@ -413,7 +413,7 @@ export function ClothingUploadForm() {
                                 </div>
                             </div>
 
-                            {/* Pickup Method Section - IGUAL */}
+                            {/* Pickup Method Section */}
                             <div className="border-t border-cream pt-8">
                                 <h3 className="text-2xl font-bold text-plum mb-6">Pickup Method</h3>
                                 <div className="space-y-4">
@@ -429,7 +429,7 @@ export function ClothingUploadForm() {
                                                     value="without"
                                                     checked={pickupInfo.pickupMethod === 'without'}
                                                     onChange={handlePickupInfoChange}
-                                                    className="text-gold focus:ring-gold"
+                                                    className="text-burgundy focus:ring-burgundy"
                                                     required
                                                     disabled={isSubmitting}
                                                 />
@@ -442,7 +442,7 @@ export function ClothingUploadForm() {
                                                     value="in-person"
                                                     checked={pickupInfo.pickupMethod === 'in-person'}
                                                     onChange={handlePickupInfoChange}
-                                                    className="text-gold focus:ring-gold"
+                                                    className="text-burgundy focus:ring-burgundy"
                                                     required
                                                     disabled={isSubmitting}
                                                 />
@@ -451,7 +451,7 @@ export function ClothingUploadForm() {
                                         </div>
                                     </div>
 
-                                    {/* 👇 UPDATED: Resto de las opciones de pickup con nuevas fechas y horarios */}
+                                    {/* Pickup options */}
                                     {pickupInfo.pickupMethod === 'without' && (
                                         <div className="space-y-4 p-4 bg-cream/30 rounded-xl">
                                             <div className="grid md:grid-cols-2 gap-4">
@@ -461,7 +461,7 @@ export function ClothingUploadForm() {
                                                         name="pickupDay"
                                                         value={pickupInfo.pickupDay}
                                                         onChange={handlePickupInfoChange}
-                                                        className="w-full px-4 py-3 border-2 border-cream rounded-xl focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all duration-300 bg-white text-plum"
+                                                        className="w-full px-4 py-3 border-2 border-cream rounded-xl focus:border-burgundy focus:ring-2 focus:ring-burgundy/20 transition-all duration-300 bg-white text-plum"
                                                         required
                                                         disabled={isSubmitting}
                                                     >
@@ -477,7 +477,7 @@ export function ClothingUploadForm() {
                                                         name="pickupTime"
                                                         value={pickupInfo.pickupTime}
                                                         onChange={handlePickupInfoChange}
-                                                        className="w-full px-4 py-3 border-2 border-cream rounded-xl focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all duration-300 bg-white text-plum"
+                                                        className="w-full px-4 py-3 border-2 border-cream rounded-xl focus:border-burgundy focus:ring-2 focus:ring-burgundy/20 transition-all duration-300 bg-white text-plum"
                                                         required
                                                         disabled={isSubmitting}
                                                     >
@@ -499,7 +499,7 @@ export function ClothingUploadForm() {
                                                     value={pickupInfo.pickupInstructions}
                                                     onChange={handlePickupInfoChange}
                                                     rows={3}
-                                                    className="w-full px-4 py-3 border-2 border-cream rounded-xl focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all duration-300 bg-white text-plum placeholder-plum/40 resize-none"
+                                                    className="w-full px-4 py-3 border-2 border-cream rounded-xl focus:border-burgundy focus:ring-2 focus:ring-burgundy/20 transition-all duration-300 bg-white text-plum placeholder-plum/40 resize-none"
                                                     placeholder="Example: 'Leave with concierge,' 'Door code 12A,' 'Bag on balcony,' etc."
                                                     disabled={isSubmitting}
                                                 />
@@ -516,7 +516,7 @@ export function ClothingUploadForm() {
                                                         name="pickupDay"
                                                         value={pickupInfo.pickupDay}
                                                         onChange={handlePickupInfoChange}
-                                                        className="w-full px-4 py-3 border-2 border-cream rounded-xl focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all duration-300 bg-white text-plum"
+                                                        className="w-full px-4 py-3 border-2 border-cream rounded-xl focus:border-burgundy focus:ring-2 focus:ring-burgundy/20 transition-all duration-300 bg-white text-plum"
                                                         required
                                                         disabled={isSubmitting}
                                                     >
@@ -532,7 +532,7 @@ export function ClothingUploadForm() {
                                                         name="pickupTime"
                                                         value={pickupInfo.pickupTime}
                                                         onChange={handlePickupInfoChange}
-                                                        className="w-full px-4 py-3 border-2 border-cream rounded-xl focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all duration-300 bg-white text-plum"
+                                                        className="w-full px-4 py-3 border-2 border-cream rounded-xl focus:border-burgundy focus:ring-2 focus:ring-burgundy/20 transition-all duration-300 bg-white text-plum"
                                                         required
                                                         disabled={isSubmitting}
                                                     >
@@ -556,13 +556,13 @@ export function ClothingUploadForm() {
                                     value={pickupInfo.specialInstructions}
                                     onChange={handlePickupInfoChange}
                                     rows={4}
-                                    className="w-full px-4 py-3 border-2 border-cream rounded-xl focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all duration-300 bg-cream/30 text-plum placeholder-plum/40 resize-none"
+                                    className="w-full px-4 py-3 border-2 border-cream rounded-xl focus:border-burgundy focus:ring-2 focus:ring-burgundy/20 transition-all duration-300 bg-cream/30 text-plum placeholder-plum/40 resize-none"
                                     placeholder="Any special care instructions, notes about the items, or pickup preferences..."
                                     disabled={isSubmitting}
                                 />
                             </div>
 
-                            {/* Clothing Items Section - IGUAL */}
+                            {/* Clothing Items Section */}
                             <div className="border-t border-cream pt-8">
                                 <div className="flex justify-between items-center mb-6">
                                     <h3 className="text-2xl font-bold text-plum">Your Clothing Items</h3>
@@ -580,7 +580,7 @@ export function ClothingUploadForm() {
                                                 {/* Image Upload */}
                                                 <div>
                                                     <label className="block text-lg font-semibold text-plum mb-3">Image *</label>
-                                                    <div className={`border-2 ${item.image ? 'border-solid border-green-500' : 'border-dashed border-gold/50'} rounded-xl p-6 text-center hover:border-gold transition-all duration-300`}>
+                                                    <div className={`border-2 ${item.image ? 'border-solid border-green-500' : 'border-dashed border-burgundy/50'} rounded-xl p-6 text-center hover:border-burgundy transition-all duration-300`}>
                                                         <input
                                                             type="file"
                                                             accept="image/*"
@@ -603,7 +603,7 @@ export function ClothingUploadForm() {
                                                                 </div>
                                                             ) : (
                                                                 <div className="flex flex-col items-center justify-center space-y-4 py-4">
-                                                                    <Upload className="text-gold" size={32} />
+                                                                    <Upload className="text-burgundy" size={32} />
                                                                     <div className="text-center">
                                                                         <p className="text-plum font-semibold text-lg">Upload Image for Item {index + 1}</p>
                                                                         <p className="text-plum/60 text-sm mt-1">PNG, JPG, JPEG up to 10MB</p>
@@ -631,7 +631,7 @@ export function ClothingUploadForm() {
                                                         <select
                                                             value={item.category}
                                                             onChange={(e) => handleClothingItemChange(index, 'category', e.target.value)}
-                                                            className="w-full px-4 py-3 border-2 border-cream rounded-xl focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all duration-300 bg-white text-plum"
+                                                            className="w-full px-4 py-3 border-2 border-cream rounded-xl focus:border-burgundy focus:ring-2 focus:ring-burgundy/20 transition-all duration-300 bg-white text-plum"
                                                             required
                                                             disabled={isSubmitting}
                                                         >
@@ -647,7 +647,7 @@ export function ClothingUploadForm() {
                                                         <select
                                                             value={item.size}
                                                             onChange={(e) => handleClothingItemChange(index, 'size', e.target.value)}
-                                                            className="w-full px-4 py-3 border-2 border-cream rounded-xl focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all duration-300 bg-white text-plum"
+                                                            className="w-full px-4 py-3 border-2 border-cream rounded-xl focus:border-burgundy focus:ring-2 focus:ring-burgundy/20 transition-all duration-300 bg-white text-plum"
                                                             required
                                                             disabled={isSubmitting}
                                                         >
@@ -669,7 +669,7 @@ export function ClothingUploadForm() {
                                 <button
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className="bg-gradient-to-r from-plum to-gold text-cream px-12 py-4 rounded-full font-bold text-lg hover:shadow-2xl transform hover:scale-105 transition-all duration-300 flex items-center space-x-3 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                                    className="bg-gradient-to-r from-plum to-burgundy text-cream px-12 py-4 rounded-full font-bold text-lg hover:shadow-2xl transform hover:scale-105 transition-all duration-300 flex items-center space-x-3 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                                 >
                                     {isSubmitting ? (
                                         <>
@@ -687,24 +687,27 @@ export function ClothingUploadForm() {
                         </form>
                     </div>
 
-                    {/* "What happens next" Section */}
+                    {/* "What happens next" Section - UPDATED WITH PURPLE */}
                     <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 text-center">
-                        <h3 className="text-2xl font-bold text-plum mb-4">What happens next?</h3>
-                        <div className="grid md:grid-cols-3 gap-6 text-plum/80">
-                            <div className="space-y-2">
-                                <div className="w-8 h-8 bg-gold rounded-full flex items-center justify-center text-cream font-bold mx-auto mb-2">1</div>
-                                <p className="font-semibold">We'll pick up your items at your selected time</p>
+                        <h3 className="text-3xl font-bold text-plum mb-6 font-kaldera">What happens next?</h3>
+                        <div className="grid md:grid-cols-3 gap-6 text-plum">
+                            <div className="space-y-3">
+                                <div className="w-12 h-12 bg-burgundy rounded-full flex items-center justify-center text-cream font-bold text-xl mx-auto mb-3">1</div>
+                                <p className="font-semibold text-lg">We'll pick up your items at your selected time</p>
                             </div>
-                            <div className="space-y-2">
-                                <div className="w-8 h-8 bg-gold rounded-full flex items-center justify-center text-cream font-bold mx-auto mb-2">2</div>
-                                <p className="font-semibold">Dinner collection launches November 11th</p>
-                                <p className="text-sm">choose your items then</p>
+                            <div className="space-y-3">
+                                <div className="w-12 h-12 bg-burgundy rounded-full flex items-center justify-center text-cream font-bold text-xl mx-auto mb-3">2</div>
+                                <p className="font-semibold text-lg">Dinner collection launches November 11th</p>
+                                <p className="text-sm text-plum/70">choose your items then</p>
                             </div>
-                            <div className="space-y-2">
-                                <div className="w-8 h-8 bg-gold rounded-full flex items-center justify-center text-cream font-bold mx-auto mb-2">3</div>
-                                <p className="font-semibold">Receive your items</p>
-                                <p className="text-sm">and you're all set for dinner</p>
+                            <div className="space-y-3">
+                                <div className="w-12 h-12 bg-burgundy rounded-full flex items-center justify-center text-cream font-bold text-xl mx-auto mb-3">3</div>
+                                <p className="font-semibold text-lg">Receive your items</p>
+                                <p className="text-sm text-plum/70">and you're all set for dinner</p>
                             </div>
+                        </div>
+                        <div className="mt-8 pt-6 border-t border-cream">
+                            <p className="text-2xl font-kaldera text-burgundy">MUSED</p>
                         </div>
                     </div>
                 </div>
