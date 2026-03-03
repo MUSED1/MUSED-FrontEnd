@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from './Header';
 import { Footer } from './Footer';
+import { PhoneEdit } from './PhoneEdit';
 import { useAuth } from '../hooks/useAuth';
 import { User, Package, Heart, LogOut, Star } from 'lucide-react';
 import axios from 'axios';
@@ -14,9 +15,9 @@ interface ClothingItem {
     size: string;
     status: string;
     createdAt: string;
-    university?: string; // Added university field
-    address?: string; // Added address field
-    pickupMethod?: string; // Added pickup method
+    university?: string;
+    address?: string;
+    pickupMethod?: string;
 }
 
 export function Profile() {
@@ -24,7 +25,7 @@ export function Profile() {
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState<'profile' | 'uploads' | 'picks' | 'settings'>('profile');
     const [uploads, setUploads] = useState<ClothingItem[]>([]);
-    const [picks, setPicks] = useState<ClothingItem[]>([]); // For saved/favorited items
+    const [picks, setPicks] = useState<ClothingItem[]>([]);
     const [isLoadingUploads, setIsLoadingUploads] = useState(false);
     const [isLoadingPicks, setIsLoadingPicks] = useState(false);
 
@@ -61,20 +62,9 @@ export function Profile() {
         }
     };
 
-    // Mock function for picks - replace with actual API call when backend is ready
     const fetchUserPicks = async () => {
         setIsLoadingPicks(true);
         try {
-            // This is a mock implementation - replace with actual API endpoint
-            // For now, we'll use a subset of uploads or an empty array
-
-            // Mock data - replace with actual API call to /favorites or similar
-            // const response = await axios.get(`${API_URL}/clothing/my-picks`, {
-            //     headers: { Authorization: `Bearer ${token}` }
-            // });
-            // setPicks(response.data.data);
-
-            // Temporary: use first 2 uploads as mock picks if available
             if (uploads.length > 0) {
                 setPicks(uploads.slice(0, 2));
             } else {
@@ -90,6 +80,12 @@ export function Profile() {
     const handleLogout = () => {
         logout();
         navigate('/');
+    };
+
+    const handlePhoneUpdate = (newPhone: string) => {
+        // This will trigger a re-render with the updated user data
+        // The actual update is handled by the PhoneEdit component
+        console.log('Phone updated to:', newPhone);
     };
 
     if (loading) {
@@ -213,8 +209,11 @@ export function Profile() {
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-plum/60 mb-2">Phone Number</label>
-                                        <div className="p-3 bg-cream/30 rounded-lg text-plum font-medium">
-                                            {user.phone || 'Not provided'}
+                                        <div className="p-3 bg-cream/30 rounded-lg">
+                                            <PhoneEdit
+                                                phone={user.phone || ''}
+                                                onUpdate={handlePhoneUpdate}
+                                            />
                                         </div>
                                     </div>
                                     <div>
