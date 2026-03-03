@@ -5,7 +5,7 @@ import { Header } from './Header';
 import { Footer } from './Footer';
 import { PhoneEdit } from './PhoneEdit';
 import { useAuth } from '../hooks/useAuth';
-import { User, Package, Heart, LogOut, Star, Calendar, Clock, MapPin } from 'lucide-react';
+import { User, Package, Heart, LogOut, Calendar, Clock, MapPin } from 'lucide-react';
 import axios from 'axios';
 
 interface ClothingItem {
@@ -35,10 +35,10 @@ export function Profile() {
     const [activeTab, setActiveTab] = useState<'profile' | 'uploads' | 'picks' | 'settings'>('profile');
     const [uploads, setUploads] = useState<ClothingItem[]>([]);
     const [isLoadingUploads, setIsLoadingUploads] = useState(false);
-    const [isLoadingPicks, setIsLoadingPicks] = useState(false);
+    const [isLoadingPicks] = useState(false);
 
     // Sample collection drops data - replace with actual API data
-    const [collectionDrops, setCollectionDrops] = useState<CollectionDrop[]>([
+    const [collectionDrops] = useState<CollectionDrop[]>([
         {
             id: '1',
             date: 'Tuesday, March 10',
