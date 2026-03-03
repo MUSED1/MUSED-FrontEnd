@@ -47,8 +47,8 @@ export const Login: React.FC = () => {
         const result = await login(formData);
 
         if (result.success) {
-            // Redirect to upload instead of previous page
-            navigate('/upload', { replace: true });
+            // Redirect to profile instead of upload
+            navigate('/profile', { replace: true });
         } else {
             setLocalError(result.error || 'Login failed');
         }

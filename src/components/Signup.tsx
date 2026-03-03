@@ -85,8 +85,8 @@ export const Signup: React.FC = () => {
         });
 
         if (result.success) {
-            // Redirigir al upload en lugar de profile
-            navigate('/upload');
+            // Redirect to profile instead of upload
+            navigate('/profile');
         } else {
             setLocalError(result.error || 'Signup failed');
         }
