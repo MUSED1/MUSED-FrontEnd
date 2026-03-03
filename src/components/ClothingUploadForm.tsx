@@ -5,6 +5,7 @@ import { Header } from './Header';
 import { Footer } from './Footer';
 import { Upload, Plus, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import { PhoneEdit } from './PhoneEdit';
 
 interface ClothingItem {
     image: string;
@@ -138,6 +139,10 @@ export function ClothingUploadForm() {
             };
             reader.readAsDataURL(file);
         }
+    };
+
+    const handlePhoneUpdate = (newPhone: string) => {
+        setUserInfo(prev => ({ ...prev, phoneNumber: newPhone }));
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -364,16 +369,13 @@ export function ClothingUploadForm() {
 
                                         <div>
                                             <label className="block text-lg font-semibold text-plum mb-3">Phone Number *</label>
-                                            <input
-                                                type="tel"
-                                                name="phoneNumber"
-                                                value={userInfo.phoneNumber}
-                                                onChange={handleUserInfoChange}
-                                                className="w-full px-4 py-3 border-2 border-cream rounded-xl focus:border-gold focus:ring-2 focus:ring-gold/20 transition-all duration-300 bg-cream/30 text-plum placeholder-plum/40"
-                                                placeholder="+1 (555) 123-4567"
-                                                required
-                                                disabled={isSubmitting}
-                                            />
+                                            <div className="w-full px-4 py-3 border-2 border-cream rounded-xl bg-cream/30">
+                                                <PhoneEdit
+                                                    phone={userInfo.phoneNumber}
+                                                    onUpdate={handlePhoneUpdate}
+                                                />
+                                            </div>
+                                            <p className="text-sm text-plum/60 mt-1">Click the pencil icon to edit</p>
                                         </div>
                                     </div>
 
