@@ -51,9 +51,10 @@ export function App() {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
+        // Set to 3500ms to match LoadingScreen animation duration
         const timer = setTimeout(() => {
             setIsLoading(false);
-        }, 2000);
+        }, 3500); // 👈 Actualizado a 3.5 segundos
 
         return () => clearTimeout(timer);
     }, []);

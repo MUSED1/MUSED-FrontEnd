@@ -95,7 +95,7 @@ export function Profile() {
                 <main className="min-h-screen bg-gradient-to-br from-cream to-amber-50 py-8">
                     <div className="container mx-auto px-4 max-w-4xl text-center">
                         <div className="bg-white rounded-2xl shadow-lg p-12">
-                            <div className="w-16 h-16 border-4 border-gold border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                            <div className="w-16 h-16 border-4 border-burgundy border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
                             <p className="text-plum">Loading profile...</p>
                         </div>
                     </div>
@@ -116,7 +116,7 @@ export function Profile() {
                 <div className="container mx-auto px-4 max-w-6xl">
                     {/* Profile Header */}
                     <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-8">
-                        <div className="h-32 bg-gradient-to-r from-plum to-gold"></div>
+                        <div className="h-32 bg-gradient-to-r from-plum to-burgundy"></div>
                         <div className="px-8 pb-8 relative">
                             <div className="flex flex-col md:flex-row md:items-end gap-6 -mt-16">
                                 <div className="w-32 h-32 bg-cream rounded-2xl border-4 border-white shadow-lg flex items-center justify-center">
@@ -130,7 +130,7 @@ export function Profile() {
                                     <div className="flex items-center gap-2 mt-2">
                                         <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
                                             user.role === 'admin'
-                                                ? 'bg-gold/20 text-gold'
+                                                ? 'bg-burgundy/20 text-burgundy'
                                                 : 'bg-plum/10 text-plum'
                                         }`}>
                                             {user.role === 'admin' ? 'Administrator' : 'Member'}
@@ -154,7 +154,7 @@ export function Profile() {
                             onClick={() => setActiveTab('profile')}
                             className={`px-6 py-3 font-medium transition-all relative whitespace-nowrap ${
                                 activeTab === 'profile'
-                                    ? 'text-gold after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gold'
+                                    ? 'text-burgundy after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-burgundy'
                                     : 'text-plum/60 hover:text-plum'
                             }`}
                         >
@@ -164,7 +164,7 @@ export function Profile() {
                             onClick={() => setActiveTab('uploads')}
                             className={`px-6 py-3 font-medium transition-all relative whitespace-nowrap ${
                                 activeTab === 'uploads'
-                                    ? 'text-gold after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gold'
+                                    ? 'text-burgundy after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-burgundy'
                                     : 'text-plum/60 hover:text-plum'
                             }`}
                         >
@@ -174,7 +174,7 @@ export function Profile() {
                             onClick={() => setActiveTab('picks')}
                             className={`px-6 py-3 font-medium transition-all relative whitespace-nowrap ${
                                 activeTab === 'picks'
-                                    ? 'text-gold after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gold'
+                                    ? 'text-burgundy after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-burgundy'
                                     : 'text-plum/60 hover:text-plum'
                             }`}
                         >
@@ -184,7 +184,7 @@ export function Profile() {
                             onClick={() => setActiveTab('settings')}
                             className={`px-6 py-3 font-medium transition-all relative whitespace-nowrap ${
                                 activeTab === 'settings'
-                                    ? 'text-gold after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-gold'
+                                    ? 'text-burgundy after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-burgundy'
                                     : 'text-plum/60 hover:text-plum'
                             }`}
                         >
@@ -233,12 +233,12 @@ export function Profile() {
                                     <h3 className="text-lg font-kaldera text-plum mb-4">Recent Activity</h3>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="bg-cream/30 rounded-xl p-4 text-center">
-                                            <Package className="mx-auto text-gold mb-2" size={24} />
+                                            <Package className="mx-auto text-burgundy mb-2" size={24} />
                                             <div className="text-2xl font-bold text-plum">{uploads.length}</div>
                                             <div className="text-sm text-plum/60">Items Uploaded</div>
                                         </div>
                                         <div className="bg-cream/30 rounded-xl p-4 text-center">
-                                            <Star className="mx-auto text-gold mb-2" size={24} />
+                                            <Star className="mx-auto text-burgundy mb-2" size={24} />
                                             <div className="text-2xl font-bold text-plum">{picks.length}</div>
                                             <div className="text-sm text-plum/60">Items Picked</div>
                                         </div>
@@ -250,14 +250,14 @@ export function Profile() {
                                     <div className="flex flex-wrap gap-4">
                                         <button
                                             onClick={() => navigate('/upload')}
-                                            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-plum to-gold text-cream rounded-lg hover:shadow-lg transition-all"
+                                            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-plum to-burgundy text-cream rounded-lg hover:shadow-lg transition-all"
                                         >
                                             <Package size={18} />
                                             Upload New Item
                                         </button>
                                         <button
                                             onClick={() => setActiveTab('uploads')}
-                                            className="flex items-center gap-2 px-6 py-3 border-2 border-gold text-plum rounded-lg hover:bg-gold/10 transition-all"
+                                            className="flex items-center gap-2 px-6 py-3 border-2 border-burgundy text-plum rounded-lg hover:bg-burgundy/10 transition-all"
                                         >
                                             <Heart size={18} />
                                             View My Uploads
@@ -280,7 +280,7 @@ export function Profile() {
                                     <h2 className="text-2xl font-kaldera text-plum">My Uploaded Items</h2>
                                     <button
                                         onClick={() => navigate('/upload')}
-                                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-plum to-gold text-cream rounded-lg text-sm hover:shadow-lg transition-all"
+                                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-plum to-burgundy text-cream rounded-lg text-sm hover:shadow-lg transition-all"
                                     >
                                         <Package size={16} />
                                         Upload New
@@ -289,7 +289,7 @@ export function Profile() {
 
                                 {isLoadingUploads ? (
                                     <div className="text-center py-12">
-                                        <div className="w-12 h-12 border-4 border-gold border-t-transparent rounded-full animate-spin mx-auto"></div>
+                                        <div className="w-12 h-12 border-4 border-burgundy border-t-transparent rounded-full animate-spin mx-auto"></div>
                                     </div>
                                 ) : uploads.length === 0 ? (
                                     <div className="text-center py-12 bg-cream/30 rounded-xl">
@@ -297,7 +297,7 @@ export function Profile() {
                                         <p className="text-plum/60 mb-4">You haven't uploaded any items yet.</p>
                                         <button
                                             onClick={() => navigate('/upload')}
-                                            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-plum to-gold text-cream rounded-lg hover:shadow-lg transition-all"
+                                            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-plum to-burgundy text-cream rounded-lg hover:shadow-lg transition-all"
                                         >
                                             Upload Your First Item
                                         </button>
@@ -349,7 +349,7 @@ export function Profile() {
 
                                 {isLoadingPicks ? (
                                     <div className="text-center py-12">
-                                        <div className="w-12 h-12 border-4 border-gold border-t-transparent rounded-full animate-spin mx-auto"></div>
+                                        <div className="w-12 h-12 border-4 border-burgundy border-t-transparent rounded-full animate-spin mx-auto"></div>
                                     </div>
                                 ) : picks.length === 0 ? (
                                     <div className="text-center py-12 bg-cream/30 rounded-xl">
@@ -360,7 +360,7 @@ export function Profile() {
                                         </p>
                                         <button
                                             onClick={() => navigate('/browse')}
-                                            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-plum to-gold text-cream rounded-lg hover:shadow-lg transition-all"
+                                            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-plum to-burgundy text-cream rounded-lg hover:shadow-lg transition-all"
                                         >
                                             Browse Items
                                         </button>
@@ -369,7 +369,7 @@ export function Profile() {
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                         {picks.map((item) => (
                                             <div key={item._id} className="bg-cream/20 rounded-xl overflow-hidden border border-cream hover:shadow-lg transition-all group relative">
-                                                <button className="absolute top-2 right-2 z-10 bg-white rounded-full p-2 shadow-md hover:bg-gold hover:text-white transition-colors">
+                                                <button className="absolute top-2 right-2 z-10 bg-white rounded-full p-2 shadow-md hover:bg-burgundy hover:text-white transition-colors">
                                                     <Heart size={16} fill="currentColor" />
                                                 </button>
                                                 <div
