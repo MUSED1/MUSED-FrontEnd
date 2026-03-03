@@ -1,4 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap'); /* index.css */
+/* index.css */
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
 @font-face {
     font-family: 'Kaldera';
     src: url('./assets/fonts/Kaldera-Regular.otf') format('opentype');
@@ -12,8 +14,6 @@
     font-weight: normal;
     font-style: normal;
 }
-
-/* Import Inter from Google Fonts */
 
 @tailwind base;
 @tailwind components;
@@ -36,5 +36,10 @@
 
     .font-inter {
         font-family: 'Inter', sans-serif;
+    }
+
+    /* 👇 ADD THIS: Amandine font class */
+    .font-amandine {
+        font-family: 'Amandine', serif;
     }
 }

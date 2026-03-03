@@ -73,8 +73,8 @@ export const Signup: React.FC = () => {
         });
 
         if (result.success) {
-            // Redirigir al perfil en lugar de home
-            navigate('/profile');
+            // Redirigir al upload en lugar de profile
+            navigate('/upload');
         } else {
             setLocalError(result.error || 'Signup failed');
         }
@@ -90,7 +90,7 @@ export const Signup: React.FC = () => {
 
                 <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-8 md:p-10 border border-gold/20">
                     <div className="text-center mb-8">
-                        <h2 className="font-kaldera text-5xl md:text-6xl text-burgundy mb-3 tracking-tight">
+                        <h2 className="font-amandine text-5xl md:text-6xl text-burgundy mb-3 tracking-tight">
                             Join Us
                         </h2>
                         <p className="text-plum/70 text-base font-inter">
