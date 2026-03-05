@@ -358,7 +358,6 @@ export function Profile() {
                                         <p className="text-sm text-plum/40 mb-6">
                                             Browse our collection and save items you love!
                                         </p>
-                                        {/* Removed button and added collection drops date */}
                                         <div className="text-2xl font-bold text-rose">
                                             11.03
                                         </div>
