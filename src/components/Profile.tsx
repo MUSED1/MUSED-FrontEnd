@@ -65,13 +65,11 @@ export function Profile() {
     const fetchUserPicks = async () => {
         setIsLoadingPicks(true);
         try {
-            if (uploads.length > 0) {
-                setPicks(uploads.slice(0, 2));
-            } else {
-                setPicks([]);
-            }
+            // Always set picks to empty array since the functionality isn't implemented yet
+            setPicks([]);
         } catch (error) {
             console.error('Error fetching picks:', error);
+            setPicks([]);
         } finally {
             setIsLoadingPicks(false);
         }
@@ -351,7 +349,7 @@ export function Profile() {
                                     <div className="text-center py-12">
                                         <div className="w-12 h-12 border-4 border-rose border-t-transparent rounded-full animate-spin mx-auto"></div>
                                     </div>
-                                ) : picks.length === 0 ? (
+                                ) : (
                                     <div className="text-center py-12 bg-cream/30 rounded-xl">
                                         <Star size={48} className="text-plum/20 mx-auto mb-4" />
                                         <p className="text-plum/60 mb-4">You haven't picked any items yet.</p>
@@ -361,37 +359,6 @@ export function Profile() {
                                         <div className="text-2xl font-bold text-rose">
                                             11.03
                                         </div>
-                                    </div>
-                                ) : (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                        {picks.map((item) => (
-                                            <div key={item._id} className="bg-cream/20 rounded-xl overflow-hidden border border-cream hover:shadow-lg transition-all group relative">
-                                                <button className="absolute top-2 right-2 z-10 bg-white rounded-full p-2 shadow-md hover:bg-rose hover:text-white transition-colors">
-                                                    <Heart size={16} fill="currentColor" />
-                                                </button>
-                                                <div
-                                                    className="h-48 bg-cover bg-center group-hover:scale-105 transition-transform duration-300"
-                                                    style={{ backgroundImage: `url(${item.images[0]})` }}
-                                                />
-                                                <div className="p-4">
-                                                    <div className="flex justify-between items-start mb-2">
-                                                        <div>
-                                                            <h3 className="font-semibold text-plum">{item.category}</h3>
-                                                            <p className="text-sm text-plum/60">Size: {item.size}</p>
-                                                        </div>
-                                                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                                                            item.status === 'available'
-                                                                ? 'bg-green-100 text-green-700'
-                                                                : item.status === 'reserved'
-                                                                    ? 'bg-yellow-100 text-yellow-700'
-                                                                    : 'bg-gray-100 text-gray-700'
-                                                        }`}>
-                                                            {item.status}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))}
                                     </div>
                                 )}
                             </div>

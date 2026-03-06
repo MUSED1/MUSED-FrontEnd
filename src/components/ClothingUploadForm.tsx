@@ -697,7 +697,7 @@ export function ClothingUploadForm() {
                             </div>
                             <div className="space-y-3">
                                 <div className="w-12 h-12 bg-rose rounded-full flex items-center justify-center text-plum font-bold text-xl mx-auto mb-3">2</div>
-                                <p className="font-semibold text-lg">Dinner collection launches November 11th</p>
+                                <p className="font-semibold text-lg">Dinner collection launches March 11th</p>
                                 <p className="text-sm text-plum/70">choose your items then</p>
                             </div>
                             <div className="space-y-3">
