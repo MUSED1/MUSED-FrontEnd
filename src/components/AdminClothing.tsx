@@ -23,12 +23,14 @@ interface ClothingItem {
 }
 
 export function AdminClothing() {
-    const [clothingItems, setClothingItems] = useState<ClothingItem[]>([])
+    const [allClothingItems, setAllClothingItems] = useState<ClothingItem[]>([])
+    const [filteredItems, setFilteredItems] = useState<ClothingItem[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
     const [editingId, setEditingId] = useState<string | null>(null)
     const [editForm, setEditForm] = useState<Partial<ClothingItem>>({})
     const [previewImage, setPreviewImage] = useState<string | null>(null)
+    const [currentYear] = useState<number>(2026)
 
     const categories = [
         'Dresses', 'Tops', 'Bottoms', 'Outerwear', 'Accessories',
@@ -65,7 +67,9 @@ export function AdminClothing() {
             const result = await response.json()
 
             if (result.success) {
-                setClothingItems(result.data)
+                setAllClothingItems(result.data)
+                // Filter items from 2026 onwards
+                filterItemsFrom2026(result.data)
             } else {
                 throw new Error(result.message || 'Failed to fetch items')
             }
@@ -75,6 +79,15 @@ export function AdminClothing() {
         } finally {
             setLoading(false)
         }
+    }
+
+    const filterItemsFrom2026 = (items: ClothingItem[]) => {
+        const startDate2026 = new Date('2026-01-01T00:00:00.000Z')
+        const filtered = items.filter((item: ClothingItem) => {
+            const itemDate = new Date(item.createdAt)
+            return itemDate >= startDate2026
+        })
+        setFilteredItems(filtered)
     }
 
     const handleEdit = (item: ClothingItem) => {
@@ -95,11 +108,15 @@ export function AdminClothing() {
             const result = await response.json()
 
             if (response.ok && result.success) {
-                setClothingItems(prev =>
-                    prev.map(item =>
-                        item._id === id ? { ...item, ...editForm } : item
-                    )
+                // Update both arrays
+                const updatedAllItems = allClothingItems.map(item =>
+                    item._id === id ? { ...item, ...editForm } : item
                 )
+                setAllClothingItems(updatedAllItems)
+
+                // Re-filter the items
+                filterItemsFrom2026(updatedAllItems)
+
                 setEditingId(null)
                 setEditForm({})
             } else {
@@ -123,7 +140,12 @@ export function AdminClothing() {
             const result = await response.json()
 
             if (response.ok && result.success) {
-                setClothingItems(prev => prev.filter(item => item._id !== id))
+                // Update both arrays
+                const updatedAllItems = allClothingItems.filter(item => item._id !== id)
+                setAllClothingItems(updatedAllItems)
+
+                // Re-filter the items
+                filterItemsFrom2026(updatedAllItems)
             } else {
                 throw new Error(result.message)
             }
@@ -191,7 +213,10 @@ export function AdminClothing() {
                             Clothing Management
                         </h1>
                         <p className="text-lg text-plum/80">
-                            Manage all uploaded clothing items ({clothingItems.length} items)
+                            Showing items from {currentYear} onwards ({filteredItems.length} items)
+                        </p>
+                        <p className="text-sm text-plum/60 mt-2">
+                            Total items in database: {allClothingItems.length}
                         </p>
                     </div>
 
@@ -210,7 +235,7 @@ export function AdminClothing() {
 
                     {/* Clothing Items Grid */}
                     <div className="grid gap-6">
-                        {clothingItems.map((item) => (
+                        {filteredItems.map((item) => (
                             <div key={item._id} className="bg-white rounded-2xl shadow-lg p-6">
                                 <div className="grid md:grid-cols-3 gap-6">
                                     {/* Image Section */}
@@ -441,9 +466,14 @@ export function AdminClothing() {
                         ))}
                     </div>
 
-                    {clothingItems.length === 0 && !loading && (
+                    {filteredItems.length === 0 && !loading && (
                         <div className="text-center py-12">
-                            <p className="text-plum text-lg">No clothing items found.</p>
+                            <p className="text-plum text-lg">No clothing items found from 2026 onwards.</p>
+                            {allClothingItems.length > 0 && (
+                                <p className="text-plum/60 text-sm mt-2">
+                                    There are {allClothingItems.length} items in total from previous years.
+                                </p>
+                            )}
                         </div>
                     )}
                 </div>
