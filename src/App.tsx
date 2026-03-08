@@ -31,6 +31,8 @@ import { Profile } from './components/Profile'
 import { OAuthSuccess } from './components/OAuthSuccess'
 import { Terms } from './components/Terms'
 import { Privacy } from './components/Privacy'
+import { CollectionsM } from './components/CollectionsM';
+
 
 function HomePage() {
     return (
@@ -92,6 +94,8 @@ export function App() {
                     <Route path="/terms" element={<Terms />} />
                     <Route path="/privacy" element={<Privacy />} />
                     <Route path="/cookies" element={<Privacy />} />
+                    <Route path="/collections-m" element={<CollectionsM />} />
+
                 </Routes>
             </Router>
         </AuthProvider>
