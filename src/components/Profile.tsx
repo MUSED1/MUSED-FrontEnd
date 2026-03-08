@@ -386,16 +386,16 @@ export function Profile() {
                                 ) : picks.length === 0 ? (
                                     <div className="text-center py-12 bg-cream/30 rounded-xl">
                                         <Heart size={48} className="text-plum/20 mx-auto mb-4" />
-                                        <p className="text-plum/60 mb-4">You haven't picked any items yet.</p>
+                                        <p className="text-plum/60 mb-4"></p>
                                         <p className="text-sm text-plum/40 mb-6">
-                                            Browse our collection and save items you love!
+                                            Collection Drops 11.03
                                         </p>
-                                        <button
+                                        {/*<button
                                             onClick={() => navigate('/collections-m')}
                                             className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-plum to-rose text-cream rounded-lg hover:shadow-lg transition-all"
                                         >
                                             Browse Collection
-                                        </button>
+                                        </button>*/}
                                     </div>
                                 ) : (
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
