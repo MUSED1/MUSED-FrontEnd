@@ -65,8 +65,16 @@ export function Profile() {
     const fetchUserPicks = async () => {
         setIsLoadingPicks(true);
         try {
-            // Always set picks to empty array since the functionality isn't implemented yet
-            setPicks([]);
+            const token = localStorage.getItem('token');
+            const API_URL = import.meta.env.VITE_API_URL?.replace('/auth', '') || 'https://mused-backend.onrender.com/api';
+
+            const response = await axios.get(`${API_URL}/users/picks`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            if (response.data.success) {
+                setPicks(response.data.data);
+            }
         } catch (error) {
             console.error('Error fetching picks:', error);
             setPicks([]);
@@ -84,6 +92,22 @@ export function Profile() {
         // This will trigger a re-render with the updated user data
         // The actual update is handled by the PhoneEdit component
         console.log('Phone updated to:', newPhone);
+    };
+
+    const handleRemovePick = async (itemId: string) => {
+        try {
+            const token = localStorage.getItem('token');
+            const API_URL = import.meta.env.VITE_API_URL?.replace('/auth', '') || 'https://mused-backend.onrender.com/api';
+
+            await axios.delete(`${API_URL}/users/picks/${itemId}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            // Remove from local state
+            setPicks(prev => prev.filter(item => item._id !== itemId));
+        } catch (error) {
+            console.error('Error removing pick:', error);
+        }
     };
 
     if (loading) {
@@ -123,8 +147,11 @@ export function Profile() {
                                 <div className="flex-1">
                                     <h1 className="text-3xl font-kaldera text-plum">{user.name}</h1>
                                     <p className="text-plum/60">{user.email}</p>
-                                    <p className="text-plum/60 text-sm mt-1">
-                                    </p>
+                                    {user.phone && (
+                                        <p className="text-plum/60 text-sm mt-1">
+                                            {user.phone}
+                                        </p>
+                                    )}
                                     <div className="flex items-center gap-2 mt-2">
                                         <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
                                             user.role === 'admin'
@@ -217,6 +244,7 @@ export function Profile() {
                                     <div>
                                         <label className="block text-sm font-medium text-plum/60 mb-2">Member Since</label>
                                         <div className="p-3 bg-cream/30 rounded-lg text-plum">
+                                            {/* Use current date as fallback since user object doesn't have createdAt */}
                                             {new Date().toLocaleDateString('en-US', {
                                                 year: 'numeric',
                                                 month: 'long',
@@ -236,7 +264,7 @@ export function Profile() {
                                             <div className="text-sm text-plum/60">Items Uploaded</div>
                                         </div>
                                         <div className="bg-cream/30 rounded-xl p-4 text-center">
-                                            <Star className="mx-auto text-rose mb-2" size={24} />
+                                            <Heart className="mx-auto text-rose mb-2" size={24} />
                                             <div className="text-2xl font-bold text-plum">{picks.length}</div>
                                             <div className="text-sm text-plum/60">Items Picked</div>
                                         </div>
@@ -254,14 +282,20 @@ export function Profile() {
                                             Upload New Item
                                         </button>
                                         <button
-                                            onClick={() => setActiveTab('uploads')}
+                                            onClick={() => {
+                                                setActiveTab('uploads');
+                                                fetchUserUploads();
+                                            }}
                                             className="flex items-center gap-2 px-6 py-3 border-2 border-rose text-plum rounded-lg hover:bg-rose/10 transition-all"
                                         >
                                             <Heart size={18} />
                                             View My Uploads
                                         </button>
                                         <button
-                                            onClick={() => setActiveTab('picks')}
+                                            onClick={() => {
+                                                setActiveTab('picks');
+                                                fetchUserPicks();
+                                            }}
                                             className="flex items-center gap-2 px-6 py-3 border-2 border-plum/20 text-plum rounded-lg hover:bg-plum/5 transition-all"
                                         >
                                             <Star size={18} />
@@ -342,23 +376,64 @@ export function Profile() {
                             <div>
                                 <div className="flex justify-between items-center mb-6">
                                     <h2 className="text-2xl font-kaldera text-plum">My Picks</h2>
-                                    <span className="text-sm text-plum/60">Items you've saved for later</span>
+                                    <span className="text-sm text-plum/60">{picks.length} items saved</span>
                                 </div>
 
                                 {isLoadingPicks ? (
                                     <div className="text-center py-12">
                                         <div className="w-12 h-12 border-4 border-rose border-t-transparent rounded-full animate-spin mx-auto"></div>
                                     </div>
-                                ) : (
+                                ) : picks.length === 0 ? (
                                     <div className="text-center py-12 bg-cream/30 rounded-xl">
-                                        <Star size={48} className="text-plum/20 mx-auto mb-4" />
+                                        <Heart size={48} className="text-plum/20 mx-auto mb-4" />
                                         <p className="text-plum/60 mb-4">You haven't picked any items yet.</p>
                                         <p className="text-sm text-plum/40 mb-6">
                                             Browse our collection and save items you love!
                                         </p>
-                                        <div className="text-2xl font-bold text-rose">
-                                            11.03
-                                        </div>
+                                        <button
+                                            onClick={() => navigate('/collections-m')}
+                                            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-plum to-rose text-cream rounded-lg hover:shadow-lg transition-all"
+                                        >
+                                            Browse Collection
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        {picks.map((item) => (
+                                            <div key={item._id} className="bg-cream/20 rounded-xl overflow-hidden border border-cream hover:shadow-lg transition-all group relative">
+                                                <div
+                                                    className="h-48 bg-cover bg-center group-hover:scale-105 transition-transform duration-300"
+                                                    style={{ backgroundImage: `url(${item.images[0]})` }}
+                                                />
+                                                <button
+                                                    onClick={() => handleRemovePick(item._id)}
+                                                    className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md hover:bg-rose hover:text-white transition-colors"
+                                                    title="Remove from picks"
+                                                >
+                                                    <Heart size={16} className="fill-rose text-rose" />
+                                                </button>
+                                                <div className="p-4">
+                                                    <div className="flex justify-between items-start mb-2">
+                                                        <div>
+                                                            <h3 className="font-semibold text-plum">{item.category}</h3>
+                                                            <p className="text-sm text-plum/60">Size: {item.size}</p>
+                                                        </div>
+                                                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                                                            item.status === 'available'
+                                                                ? 'bg-green-100 text-green-700'
+                                                                : item.status === 'reserved'
+                                                                    ? 'bg-yellow-100 text-yellow-700'
+                                                                    : 'bg-gray-100 text-gray-700'
+                                                        }`}>
+                                                            {item.status}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-xs text-plum/40">
+                                                        Added: {new Date(item.createdAt).toLocaleDateString()}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        ))}
                                     </div>
                                 )}
                             </div>
