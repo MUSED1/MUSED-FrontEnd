@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import { Header } from './Header'
 import { Footer } from './Footer'
-import { Edit, Trash2, Eye, Save, X } from 'lucide-react'
+import { Edit, Trash2, Eye, Save, X, Plus } from 'lucide-react'
 
 interface ClothingItem {
     _id: string;
@@ -31,6 +31,8 @@ export function AdminClothing() {
     const [editForm, setEditForm] = useState<Partial<ClothingItem>>({})
     const [previewImage, setPreviewImage] = useState<string | null>(null)
     const [currentYear] = useState<number>(2026)
+    const [uploadingImage, setUploadingImage] = useState(false)
+    const [deletingImage, setDeletingImage] = useState<string | null>(null)
 
     const categories = [
         'Dresses', 'Tops', 'Bottoms', 'Outerwear', 'Accessories',
@@ -166,6 +168,111 @@ export function AdminClothing() {
         }))
     }
 
+    // New function to handle image upload
+    const handleImageUpload = async (itemId: string, file: File) => {
+        try {
+            setUploadingImage(true)
+            setError('')
+
+            // Convert file to base64
+            const base64Image = await new Promise<string>((resolve, reject) => {
+                const reader = new FileReader()
+                reader.readAsDataURL(file)
+                reader.onload = () => resolve(reader.result as string)
+                reader.onerror = error => reject(error)
+            })
+
+            // Remove the data:image/xyz;base64, prefix if needed
+            base64Image.split(',')[1] || base64Image;
+// Find the current item
+            const currentItem = allClothingItems.find(item => item._id === itemId)
+            if (!currentItem) return
+
+            // Create updated images array
+            const updatedImages = [...currentItem.images, base64Image]
+
+            // Update the item with new images array
+            const response = await fetch(`https://mused-backend.onrender.com/api/clothing/${itemId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    ...currentItem,
+                    images: updatedImages
+                })
+            })
+
+            const result = await response.json()
+
+            if (response.ok && result.success) {
+                // Update local state
+                const updatedAllItems = allClothingItems.map(item =>
+                    item._id === itemId
+                        ? { ...item, images: updatedImages }
+                        : item
+                )
+                setAllClothingItems(updatedAllItems)
+                filterItemsFrom2026(updatedAllItems)
+            } else {
+                throw new Error(result.message)
+            }
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Error uploading image')
+        } finally {
+            setUploadingImage(false)
+        }
+    }
+
+    // New function to handle image deletion
+    const handleImageDelete = async (itemId: string, imageUrl: string) => {
+        if (!confirm('Are you sure you want to delete this image?')) {
+            return
+        }
+
+        try {
+            setDeletingImage(imageUrl)
+            setError('')
+
+            const currentItem = allClothingItems.find(item => item._id === itemId)
+            if (!currentItem) return
+
+            // Filter out the deleted image
+            const updatedImages = currentItem.images.filter(url => url !== imageUrl)
+
+            // Update the item with new images array
+            const response = await fetch(`https://mused-backend.onrender.com/api/clothing/${itemId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    ...currentItem,
+                    images: updatedImages
+                })
+            })
+
+            const result = await response.json()
+
+            if (response.ok && result.success) {
+                // Update local state
+                const updatedAllItems = allClothingItems.map(item =>
+                    item._id === itemId
+                        ? { ...item, images: updatedImages }
+                        : item
+                )
+                setAllClothingItems(updatedAllItems)
+                filterItemsFrom2026(updatedAllItems)
+            } else {
+                throw new Error(result.message)
+            }
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Error deleting image')
+        } finally {
+            setDeletingImage(null)
+        }
+    }
+
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('en-US', {
             year: 'numeric',
@@ -238,10 +345,33 @@ export function AdminClothing() {
                         {filteredItems.map((item) => (
                             <div key={item._id} className="bg-white rounded-2xl shadow-lg p-6">
                                 <div className="grid md:grid-cols-3 gap-6">
-                                    {/* Image Section */}
+                                    {/* Image Section - UPDATED with delete and add functionality */}
                                     <div className="space-y-4">
-                                        <h3 className="text-lg font-semibold text-plum">Images</h3>
-                                        <div className="space-y-2">
+                                        <div className="flex justify-between items-center">
+                                            <h3 className="text-lg font-semibold text-plum">Images</h3>
+                                            {editingId === item._id && (
+                                                <label className="cursor-pointer bg-plum text-white p-2 rounded-lg hover:bg-plum/80 transition-colors">
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        className="hidden"
+                                                        onChange={(e) => {
+                                                            const file = e.target.files?.[0]
+                                                            if (file) {
+                                                                handleImageUpload(item._id, file)
+                                                            }
+                                                        }}
+                                                        disabled={uploadingImage}
+                                                    />
+                                                    {uploadingImage ? (
+                                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                                    ) : (
+                                                        <Plus size={16} />
+                                                    )}
+                                                </label>
+                                            )}
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-2">
                                             {item.images.map((imageUrl, index) => (
                                                 <div key={index} className="relative group">
                                                     <img
@@ -253,12 +383,27 @@ export function AdminClothing() {
                                                             e.currentTarget.src = 'https://via.placeholder.com/400x400?text=Image+Not+Found'
                                                         }}
                                                     />
-                                                    <button
-                                                        onClick={() => setPreviewImage(imageUrl)}
-                                                        className="absolute inset-0 w-full h-full flex items-center justify-center bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all"
-                                                    >
-                                                        <Eye size={20} className="text-white opacity-0 group-hover:opacity-100" />
-                                                    </button>
+                                                    <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all">
+                                                        <button
+                                                            onClick={() => setPreviewImage(imageUrl)}
+                                                            className="text-white opacity-0 group-hover:opacity-100 hover:scale-110 transition-all"
+                                                        >
+                                                            <Eye size={20} />
+                                                        </button>
+                                                        {editingId === item._id && (
+                                                            <button
+                                                                onClick={() => handleImageDelete(item._id, imageUrl)}
+                                                                disabled={deletingImage === imageUrl}
+                                                                className="text-red-500 opacity-0 group-hover:opacity-100 hover:scale-110 transition-all bg-white rounded-full p-1"
+                                                            >
+                                                                {deletingImage === imageUrl ? (
+                                                                    <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
+                                                                ) : (
+                                                                    <Trash2 size={16} />
+                                                                )}
+                                                            </button>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             ))}
                                         </div>
