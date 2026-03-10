@@ -241,35 +241,59 @@ export function CollectionsM() {
     // Process payment via Stripe - FIXED VERSION
 // In CollectionsM.tsx, update the processPayment function:
 
+    // Process payment via Stripe - FIXED VERSION
     const processPayment = async (formData: ReservationFormData, outfit: ClothingItem) => {
         setProcessingPayment(true);
 
         try {
+            // Create a unique session ID
             const sessionId = `reservation_${outfit._id}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
+            // Store COMPLETE reservation data
             const reservationSession = {
                 sessionId,
-                formData,
-                outfit,
+                formData: {
+                    name: formData.name,
+                    email: formData.email,
+                    phone: formData.phone,
+                    address: formData.address,
+                    instructions: formData.instructions,
+                    deliveryDay: formData.deliveryDay,
+                    deliveryTime: formData.deliveryTime,
+                    returnDay: formData.returnDay,
+                    returnTime: formData.returnTime,
+                    deliveryMethod: formData.deliveryMethod,
+                    agreeToTerms: formData.agreeToTerms
+                },
+                outfit: {
+                    id: outfit._id, // Make sure this is set correctly
+                    _id: outfit._id,
+                    name: outfit.fullName,
+                    category: outfit.category,
+                    size: outfit.size,
+                    images: outfit.images
+                },
                 timestamp: new Date().toISOString()
             };
 
             try {
                 localStorage.setItem('pendingReservation', JSON.stringify(reservationSession));
-            } catch {
+                console.log('✅ Reservation data saved to localStorage:', reservationSession);
+            } catch (e) {
                 console.warn('LocalStorage unavailable, proceeding without storage');
             }
 
-            // Send the correct amount (290 HKD)
+            // Call your backend to create a Stripe Checkout session
             const response = await axios.post(`${API_URL}/create-checkout-session`, {
                 itemId: outfit._id,
                 itemName: `${outfit.fullName}'s ${outfit.category}`,
-                amount: 290, // Fixed amount
+                amount: 290, // HKD
                 customerEmail: formData.email,
                 sessionId: sessionId
             });
 
             if (response.data.success && response.data.url) {
+                // Redirect to Stripe Checkout
                 window.location.href = response.data.url;
             } else {
                 throw new Error('Failed to create checkout session');
@@ -280,7 +304,7 @@ export function CollectionsM() {
             setProcessingPayment(false);
             throw new Error(err instanceof Error ? err.message : 'Failed to process payment');
         }
-    };    // Helper function to get image URL through proxy
+    };
     const getImageUrl = (itemId: string, index: number) => {
         return `${API_URL}/clothing/image/${itemId}/${index}`;
     };
