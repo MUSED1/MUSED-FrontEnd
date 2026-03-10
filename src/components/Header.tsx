@@ -69,9 +69,12 @@ export function Header() {
                         <button className="text-cream hover:text-gold transition-all duration-300 ease-in-out transform hover:scale-110">
                             <Search size={20} />
                         </button>
-                        <button className="text-cream hover:text-gold transition-all duration-300 ease-in-out transform hover:scale-110">
+                        <Link
+                            to="/profile"
+                            className="text-cream hover:text-gold transition-all duration-300 ease-in-out transform hover:scale-110"
+                        >
                             <User size={20} />
-                        </button>
+                        </Link>
                         <button className="text-cream hover:text-gold transition-all duration-300 ease-in-out transform hover:scale-110 relative">
                             <ShoppingBag size={20} />
                             <span className="absolute -top-1 -right-1 bg-gold text-[#5b1b3a] rounded-full w-4 h-4 flex items-center justify-center text-xs transition-all duration-300 ease-in-out hover:bg-cream hover:scale-110">
