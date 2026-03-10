@@ -89,40 +89,74 @@ export function Confirmation() {
         try {
             const pickupMethod = formData.deliveryMethod || formData.pickupMethod;
 
+            // Parse the delivery day to extract date and time
+            let deliveryDay = formData.deliveryDay || '';
+            let deliveryTime = formData.deliveryTime || '';
+
+            // If deliveryDay contains time info (like 'sunday-4-6'), parse it
+            if (deliveryDay.includes('-')) {
+                const parts = deliveryDay.split('-');
+                if (parts.length >= 3) {
+                    // Format: day-time (e.g., sunday-4-6)
+                    deliveryDay = parts[0]; // 'sunday'
+                    deliveryTime = `${parts[1]}-${parts[2]} pm`; // '4-6 pm'
+                }
+            }
+
+            // Parse return day similarly
+            let returnDay = formData.returnDay || '';
+            let returnTime = formData.returnTime || '';
+
+            if (returnDay.includes('-')) {
+                const parts = returnDay.split('-');
+                if (parts.length >= 3) {
+                    returnDay = parts[0];
+                    returnTime = `${parts[1]}-${parts[2]} pm`;
+                }
+            }
+
             const reservationData = {
                 fullName: formData.name,
                 email: formData.email,
                 phoneNumber: formData.phone,
                 pickupMethod: pickupMethod,
-                pickupTime: formData.deliveryTime || formData.pickupDate,
-                pickupDay: formData.deliveryDay || formData.pickupDate,
+                pickupTime: deliveryTime || formData.pickupDate,
+                pickupDay: deliveryDay || formData.pickupDate,
                 pickupInstructions: formData.instructions,
                 specialInstructions: formData.instructions,
-                returnDay: formData.returnDay || '',
-                returnTime: formData.returnTime || ''
-            }
+                returnDay: returnDay || '',
+                returnTime: returnTime || ''
+            };
 
-            console.log('Completing pending reservation:', reservationData)
+            console.log('Completing pending reservation for outfit ID:', outfit.id || outfit.id);
+            console.log('Reservation data:', reservationData);
 
             // Validate that all required fields are present
-            if (!reservationData.fullName || !reservationData.email || !reservationData.phoneNumber || !reservationData.pickupMethod || !reservationData.returnDay) {
+            if (!reservationData.fullName || !reservationData.email || !reservationData.phoneNumber || !reservationData.pickupMethod) {
                 throw new Error('Missing required fields: ' + JSON.stringify({
                     fullName: !!reservationData.fullName,
                     email: !!reservationData.email,
                     phoneNumber: !!reservationData.phoneNumber,
-                    pickupMethod: !!reservationData.pickupMethod,
-                    returnDay: !!reservationData.returnDay
+                    pickupMethod: !!reservationData.pickupMethod
                 }));
             }
 
-            const API_BASE_URL = 'https://mused-backend.onrender.com/api/clothing'
-            const response = await fetch(`${API_BASE_URL}/${outfit.id}/reserve`, {
+            const outfitId = outfit.id || outfit.id;
+            if (!outfitId) {
+                throw new Error('Missing outfit ID');
+            }
+
+            const API_BASE_URL = 'https://mused-backend.onrender.com/api/clothing';
+            const url = `${API_BASE_URL}/${outfitId}/reserve`;
+            console.log('Sending request to:', url);
+
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(reservationData),
-            })
+            });
 
             if (!response.ok) {
                 let errorData;
@@ -131,27 +165,26 @@ export function Confirmation() {
                 } catch {
                     errorData = { message: `HTTP error: ${response.status}` };
                 }
-                throw new Error(errorData.message || `Failed to submit reservation: ${response.status}`)
+                throw new Error(errorData.message || `Failed to submit reservation: ${response.status}`);
             }
 
-            const result = await response.json()
+            const result = await response.json();
 
             if (!result.success) {
-                throw new Error(result.message || 'Failed to submit reservation')
+                throw new Error(result.message || 'Failed to submit reservation');
             }
 
-            console.log('Pending reservation completed successfully')
-            // Clear pending reservation on success
-            localStorage.removeItem('pendingReservation')
+            console.log('✅ Pending reservation completed successfully');
+            localStorage.removeItem('pendingReservation');
+            return result;
 
         } catch (error) {
-            console.error('Pending reservation completion error:', error)
-            const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred'
-            setReservationError(`Payment was successful but reservation failed: ${errorMessage}`)
-            throw error
+            console.error('❌ Pending reservation completion error:', error);
+            const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+            setReservationError(`Payment was successful but reservation failed: ${errorMessage}`);
+            throw error;
         }
-    }
-
+    };
     const checkReservationStatus = async () => {
         try {
             setIsLoading(true);
