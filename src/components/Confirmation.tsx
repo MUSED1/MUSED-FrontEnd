@@ -1,9 +1,9 @@
 // components/Confirmation.tsx
 import { Header } from './Header'
 import { Footer } from './Footer'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
-import { AlertCircle, CheckCircle, XCircle, RefreshCw, Mail } from 'lucide-react'
+import { AlertCircle, CheckCircle, XCircle, RefreshCw, Mail, Heart } from 'lucide-react'
 
 interface ReservationFormData {
     name: string;
@@ -38,11 +38,20 @@ interface PendingReservation {
     timestamp: string;
 }
 
+interface PaymentDetails {
+    amount: number;
+    originalAmount: number;
+    discountApplied: boolean;
+    promoCode?: string;
+}
+
 export function Confirmation() {
+    const navigate = useNavigate();
     const [reservationError, setReservationError] = useState<string | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const [recoveryData, setRecoveryData] = useState<PendingReservation | null>(null)
     const [paymentStatus, setPaymentStatus] = useState<'verifying' | 'success' | 'failed' | 'recovery'>('verifying')
+    const [paymentDetails, setPaymentDetails] = useState<PaymentDetails | null>(null)
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -62,6 +71,18 @@ export function Confirmation() {
 
             if (response.ok) {
                 const result = await response.json();
+
+                // Store payment details if available
+                if (result.amountTotal) {
+                    const amountInHKD = result.amountTotal / 100;
+                    setPaymentDetails({
+                        amount: amountInHKD,
+                        originalAmount: 290,
+                        discountApplied: amountInHKD < 290,
+                        promoCode: result.promoCode
+                    });
+                }
+
                 return result.paid === true;
             }
         } catch (error) {
@@ -74,11 +95,23 @@ export function Confirmation() {
         const stripeSession = urlParams.get('session_id');
 
         if (paymentSuccess === 'true' || stripeSession) {
+            // Check if there was a discount applied (you might want to store this in sessionStorage)
+            const hasDiscount = sessionStorage.getItem('promoCodeApplied') === 'true';
+            setPaymentDetails({
+                amount: hasDiscount ? 250 : 290,
+                originalAmount: 290,
+                discountApplied: hasDiscount
+            });
             return true;
         }
 
         // Fallback: Check if coming from Stripe
         if (document.referrer.includes('stripe.com')) {
+            setPaymentDetails({
+                amount: 290,
+                originalAmount: 290,
+                discountApplied: false
+            });
             return true;
         }
 
@@ -185,6 +218,7 @@ export function Confirmation() {
             throw error;
         }
     };
+
     const checkReservationStatus = async () => {
         try {
             setIsLoading(true);
@@ -235,6 +269,13 @@ export function Confirmation() {
                 const paymentSuccess = urlParams.get('payment_success');
 
                 if (paymentSuccess === 'true') {
+                    // Try to get payment details from URL or session
+                    const hasDiscount = sessionStorage.getItem('promoCodeApplied') === 'true';
+                    setPaymentDetails({
+                        amount: hasDiscount ? 250 : 290,
+                        originalAmount: 290,
+                        discountApplied: hasDiscount
+                    });
                     setPaymentStatus('success');
                 } else {
                     setReservationError('No reservation data found. Please contact support with your payment details.');
@@ -273,6 +314,14 @@ export function Confirmation() {
             `Hello Support Team,\n\nI recently made a payment for a reservation but encountered an issue with the reservation completion.\n\nError details: ${reservationError || 'Unknown error'}\n\nPlease assist me in resolving this issue.\n\nThank you.`
         )
         window.location.href = `mailto:support@mused.com?subject=${subject}&body=${body}`
+    }
+
+    const handleViewReservations = () => {
+        navigate('/profile?tab=reservations');
+    }
+
+    const handleViewPicks = () => {
+        navigate('/profile?tab=picks');
     }
 
     if (isLoading) {
@@ -396,16 +445,16 @@ export function Confirmation() {
                                         <span>Contact Support Urgently</span>
                                     </button>
                                     <Link
-                                        to="/diner"
+                                        to="/collections-m"
                                         className="bg-gray-600 text-white px-8 py-3 rounded-full hover:bg-gray-700 transition-all duration-300 font-semibold text-center"
                                     >
-                                        Back to Diner
+                                        Back to Collection
                                     </Link>
                                 </div>
                             </>
                         )}
 
-                        {/* Success State */}
+                        {/* Success State - UPDATED WITH PROFILE REDIRECTS */}
                         {!reservationError && paymentStatus === 'success' && (
                             <>
                                 <div className="w-24 h-24 mx-auto mb-6 bg-green-100 rounded-full flex items-center justify-center">
@@ -418,7 +467,7 @@ export function Confirmation() {
 
                                 <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
                                     <p className="text-xl text-plum/80 mb-6 font-amandine">
-                                        Thank you for your reservation! Your payment has been processed successfully.Check your mail and spam
+                                        Thank you for your reservation! Your payment has been processed successfully.
                                     </p>
 
                                     <div className="bg-cream rounded-xl p-6 mb-6 text-left">
@@ -430,7 +479,7 @@ export function Confirmation() {
                                             </div>
                                             <div className="flex justify-between">
                                                 <span className="font-semibold">Date:</span>
-                                                <span>Nov 18, 2025</span>
+                                                <span>March 19, 2025</span>
                                             </div>
                                             <div className="flex justify-between">
                                                 <span className="font-semibold">Time:</span>
@@ -438,12 +487,24 @@ export function Confirmation() {
                                             </div>
                                             <div className="flex justify-between">
                                                 <span className="font-semibold">Location:</span>
-                                                <span>Pazta 10 Hollywood road, central Hong Kong </span>
+                                                <span>Pazta 10 Hollywood road, central Hong Kong</span>
                                             </div>
                                             <div className="flex justify-between text-lg font-bold text-gold mt-4 pt-4 border-t border-amber-200">
                                                 <span>Amount Paid:</span>
-                                                <span>250 HKD</span>
+                                                <span>{paymentDetails?.amount || 290} HKD</span>
                                             </div>
+                                            {paymentDetails?.discountApplied && (
+                                                <div className="flex justify-between text-sm text-green-600">
+                                                    <span>Original Price:</span>
+                                                    <span className="line-through text-gray-400">{paymentDetails.originalAmount} HKD</span>
+                                                </div>
+                                            )}
+                                            {paymentDetails?.promoCode && (
+                                                <div className="flex justify-between text-sm text-green-600">
+                                                    <span>Promo Code Applied:</span>
+                                                    <span className="font-mono">{paymentDetails.promoCode}</span>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
 
@@ -454,7 +515,6 @@ export function Confirmation() {
                                                 <p className="text-green-800 font-semibold">Reservation Confirmed!</p>
                                                 <p className="text-green-700 text-sm mt-1">
                                                     Your reservation has been successfully processed. A confirmation email has been sent to your email address with all the details.
-                                                    Please check your inbox and spam folder.
                                                 </p>
                                             </div>
                                         </div>
@@ -462,17 +522,28 @@ export function Confirmation() {
                                 </div>
 
                                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                                    <Link
-                                        to="/diner"
-                                        className="bg-plum text-cream px-8 py-3 rounded-full hover:bg-gold transition-all duration-300 font-semibold text-center"
+                                    <button
+                                        onClick={handleViewReservations}
+                                        className="bg-gradient-to-r from-plum to-rose text-cream px-8 py-3 rounded-full hover:shadow-xl transition-all duration-300 font-semibold text-center flex items-center justify-center gap-2"
                                     >
-                                        Back to Diner
-                                    </Link>
-                                    <Link
-                                        to="/"
-                                        className="bg-gold text-plum px-8 py-3 rounded-full hover:bg-plum hover:text-cream transition-all duration-300 font-semibold text-center"
+                                        <CheckCircle size={20} />
+                                        View My Reservations
+                                    </button>
+                                    <button
+                                        onClick={handleViewPicks}
+                                        className="bg-cream text-plum px-8 py-3 rounded-full hover:bg-amber-100 transition-all duration-300 font-semibold text-center flex items-center justify-center gap-2 border-2 border-plum/20"
                                     >
-                                        Return to Home
+                                        <Heart size={20} />
+                                        Go to My Picks
+                                    </button>
+                                </div>
+
+                                <div className="mt-4">
+                                    <Link
+                                        to="/collections-m"
+                                        className="text-plum/60 hover:text-plum transition-colors duration-300 text-sm underline"
+                                    >
+                                        Continue browsing collection
                                     </Link>
                                 </div>
                             </>

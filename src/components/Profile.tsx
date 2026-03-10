@@ -5,7 +5,7 @@ import { Header } from './Header';
 import { Footer } from './Footer';
 import { PhoneEdit } from './PhoneEdit';
 import { useAuth } from '../hooks/useAuth';
-import { User, Package, Heart, LogOut, Star } from 'lucide-react';
+import { User, Package, Heart, LogOut, Star, CheckCircle } from 'lucide-react';
 import axios from 'axios';
 
 interface ClothingItem {
@@ -18,16 +18,34 @@ interface ClothingItem {
     university?: string;
     address?: string;
     pickupMethod?: string;
+    fullName?: string;
+}
+
+interface Reservation {
+    _id: string;
+    clothingId: ClothingItem;
+    fullName: string;
+    email: string;
+    phoneNumber: string;
+    pickupMethod: string;
+    pickupTime: string;
+    pickupDay: string;
+    returnDay: string;
+    returnTime: string;
+    status: 'active' | 'completed' | 'cancelled';
+    createdAt: string;
 }
 
 export function Profile() {
     const { user, isAuthenticated, loading, logout } = useAuth();
     const navigate = useNavigate();
-    const [activeTab, setActiveTab] = useState<'profile' | 'uploads' | 'picks' | 'settings'>('profile');
+    const [activeTab, setActiveTab] = useState<'profile' | 'uploads' | 'picks' | 'reservations' | 'settings'>('profile');
     const [uploads, setUploads] = useState<ClothingItem[]>([]);
     const [picks, setPicks] = useState<ClothingItem[]>([]);
+    const [reservations, setReservations] = useState<Reservation[]>([]);
     const [isLoadingUploads, setIsLoadingUploads] = useState(false);
     const [isLoadingPicks, setIsLoadingPicks] = useState(false);
+    const [isLoadingReservations, setIsLoadingReservations] = useState(false);
 
     useEffect(() => {
         if (!loading && !isAuthenticated) {
@@ -41,6 +59,8 @@ export function Profile() {
                 fetchUserUploads();
             } else if (activeTab === 'picks') {
                 fetchUserPicks();
+            } else if (activeTab === 'reservations') {
+                fetchUserReservations();
             }
         }
     }, [isAuthenticated, activeTab]);
@@ -83,14 +103,33 @@ export function Profile() {
         }
     };
 
+    const fetchUserReservations = async () => {
+        setIsLoadingReservations(true);
+        try {
+            const token = localStorage.getItem('token');
+            const API_URL = import.meta.env.VITE_API_URL?.replace('/auth', '') || 'https://mused-backend.onrender.com/api';
+
+            const response = await axios.get(`${API_URL}/users/reservations`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            if (response.data.success) {
+                setReservations(response.data.data);
+            }
+        } catch (error) {
+            console.error('Error fetching reservations:', error);
+            setReservations([]);
+        } finally {
+            setIsLoadingReservations(false);
+        }
+    };
+
     const handleLogout = () => {
         logout();
         navigate('/');
     };
 
     const handlePhoneUpdate = (newPhone: string) => {
-        // This will trigger a re-render with the updated user data
-        // The actual update is handled by the PhoneEdit component
         console.log('Phone updated to:', newPhone);
     };
 
@@ -103,7 +142,6 @@ export function Profile() {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
-            // Remove from local state
             setPicks(prev => prev.filter(item => item._id !== itemId));
         } catch (error) {
             console.error('Error removing pick:', error);
@@ -203,7 +241,33 @@ export function Profile() {
                                     : 'text-plum/60 hover:text-plum'
                             }`}
                         >
-                            My Picks
+                            <span className="flex items-center gap-2">
+                                <Heart size={16} />
+                                My Picks
+                                {picks.length > 0 && (
+                                    <span className="bg-rose text-white text-xs px-2 py-0.5 rounded-full">
+                                        {picks.length}
+                                    </span>
+                                )}
+                            </span>
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('reservations')}
+                            className={`px-6 py-3 font-medium transition-all relative whitespace-nowrap ${
+                                activeTab === 'reservations'
+                                    ? 'text-rose after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-rose'
+                                    : 'text-plum/60 hover:text-plum'
+                            }`}
+                        >
+                            <span className="flex items-center gap-2">
+                                <CheckCircle size={16} />
+                                My Reservations
+                                {reservations.length > 0 && (
+                                    <span className="bg-green-500 text-white text-xs px-2 py-0.5 rounded-full">
+                                        {reservations.length}
+                                    </span>
+                                )}
+                            </span>
                         </button>
                         <button
                             onClick={() => setActiveTab('settings')}
@@ -244,7 +308,6 @@ export function Profile() {
                                     <div>
                                         <label className="block text-sm font-medium text-plum/60 mb-2">Member Since</label>
                                         <div className="p-3 bg-cream/30 rounded-lg text-plum">
-                                            {/* Use current date as fallback since user object doesn't have createdAt */}
                                             {new Date().toLocaleDateString('en-US', {
                                                 year: 'numeric',
                                                 month: 'long',
@@ -254,10 +317,10 @@ export function Profile() {
                                     </div>
                                 </div>
 
-                                {/* Recent Activity Summary */}
+                                {/* Activity Summary */}
                                 <div className="border-t border-cream pt-6 mt-6">
-                                    <h3 className="text-lg font-kaldera text-plum mb-4">Recent Activity</h3>
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <h3 className="text-lg font-kaldera text-plum mb-4">Activity Summary</h3>
+                                    <div className="grid grid-cols-3 gap-4">
                                         <div className="bg-cream/30 rounded-xl p-4 text-center">
                                             <Package className="mx-auto text-rose mb-2" size={24} />
                                             <div className="text-2xl font-bold text-plum">{uploads.length}</div>
@@ -267,6 +330,11 @@ export function Profile() {
                                             <Heart className="mx-auto text-rose mb-2" size={24} />
                                             <div className="text-2xl font-bold text-plum">{picks.length}</div>
                                             <div className="text-sm text-plum/60">Items Picked</div>
+                                        </div>
+                                        <div className="bg-cream/30 rounded-xl p-4 text-center">
+                                            <CheckCircle className="mx-auto text-green-600 mb-2" size={24} />
+                                            <div className="text-2xl font-bold text-plum">{reservations.length}</div>
+                                            <div className="text-sm text-plum/60">Reservations</div>
                                         </div>
                                     </div>
                                 </div>
@@ -300,6 +368,16 @@ export function Profile() {
                                         >
                                             <Star size={18} />
                                             View My Picks
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                setActiveTab('reservations');
+                                                fetchUserReservations();
+                                            }}
+                                            className="flex items-center gap-2 px-6 py-3 border-2 border-green-600/20 text-green-700 rounded-lg hover:bg-green-50 transition-all"
+                                        >
+                                            <CheckCircle size={18} />
+                                            View My Reservations
                                         </button>
                                     </div>
                                 </div>
@@ -375,8 +453,13 @@ export function Profile() {
                         {activeTab === 'picks' && (
                             <div>
                                 <div className="flex justify-between items-center mb-6">
-                                    <h2 className="text-2xl font-kaldera text-plum">My Picks</h2>
-                                    <span className="text-sm text-plum/60">{picks.length} items saved</span>
+                                    <h2 className="text-2xl font-kaldera text-plum flex items-center gap-2">
+                                        <Heart className="text-rose" size={24} />
+                                        My Picks
+                                    </h2>
+                                    <span className="text-sm text-plum/60 bg-cream/50 px-3 py-1 rounded-full">
+                                        {picks.length} items saved
+                                    </span>
                                 </div>
 
                                 {isLoadingPicks ? (
@@ -386,16 +469,16 @@ export function Profile() {
                                 ) : picks.length === 0 ? (
                                     <div className="text-center py-12 bg-cream/30 rounded-xl">
                                         <Heart size={48} className="text-plum/20 mx-auto mb-4" />
-                                        <p className="text-plum/60 mb-4"></p>
+                                        <p className="text-plum/60 mb-2">No picks yet</p>
                                         <p className="text-sm text-plum/40 mb-6">
-                                            Collection Drops 11.03
+                                            Browse the collection and save items you like
                                         </p>
-                                        {/*<button
+                                        <button
                                             onClick={() => navigate('/collections-m')}
                                             className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-plum to-rose text-cream rounded-lg hover:shadow-lg transition-all"
                                         >
                                             Browse Collection
-                                        </button>*/}
+                                        </button>
                                     </div>
                                 ) : (
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -415,7 +498,9 @@ export function Profile() {
                                                 <div className="p-4">
                                                     <div className="flex justify-between items-start mb-2">
                                                         <div>
-                                                            <h3 className="font-semibold text-plum">{item.category}</h3>
+                                                            <h3 className="font-semibold text-plum">
+                                                                {item.fullName ? `${item.fullName}'s ${item.category}` : item.category}
+                                                            </h3>
                                                             <p className="text-sm text-plum/60">Size: {item.size}</p>
                                                         </div>
                                                         <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
@@ -431,6 +516,103 @@ export function Profile() {
                                                     <p className="text-xs text-plum/40">
                                                         Added: {new Date(item.createdAt).toLocaleDateString()}
                                                     </p>
+                                                    {item.status === 'reserved' && (
+                                                        <div className="mt-2 text-xs text-amber-600 bg-amber-50 p-1 rounded flex items-center gap-1">
+                                                            <CheckCircle size={12} />
+                                                            Already reserved by someone
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {activeTab === 'reservations' && (
+                            <div>
+                                <div className="flex justify-between items-center mb-6">
+                                    <h2 className="text-2xl font-kaldera text-plum flex items-center gap-2">
+                                        <CheckCircle className="text-green-600" size={24} />
+                                        My Reservations
+                                    </h2>
+                                    <span className="text-sm text-plum/60 bg-cream/50 px-3 py-1 rounded-full">
+                                        {reservations.length} confirmed
+                                    </span>
+                                </div>
+
+                                {isLoadingReservations ? (
+                                    <div className="text-center py-12">
+                                        <div className="w-12 h-12 border-4 border-green-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                                    </div>
+                                ) : reservations.length === 0 ? (
+                                    <div className="text-center py-12 bg-cream/30 rounded-xl">
+                                        <CheckCircle size={48} className="text-plum/20 mx-auto mb-4" />
+                                        <p className="text-plum/60 mb-2">No reservations yet</p>
+                                        <p className="text-sm text-plum/40 mb-6">
+                                            Your paid and confirmed reservations will appear here
+                                        </p>
+                                        <button
+                                            onClick={() => navigate('/collections-m')}
+                                            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-plum to-rose text-cream rounded-lg hover:shadow-lg transition-all"
+                                        >
+                                            Browse Collection
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-6">
+                                        {reservations.map((reservation) => (
+                                            <div key={reservation._id} className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl overflow-hidden border border-green-200 shadow-md hover:shadow-lg transition-all">
+                                                <div className="flex flex-col md:flex-row">
+                                                    {reservation.clothingId && reservation.clothingId.images && reservation.clothingId.images.length > 0 && (
+                                                        <div className="md:w-48 h-48 md:h-auto">
+                                                            <img
+                                                                src={reservation.clothingId.images[0]}
+                                                                alt={reservation.clothingId.category}
+                                                                className="w-full h-full object-cover"
+                                                                onError={(e) => {
+                                                                    e.currentTarget.src = 'https://via.placeholder.com/400x400?text=Image+Not+Found';
+                                                                }}
+                                                            />
+                                                        </div>
+                                                    )}
+                                                    <div className="flex-1 p-6">
+                                                        <div className="flex justify-between items-start mb-4">
+                                                            <div>
+                                                                <h3 className="text-xl font-bold text-plum">
+                                                                    {reservation.clothingId?.fullName
+                                                                        ? `${reservation.clothingId.fullName}'s ${reservation.clothingId.category}`
+                                                                        : 'Reserved Item'}
+                                                                </h3>
+                                                                <p className="text-plum/60">Size: {reservation.clothingId?.size || 'N/A'}</p>
+                                                            </div>
+                                                            <span className="bg-green-600 text-white px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
+                                                                <CheckCircle size={12} />
+                                                                PAID & CONFIRMED
+                                                            </span>
+                                                        </div>
+
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                                            <div className="bg-white/50 rounded-lg p-3">
+                                                                <p className="text-xs text-plum/40">Delivery</p>
+                                                                <p className="text-sm font-medium text-plum">{reservation.pickupDay || 'Not specified'}</p>
+                                                                <p className="text-xs text-plum/60">{reservation.pickupTime || ''}</p>
+                                                            </div>
+                                                            <div className="bg-white/50 rounded-lg p-3">
+                                                                <p className="text-xs text-plum/40">Return/Pickup</p>
+                                                                <p className="text-sm font-medium text-plum">{reservation.returnDay || 'Not specified'}</p>
+                                                                <p className="text-xs text-plum/60">{reservation.returnTime || ''}</p>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="flex justify-between items-center text-xs text-plum/40 border-t border-green-200 pt-3">
+                                                            <span>Reserved on: {new Date(reservation.createdAt).toLocaleDateString()}</span>
+                                                            <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full">
+                                                                {reservation.status}
+                                                            </span>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         ))}
