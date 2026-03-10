@@ -128,7 +128,7 @@ export function Confirmation() {
                 returnTime: returnTime || ''
             };
 
-            console.log('Completing pending reservation for outfit ID:', outfit.id || outfit._id);
+            console.log('Completing pending reservation for outfit ID:', outfit.id || outfit.id);
             console.log('Reservation data:', reservationData);
 
             // Validate that all required fields are present
