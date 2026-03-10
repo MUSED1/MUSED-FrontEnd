@@ -31,9 +31,9 @@ export function Diner() {
                                     style, share a moment.
                                 </p>
                                 <div className="flex justify-between items-center">
-                                    <span className="text-2xl font-bold text-gold">270 HKD</span>
+                                    <span className="text-2xl font-bold text-gold">290 HKD</span>
                                     <Link
-                                        to="/dinner-collection-two"
+                                        to="/collections-m"
                                         className="bg-plum text-cream px-8 py-3 rounded-full hover:bg-gold transition-all duration-300 font-semibold"
                                     >
                                         PICK YOUR OUTFIT
@@ -44,7 +44,7 @@ export function Diner() {
                                 <div className="text-center text-white">
                                     <h3 className="text-2xl font-bold mb-4">Next Event</h3>
                                     <p className="text-xl mb-2">Wear Something Borrowed</p>
-                                    <p className="text-3xl font-bold mb-4">Nov 18, 2025</p>
+                                    <p className="text-3xl font-bold mb-4">Mar 19, 2025</p>
                                     <p className="text-amber-100">8:00 PM - Central Hong Kong</p>
                                 </div>
                             </div>
@@ -55,7 +55,6 @@ export function Diner() {
                     <div className="text-center mb-16 flex justify-center space-x-6">
                         <Link
                             to="/first-dinner"
-
                             className="bg-plum text-cream px-8 py-3 rounded-full hover:bg-gold hover:text-plum transition-all duration-300 font-semibold inline-block"
                         >
                             First Dinner Pictures
