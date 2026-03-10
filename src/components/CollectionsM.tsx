@@ -35,9 +35,6 @@ interface ReservationFormData {
     agreeToTerms: boolean;
 }
 
-// Stripe configuration
-const STRIPE_PAYMENT_URL = 'https://buy.stripe.com/dRm3cw5z59sH1vedS4ew802';
-
 export function CollectionsM() {
     const { isAuthenticated, loading: authLoading, user } = useAuth();
     const navigate = useNavigate();
@@ -89,7 +86,7 @@ export function CollectionsM() {
         { value: 'other', label: 'Other (choose date before March 19th)' }
     ];
 
-    // Return options - updated with new dates
+    // Return options
     const returnDays = [
         { value: 'friday-12-2', label: 'Friday 20th: 12-2 pm' },
         { value: 'friday-2-4', label: 'Friday 20th: 2-4 pm' },
@@ -130,7 +127,9 @@ export function CollectionsM() {
             const paymentSuccess = urlParams.get('payment_success');
             const sessionId = urlParams.get('session_id');
 
-            if (paymentSuccess === 'true' || sessionId) {
+            if (paymentSuccess === 'true' && sessionId) {
+                // You could verify the payment with your backend here
+                // await verifyPayment(sessionId);
                 window.location.href = '/confirmation';
             }
         };
@@ -239,13 +238,15 @@ export function CollectionsM() {
         }
     };
 
-    // Process payment via Stripe
+    // Process payment via Stripe - FIXED VERSION
     const processPayment = async (formData: ReservationFormData, outfit: ClothingItem) => {
         setProcessingPayment(true);
 
         try {
+            // Create a unique session ID
             const sessionId = `reservation_${outfit._id}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
+            // Store reservation data temporarily
             const reservationSession = {
                 sessionId,
                 formData,
@@ -259,31 +260,26 @@ export function CollectionsM() {
                 console.warn('LocalStorage unavailable, proceeding without storage');
             }
 
-            const successParams = new URLSearchParams({
-                payment_success: 'true',
-                session_id: sessionId,
-                item_id: outfit._id
-            }).toString();
+            // ✅ FIXED: Call your backend to create a Stripe Checkout session
+            const response = await axios.post(`${API_URL}/create-checkout-session`, {
+                itemId: outfit._id,
+                itemName: `${outfit.fullName}'s ${outfit.category}`,
+                amount: 250, // HKD
+                customerEmail: formData.email,
+                sessionId: sessionId
+            });
 
-            const paymentUrl = `${STRIPE_PAYMENT_URL}?${successParams}&client_reference_id=${sessionId}&prefilled_email=${encodeURIComponent(formData.email)}`;
-
-            const newWindow = window.open(paymentUrl, '_blank');
-
-            if (!newWindow) {
-                window.location.href = paymentUrl;
+            if (response.data.success && response.data.url) {
+                // Redirect to Stripe Checkout
+                window.location.href = response.data.url;
             } else {
-                const checkInterval = setInterval(() => {
-                    if (newWindow.closed) {
-                        clearInterval(checkInterval);
-                        window.location.href = '/confirmation';
-                    }
-                }, 2000);
+                throw new Error('Failed to create checkout session');
             }
 
         } catch (err) {
             console.error('Payment processing error:', err);
             setProcessingPayment(false);
-            throw new Error('Failed to process payment');
+            throw new Error(err instanceof Error ? err.message : 'Failed to process payment');
         }
     };
 
