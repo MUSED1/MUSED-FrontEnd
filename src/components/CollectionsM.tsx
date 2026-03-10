@@ -14,6 +14,7 @@ interface ClothingItem {
     category: string;
     status: 'available' | 'reserved' | 'sold';
     createdAt: string;
+    fullName: string; // Added fullName field
 }
 
 interface UserPicks {
@@ -38,6 +39,9 @@ export function CollectionsM() {
     // Filter states
     const [selectedCategory, setSelectedCategory] = useState<string>('all');
     const [selectedSize, setSelectedSize] = useState<string>('all');
+
+    // API URL
+    const API_URL = import.meta.env.VITE_API_URL?.replace('/auth', '') || 'https://mused-backend.onrender.com/api';
 
     const categories = [
         'all', 'Dresses', 'Tops', 'Bottoms', 'Outerwear', 'Accessories',
@@ -72,7 +76,6 @@ export function CollectionsM() {
             setError('');
 
             const token = localStorage.getItem('token');
-            const API_URL = import.meta.env.VITE_API_URL?.replace('/auth', '') || 'https://mused-backend.onrender.com/api';
 
             const response = await axios.get(`${API_URL}/clothing/admin/all`, {
                 headers: { Authorization: `Bearer ${token}` }
@@ -92,7 +95,6 @@ export function CollectionsM() {
     const fetchUserPicks = async () => {
         try {
             const token = localStorage.getItem('token');
-            const API_URL = import.meta.env.VITE_API_URL?.replace('/auth', '') || 'https://mused-backend.onrender.com/api';
 
             const response = await axios.get(`${API_URL}/users/picks`, {
                 headers: { Authorization: `Bearer ${token}` }
@@ -130,8 +132,6 @@ export function CollectionsM() {
     const togglePick = async (itemId: string) => {
         try {
             const token = localStorage.getItem('token');
-            const API_URL = import.meta.env.VITE_API_URL?.replace('/auth', '') || 'https://mused-backend.onrender.com/api';
-
             const isPicked = userPicks[itemId];
 
             if (isPicked) {
@@ -160,6 +160,11 @@ export function CollectionsM() {
             console.error('Error toggling pick:', err);
             setError('Failed to update picks. Please try again.');
         }
+    };
+
+    // Helper function to get image URL through proxy
+    const getImageUrl = (itemId: string, index: number) => {
+        return `${API_URL}/clothing/image/${itemId}/${index}`;
     };
 
     // Pagination
@@ -286,10 +291,10 @@ export function CollectionsM() {
                                     >
                                         <div className="relative aspect-square overflow-hidden">
                                             <img
-                                                src={item.images[0]}
-                                                alt={item.category}
+                                                src={getImageUrl(item._id, 0)}
+                                                alt={`${item.fullName}'s ${item.category}`}
                                                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 cursor-pointer"
-                                                onClick={() => setSelectedImage(item.images[0])}
+                                                onClick={() => setSelectedImage(getImageUrl(item._id, 0))}
                                                 onError={(e) => {
                                                     e.currentTarget.src = 'https://via.placeholder.com/400x400?text=Image+Not+Found';
                                                 }}
@@ -317,7 +322,9 @@ export function CollectionsM() {
 
                                         <div className="p-4">
                                             <div className="flex justify-between items-start mb-2">
-                                                <h3 className="font-semibold text-plum">{item.category}</h3>
+                                                <h3 className="font-semibold text-plum">
+                                                    {item.fullName}'s {item.category}
+                                                </h3>
                                                 <span className="text-sm text-plum/60">Size {item.size}</span>
                                             </div>
 
