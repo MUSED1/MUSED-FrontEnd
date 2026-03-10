@@ -234,7 +234,7 @@ export function Collections() {
                                         Ready to find your perfect outfit for the dinner?
                                     </p>
                                     <Link
-                                        to="/dinner-collection-two"
+                                        to="/collections-m"
                                         className="inline-flex items-center bg-[#AD7301] text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-[#FFD166] hover:text-[#5B1B3A] transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
                                     >
                                         Explore Live Collection
