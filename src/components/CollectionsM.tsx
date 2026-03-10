@@ -239,6 +239,8 @@ export function CollectionsM() {
     };
 
     // Process payment via Stripe - FIXED VERSION
+// In CollectionsM.tsx, update the processPayment function:
+
     const processPayment = async (formData: ReservationFormData, outfit: ClothingItem) => {
         setProcessingPayment(true);
 
@@ -260,11 +262,11 @@ export function CollectionsM() {
                 console.warn('LocalStorage unavailable, proceeding without storage');
             }
 
-            // ✅ FIXED: Call your backend to create a Stripe Checkout session
+            // ✅ FIXED: Send the correct amount (290 HKD)
             const response = await axios.post(`${API_URL}/create-checkout-session`, {
                 itemId: outfit._id,
                 itemName: `${outfit.fullName}'s ${outfit.category}`,
-                amount: 250, // HKD
+                amount: 290, // Changed from 250 to 290 HKD
                 customerEmail: formData.email,
                 sessionId: sessionId
             });
@@ -282,7 +284,6 @@ export function CollectionsM() {
             throw new Error(err instanceof Error ? err.message : 'Failed to process payment');
         }
     };
-
     // Helper function to get image URL through proxy
     const getImageUrl = (itemId: string, index: number) => {
         return `${API_URL}/clothing/image/${itemId}/${index}`;
