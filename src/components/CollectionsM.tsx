@@ -178,6 +178,13 @@ export function CollectionsM() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
+    const handleReserve = (itemId: string) => {
+        // Navigate to reservation page or open reservation modal
+        // You can implement this based on your requirements
+        console.log('Reserve item:', itemId);
+        // navigate(`/reserve/${itemId}`);
+    };
+
     if (authLoading || loading) {
         return (
             <div className="font-sans">
@@ -207,24 +214,11 @@ export function CollectionsM() {
                     {/* Header */}
                     <div className="text-center mb-12">
                         <h1 className="text-4xl md:text-5xl font-kaldera text-plum mb-4">
-                            Collection 2026
+                            Dinner Collection No. 3
                         </h1>
                         <p className="text-lg text-plum/80 max-w-2xl mx-auto">
-                            Browse our latest collection from 2026. Pick your favorite items and they'll be saved to your profile.
+                            Let yourself be mused. Choose your item and receive it at your door.
                         </p>
-                    </div>
-
-                    {/* Stats Bar */}
-                    <div className="bg-white rounded-xl shadow-md p-4 mb-8 flex flex-wrap items-center justify-between gap-4">
-                        <div className="flex items-center gap-4">
-                            <span className="text-plum/60">Showing:</span>
-                            <span className="font-semibold text-plum">{filteredItems.length} items</span>
-                        </div>
-                        <div className="flex items-center gap-4">
-                            <span className="text-plum/60">Your picks:</span>
-                            <span className="font-semibold text-rose">{Object.keys(userPicks).length} items</span>
-                            <Heart size={18} className="text-rose fill-rose" />
-                        </div>
                     </div>
 
                     {/* Filters */}
@@ -321,28 +315,19 @@ export function CollectionsM() {
                                         </div>
 
                                         <div className="p-4">
-                                            <div className="flex justify-between items-start mb-2">
+                                            <div className="flex justify-between items-start mb-3">
                                                 <h3 className="font-semibold text-plum">
                                                     {item.fullName}'s {item.category}
                                                 </h3>
                                                 <span className="text-sm text-plum/60">Size {item.size}</span>
                                             </div>
 
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-xs text-plum/40">
-                                                    {new Date(item.createdAt).toLocaleDateString('en-US', {
-                                                        month: 'short',
-                                                        year: 'numeric'
-                                                    })}
-                                                </span>
-
-                                                {userPicks[item._id] && (
-                                                    <span className="text-xs text-rose flex items-center gap-1">
-                                                        <Heart size={12} className="fill-rose" />
-                                                        Picked
-                                                    </span>
-                                                )}
-                                            </div>
+                                            <button
+                                                onClick={() => handleReserve(item._id)}
+                                                className="w-full bg-rose text-white py-2 px-4 rounded-lg hover:bg-rose/90 transition-colors font-medium"
+                                            >
+                                                Reserve It
+                                            </button>
                                         </div>
                                     </div>
                                 ))}
