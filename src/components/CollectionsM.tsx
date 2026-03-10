@@ -382,12 +382,14 @@ export function CollectionsM() {
                     {/* Filters */}
                     <div className="bg-white rounded-xl shadow-md p-6 mb-8">
                         <div className="grid md:grid-cols-2 gap-6">
-                            <div>
-                                <label className="block text-sm font-medium text-plum/60 mb-2">Category</label>
+                            <div className="filter-container">
+                                <label className="filter-label">
+                                    Category
+                                </label>
                                 <select
                                     value={selectedCategory}
                                     onChange={(e) => setSelectedCategory(e.target.value)}
-                                    className="w-full p-3 border border-cream rounded-lg focus:outline-none focus:ring-2 focus:ring-rose/50"
+                                    className="filter-select"
                                 >
                                     {categories.map(cat => (
                                         <option key={cat} value={cat}>
@@ -396,12 +398,14 @@ export function CollectionsM() {
                                     ))}
                                 </select>
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-plum/60 mb-2">Size</label>
+                            <div className="filter-container">
+                                <label className="filter-label">
+                                    Size
+                                </label>
                                 <select
                                     value={selectedSize}
                                     onChange={(e) => setSelectedSize(e.target.value)}
-                                    className="w-full p-3 border border-cream rounded-lg focus:outline-none focus:ring-2 focus:ring-rose/50"
+                                    className="filter-select"
                                 >
                                     {sizes.map(size => (
                                         <option key={size} value={size}>
@@ -412,7 +416,6 @@ export function CollectionsM() {
                             </div>
                         </div>
                     </div>
-
                     {/* Error Message */}
                     {error && (
                         <div className="mb-6 p-4 bg-red-100 text-red-800 rounded-xl border border-red-300 flex justify-between items-center">

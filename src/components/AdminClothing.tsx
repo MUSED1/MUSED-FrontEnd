@@ -445,6 +445,21 @@ export function AdminClothing() {
                                         <h3 className="text-lg font-semibold text-plum">Item Details</h3>
                                         <div className="space-y-2">
                                             <div className="flex justify-between items-center">
+                                                <span className="font-semibold text-plum/80">Owner Name:</span>
+                                                {editingId === item._id ? (
+                                                    <input
+                                                        type="text"
+                                                        value={editForm.fullName || ''}
+                                                        onChange={(e) => handleInputChange('fullName', e.target.value)}
+                                                        className="border border-cream rounded px-2 py-1 w-48"
+                                                        placeholder="Enter owner name"
+                                                    />
+                                                ) : (
+                                                    <span className="text-plum font-medium">{item.fullName}</span>
+                                                )}
+                                            </div>
+
+                                            <div className="flex justify-between items-center">
                                                 <span className="font-semibold text-plum/80">Category:</span>
                                                 {editingId === item._id ? (
                                                     <select
@@ -526,13 +541,14 @@ export function AdminClothing() {
                                         <h3 className="text-lg font-semibold text-plum">Contact & Pickup</h3>
                                         <div className="space-y-2 text-sm">
                                             <div>
-                                                <span className="font-semibold text-plum/80">Name:</span>
+                                                <span className="font-semibold text-plum/80">Name (again):</span>
                                                 {editingId === item._id ? (
                                                     <input
                                                         type="text"
                                                         value={editForm.fullName || ''}
                                                         onChange={(e) => handleInputChange('fullName', e.target.value)}
                                                         className="w-full border border-cream rounded px-2 py-1 mt-1"
+                                                        placeholder="Contact person name"
                                                     />
                                                 ) : (
                                                     <span className="block text-plum">{item.fullName}</span>
