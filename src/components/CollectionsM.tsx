@@ -73,7 +73,7 @@ export function CollectionsM() {
         '32', '34', '36', '38', '40', '42', 'One Size'
     ];
 
-    // Delivery/Return options
+    // Delivery options
     const deliveryDays = [
         { value: 'sunday-4-6', label: 'Sunday 15th: 4-6 pm' },
         { value: 'sunday-6-8', label: 'Sunday 15th: 6-8 pm' },
@@ -89,18 +89,20 @@ export function CollectionsM() {
         { value: 'other', label: 'Other (choose date before March 19th)' }
     ];
 
+    // Return options - updated with new dates
     const returnDays = [
-        { value: 'sunday-4-6', label: 'Sunday 22nd: 4-6 pm' },
-        { value: 'sunday-6-8', label: 'Sunday 22nd: 6-8 pm' },
-        { value: 'monday-12-2', label: 'Monday 23rd: 12-2 pm' },
-        { value: 'monday-2-4', label: 'Monday 23rd: 2-4 pm' },
-        { value: 'monday-4-6', label: 'Monday 23rd: 4-6 pm' },
-        { value: 'tuesday-12-2', label: 'Tuesday 24th: 12-2 pm' },
-        { value: 'tuesday-2-4', label: 'Tuesday 24th: 2-4 pm' },
-        { value: 'tuesday-4-6', label: 'Tuesday 24th: 4-6 pm' },
-        { value: 'wednesday-12-2', label: 'Wednesday 25th: 12-2 pm' },
-        { value: 'wednesday-2-4', label: 'Wednesday 25th: 2-4 pm' },
-        { value: 'wednesday-4-6', label: 'Wednesday 25th: 4-6 pm' },
+        { value: 'friday-12-2', label: 'Friday 20th: 12-2 pm' },
+        { value: 'friday-2-4', label: 'Friday 20th: 2-4 pm' },
+        { value: 'friday-4-6', label: 'Friday 20th: 4-6 pm' },
+        { value: 'saturday-12-2', label: 'Saturday 21st: 12-2 pm' },
+        { value: 'saturday-2-4', label: 'Saturday 21st: 2-4 pm' },
+        { value: 'saturday-4-6', label: 'Saturday 21st: 4-6 pm' },
+        { value: 'monday-12-2', label: 'Monday 22nd: 12-2 pm' },
+        { value: 'monday-2-4', label: 'Monday 22nd: 2-4 pm' },
+        { value: 'monday-4-6', label: 'Monday 22nd: 4-6 pm' },
+        { value: 'tuesday-12-2', label: 'Tuesday 23rd: 12-2 pm' },
+        { value: 'tuesday-2-4', label: 'Tuesday 23rd: 2-4 pm' },
+        { value: 'tuesday-4-6', label: 'Tuesday 23rd: 4-6 pm' },
         { value: 'other', label: 'Other (arrange separately)' }
     ];
 
@@ -437,14 +439,14 @@ export function CollectionsM() {
                                 {currentItems.map((item) => (
                                     <div
                                         key={item._id}
-                                        className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all group"
+                                        className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all group cursor-pointer"
+                                        onClick={() => setSelectedOutfit(item)}
                                     >
                                         <div className="relative aspect-square overflow-hidden">
                                             <img
                                                 src={getImageUrl(item._id, 0)}
                                                 alt={`${item.fullName}'s ${item.category}`}
-                                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 cursor-pointer"
-                                                onClick={() => setSelectedImage(getImageUrl(item._id, 0))}
+                                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                                                 onError={(e) => {
                                                     e.currentTarget.src = 'https://via.placeholder.com/400x400?text=Image+Not+Found';
                                                 }}
@@ -452,7 +454,10 @@ export function CollectionsM() {
 
                                             {/* Pick Button */}
                                             <button
-                                                onClick={() => togglePick(item._id)}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    togglePick(item._id);
+                                                }}
                                                 className={`absolute top-3 right-3 p-3 rounded-full transition-all transform hover:scale-110 ${
                                                     userPicks[item._id]
                                                         ? 'bg-rose text-white shadow-lg'
@@ -486,14 +491,6 @@ export function CollectionsM() {
                                                     </span>
                                                 </div>
                                             )}
-
-                                            {/* Reserve Button */}
-                                            <button
-                                                onClick={() => setSelectedOutfit(item)}
-                                                className="w-full mt-3 py-2 bg-gradient-to-r from-plum to-rose text-cream rounded-lg hover:shadow-lg transition-all transform hover:scale-105 text-sm font-semibold"
-                                            >
-                                                Reserve This Item
-                                            </button>
                                         </div>
                                     </div>
                                 ))}
