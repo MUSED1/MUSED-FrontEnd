@@ -31,8 +31,8 @@ export function AdminClothing() {
     const [editForm, setEditForm] = useState<Partial<ClothingItem>>({})
     const [previewImage, setPreviewImage] = useState<string | null>(null)
     const [currentYear] = useState<number>(2026)
-    const [uploadingImage, setUploadingImage] = useState(false)
-    const [deletingImage, setDeletingImage] = useState<string | null>(null)
+    const [uploadingForItem, setUploadingForItem] = useState<string | null>(null)
+    const [deletingImageInfo, setDeletingImageInfo] = useState<{itemId: string, imageUrl: string} | null>(null)
 
     const categories = [
         'Dresses', 'Tops', 'Bottoms', 'Outerwear', 'Accessories',
@@ -168,10 +168,10 @@ export function AdminClothing() {
         }))
     }
 
-    // New function to handle image upload
+    // Function to handle image upload
     const handleImageUpload = async (itemId: string, file: File) => {
         try {
-            setUploadingImage(true)
+            setUploadingForItem(itemId)
             setError('')
 
             // Convert file to base64
@@ -182,13 +182,11 @@ export function AdminClothing() {
                 reader.onerror = error => reject(error)
             })
 
-            // Remove the data:image/xyz;base64, prefix if needed
-            base64Image.split(',')[1] || base64Image;
-// Find the current item
+            // Find the current item
             const currentItem = allClothingItems.find(item => item._id === itemId)
             if (!currentItem) return
 
-            // Create updated images array
+            // Create updated images array with the new image
             const updatedImages = [...currentItem.images, base64Image]
 
             // Update the item with new images array
@@ -215,23 +213,24 @@ export function AdminClothing() {
                 setAllClothingItems(updatedAllItems)
                 filterItemsFrom2026(updatedAllItems)
             } else {
-                throw new Error(result.message)
+                throw new Error(result.message || 'Failed to upload image')
             }
         } catch (err) {
+            console.error('Upload error:', err)
             setError(err instanceof Error ? err.message : 'Error uploading image')
         } finally {
-            setUploadingImage(false)
+            setUploadingForItem(null)
         }
     }
 
-    // New function to handle image deletion
+    // Function to handle image deletion
     const handleImageDelete = async (itemId: string, imageUrl: string) => {
         if (!confirm('Are you sure you want to delete this image?')) {
             return
         }
 
         try {
-            setDeletingImage(imageUrl)
+            setDeletingImageInfo({ itemId, imageUrl })
             setError('')
 
             const currentItem = allClothingItems.find(item => item._id === itemId)
@@ -264,13 +263,20 @@ export function AdminClothing() {
                 setAllClothingItems(updatedAllItems)
                 filterItemsFrom2026(updatedAllItems)
             } else {
-                throw new Error(result.message)
+                throw new Error(result.message || 'Failed to delete image')
             }
         } catch (err) {
+            console.error('Delete error:', err)
             setError(err instanceof Error ? err.message : 'Error deleting image')
         } finally {
-            setDeletingImage(null)
+            setDeletingImageInfo(null)
         }
+    }
+
+    // Helper function to handle image errors
+    const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+        const target = e.target as HTMLImageElement;
+        target.src = 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'400\' height=\'400\' viewBox=\'0 0 400 400\'%3E%3Crect width=\'400\' height=\'400\' fill=\'%23f0f0f0\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' font-family=\'Arial\' font-size=\'20\' fill=\'%23999\'%3EImage Not Found%3C/text%3E%3C/svg%3E';
     }
 
     const formatDate = (dateString: string) => {
@@ -345,14 +351,15 @@ export function AdminClothing() {
                         {filteredItems.map((item) => (
                             <div key={item._id} className="bg-white rounded-2xl shadow-lg p-6">
                                 <div className="grid md:grid-cols-3 gap-6">
-                                    {/* Image Section - UPDATED with delete and add functionality */}
+                                    {/* Image Section */}
                                     <div className="space-y-4">
                                         <div className="flex justify-between items-center">
-                                            <h3 className="text-lg font-semibold text-plum">Images</h3>
+                                            <h3 className="text-lg font-semibold text-plum">Images ({item.images.length})</h3>
                                             {editingId === item._id && (
-                                                <label className="cursor-pointer bg-plum text-white p-2 rounded-lg hover:bg-plum/80 transition-colors">
+                                                <div>
                                                     <input
                                                         type="file"
+                                                        id={`image-upload-${item._id}`}
                                                         accept="image/*"
                                                         className="hidden"
                                                         onChange={(e) => {
@@ -361,51 +368,68 @@ export function AdminClothing() {
                                                                 handleImageUpload(item._id, file)
                                                             }
                                                         }}
-                                                        disabled={uploadingImage}
+                                                        disabled={uploadingForItem === item._id}
                                                     />
-                                                    {uploadingImage ? (
-                                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                                    ) : (
-                                                        <Plus size={16} />
-                                                    )}
-                                                </label>
+                                                    <label
+                                                        htmlFor={`image-upload-${item._id}`}
+                                                        className={`cursor-pointer bg-plum text-white p-2 rounded-lg hover:bg-plum/80 transition-colors inline-flex items-center gap-2 ${
+                                                            uploadingForItem === item._id ? 'opacity-50 cursor-not-allowed' : ''
+                                                        }`}
+                                                    >
+                                                        {uploadingForItem === item._id ? (
+                                                            <>
+                                                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                                                <span>Uploading...</span>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <Plus size={16} />
+                                                                <span>Add Image</span>
+                                                            </>
+                                                        )}
+                                                    </label>
+                                                </div>
                                             )}
                                         </div>
                                         <div className="grid grid-cols-2 gap-2">
-                                            {item.images.map((imageUrl, index) => (
-                                                <div key={index} className="relative group">
-                                                    <img
-                                                        src={imageUrl}
-                                                        alt={`${item.category} ${index + 1}`}
-                                                        className="w-full h-32 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
-                                                        onClick={() => setPreviewImage(imageUrl)}
-                                                        onError={(e) => {
-                                                            e.currentTarget.src = 'https://via.placeholder.com/400x400?text=Image+Not+Found'
-                                                        }}
-                                                    />
-                                                    <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all">
-                                                        <button
+                                            {item.images.map((imageUrl, index) => {
+                                                const isDeleting = deletingImageInfo?.itemId === item._id &&
+                                                    deletingImageInfo?.imageUrl === imageUrl;
+
+                                                return (
+                                                    <div key={`${item._id}-image-${index}`} className="relative group">
+                                                        <img
+                                                            src={imageUrl}
+                                                            alt={`${item.category} ${index + 1}`}
+                                                            className="w-full h-32 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
                                                             onClick={() => setPreviewImage(imageUrl)}
-                                                            className="text-white opacity-0 group-hover:opacity-100 hover:scale-110 transition-all"
-                                                        >
-                                                            <Eye size={20} />
-                                                        </button>
-                                                        {editingId === item._id && (
+                                                            onError={handleImageError}
+                                                        />
+                                                        <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all">
                                                             <button
-                                                                onClick={() => handleImageDelete(item._id, imageUrl)}
-                                                                disabled={deletingImage === imageUrl}
-                                                                className="text-red-500 opacity-0 group-hover:opacity-100 hover:scale-110 transition-all bg-white rounded-full p-1"
+                                                                onClick={() => setPreviewImage(imageUrl)}
+                                                                className="text-white opacity-0 group-hover:opacity-100 hover:scale-110 transition-all bg-black bg-opacity-50 rounded-full p-1"
+                                                                disabled={isDeleting}
                                                             >
-                                                                {deletingImage === imageUrl ? (
-                                                                    <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
-                                                                ) : (
-                                                                    <Trash2 size={16} />
-                                                                )}
+                                                                <Eye size={16} />
                                                             </button>
-                                                        )}
+                                                            {editingId === item._id && (
+                                                                <button
+                                                                    onClick={() => handleImageDelete(item._id, imageUrl)}
+                                                                    disabled={isDeleting}
+                                                                    className="text-red-500 opacity-0 group-hover:opacity-100 hover:scale-110 transition-all bg-white rounded-full p-1"
+                                                                >
+                                                                    {isDeleting ? (
+                                                                        <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
+                                                                    ) : (
+                                                                        <Trash2 size={16} />
+                                                                    )}
+                                                                </button>
+                                                            )}
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            ))}
+                                                );
+                                            })}
                                         </div>
                                     </div>
 
@@ -636,14 +660,12 @@ export function AdminClothing() {
                             src={previewImage}
                             alt="Preview"
                             className="max-w-full max-h-[90vh] object-contain rounded-lg"
-                            onError={(e) => {
-                                e.currentTarget.src = 'https://via.placeholder.com/800x800?text=Image+Not+Found'
-                            }}
+                            onError={handleImageError}
                         />
                         <button
                             onClick={(e) => {
-                                e.stopPropagation()
-                                setPreviewImage(null)
+                                e.stopPropagation();
+                                setPreviewImage(null);
                             }}
                             className="absolute top-4 right-4 text-white bg-black bg-opacity-50 rounded-full p-2 hover:bg-opacity-75 transition-all"
                         >
