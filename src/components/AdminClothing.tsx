@@ -13,6 +13,7 @@ interface ClothingItem {
     fullName: string;
     email: string;
     phoneNumber: string;
+    university: string;
     pickupMethod: string;
     pickupTime: string;
     pickupDay: string;
@@ -42,6 +43,10 @@ export function AdminClothing() {
     const sizes = [
         'XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXS',
         '32', '34', '36', '38', '40', '42', 'One Size'
+    ]
+
+    const universities = [
+        'HKU', 'CUHK', 'PolyU', 'HKUST', 'Baptist', 'NA'
     ]
 
     const statuses = ['available', 'reserved', 'sold']
@@ -189,14 +194,13 @@ export function AdminClothing() {
             // Create updated images array with the new image
             const updatedImages = [...currentItem.images, base64Image]
 
-            // Update the item with new images array
-            const response = await fetch(`https://mused-backend.onrender.com/api/clothing/${itemId}`, {
+            // Use the dedicated images endpoint
+            const response = await fetch(`https://mused-backend.onrender.com/api/clothing/${itemId}/images`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    ...currentItem,
                     images: updatedImages
                 })
             })
@@ -239,14 +243,13 @@ export function AdminClothing() {
             // Filter out the deleted image
             const updatedImages = currentItem.images.filter(url => url !== imageUrl)
 
-            // Update the item with new images array
-            const response = await fetch(`https://mused-backend.onrender.com/api/clothing/${itemId}`, {
+            // Use the dedicated images endpoint
+            const response = await fetch(`https://mused-backend.onrender.com/api/clothing/${itemId}/images`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    ...currentItem,
                     images: updatedImages
                 })
             })
@@ -262,11 +265,13 @@ export function AdminClothing() {
                 )
                 setAllClothingItems(updatedAllItems)
                 filterItemsFrom2026(updatedAllItems)
+
+                console.log('Cloudinary deletion results:', result.data?.deletedFromCloudinary)
             } else {
                 throw new Error(result.message || 'Failed to delete image')
             }
         } catch (err) {
-            console.error('Delete error:', err)
+            console.error('Delete error details:', err)
             setError(err instanceof Error ? err.message : 'Error deleting image')
         } finally {
             setDeletingImageInfo(null)
@@ -404,6 +409,8 @@ export function AdminClothing() {
                                                             className="w-full h-32 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
                                                             onClick={() => setPreviewImage(imageUrl)}
                                                             onError={handleImageError}
+                                                            referrerPolicy="no-referrer"
+                                                            crossOrigin="anonymous"
                                                         />
                                                         <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all">
                                                             <button
@@ -468,6 +475,23 @@ export function AdminClothing() {
                                                     </select>
                                                 ) : (
                                                     <span className="text-plum">{item.size}</span>
+                                                )}
+                                            </div>
+
+                                            <div className="flex justify-between items-center">
+                                                <span className="font-semibold text-plum/80">University:</span>
+                                                {editingId === item._id ? (
+                                                    <select
+                                                        value={editForm.university || ''}
+                                                        onChange={(e) => handleInputChange('university', e.target.value)}
+                                                        className="border border-cream rounded px-2 py-1"
+                                                    >
+                                                        {universities.map(uni => (
+                                                            <option key={uni} value={uni}>{uni}</option>
+                                                        ))}
+                                                    </select>
+                                                ) : (
+                                                    <span className="text-plum">{item.university}</span>
                                                 )}
                                             </div>
 
@@ -661,6 +685,8 @@ export function AdminClothing() {
                             alt="Preview"
                             className="max-w-full max-h-[90vh] object-contain rounded-lg"
                             onError={handleImageError}
+                            referrerPolicy="no-referrer"
+                            crossOrigin="anonymous"
                         />
                         <button
                             onClick={(e) => {
