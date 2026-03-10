@@ -245,10 +245,8 @@ export function CollectionsM() {
         setProcessingPayment(true);
 
         try {
-            // Create a unique session ID
             const sessionId = `reservation_${outfit._id}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-            // Store reservation data temporarily
             const reservationSession = {
                 sessionId,
                 formData,
@@ -262,17 +260,16 @@ export function CollectionsM() {
                 console.warn('LocalStorage unavailable, proceeding without storage');
             }
 
-            // ✅ FIXED: Send the correct amount (290 HKD)
+            // Send the correct amount (290 HKD)
             const response = await axios.post(`${API_URL}/create-checkout-session`, {
                 itemId: outfit._id,
                 itemName: `${outfit.fullName}'s ${outfit.category}`,
-                amount: 290, // Changed from 250 to 290 HKD
+                amount: 290, // Fixed amount
                 customerEmail: formData.email,
                 sessionId: sessionId
             });
 
             if (response.data.success && response.data.url) {
-                // Redirect to Stripe Checkout
                 window.location.href = response.data.url;
             } else {
                 throw new Error('Failed to create checkout session');
@@ -283,8 +280,7 @@ export function CollectionsM() {
             setProcessingPayment(false);
             throw new Error(err instanceof Error ? err.message : 'Failed to process payment');
         }
-    };
-    // Helper function to get image URL through proxy
+    };    // Helper function to get image URL through proxy
     const getImageUrl = (itemId: string, index: number) => {
         return `${API_URL}/clothing/image/${itemId}/${index}`;
     };
