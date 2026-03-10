@@ -38,8 +38,37 @@
         font-family: 'Inter', sans-serif;
     }
 
-    /* 👇 ADD THIS: Amandine font class */
     .font-amandine {
         font-family: 'Amandine', serif;
+    }
+
+    /* Kaldera font for select inputs */
+    select.font-kaldera,
+    .filter-select {
+        font-family: 'Kaldera', serif;
+    }
+
+    /* Custom styling for filter selects to match Dinner Collection Number 3 */
+    .filter-select {
+        @apply w-full p-3 border-2 border-amber-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose/50 focus:border-rose bg-white text-plum transition-all duration-300;
+        font-family: 'Kaldera', serif;
+    }
+
+    /* Label styling for filters */
+    .filter-label {
+        @apply block text-sm font-medium text-plum/80 mb-2;
+        font-family: 'Kaldera', serif;
+        letter-spacing: 0.05em;
+    }
+
+    /* Option styling for select dropdowns */
+    select.filter-select option {
+        font-family: 'Kaldera', serif;
+        @apply text-plum;
+    }
+
+    /* Hover effect for filter containers */
+    .filter-container {
+        @apply transform transition-all duration-300 hover:scale-105;
     }
 }
