@@ -108,6 +108,14 @@ export function AdminClothing() {
         setFilteredItems(filtered)
     }
 
+    const getAuthHeaders = () => {
+        const token = localStorage.getItem('token')
+        return {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        }
+    }
+
     const handleEdit = (item: ClothingItem) => {
         setEditingId(item._id)
         setEditForm({ ...item })
@@ -117,9 +125,7 @@ export function AdminClothing() {
         try {
             const response = await fetch(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.clothing}/${id}`, {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: getAuthHeaders(),
                 body: JSON.stringify(editForm)
             })
 
@@ -147,8 +153,12 @@ export function AdminClothing() {
         }
 
         try {
+            const token = localStorage.getItem('token')
             const response = await fetch(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.clothing}/${id}`, {
-                method: 'DELETE'
+                method: 'DELETE',
+                headers: {
+                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                }
             })
 
             const result = await response.json()
@@ -207,9 +217,7 @@ export function AdminClothing() {
 
             const response = await fetch(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.clothing}/${itemId}/images`, {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: getAuthHeaders(),
                 body: JSON.stringify({
                     images: updatedImages
                 })
@@ -218,9 +226,10 @@ export function AdminClothing() {
             const result = await response.json()
 
             if (response.ok && result.success) {
+                const finalImages = result.data?.images || updatedImages
                 const updatedAllItems = allClothingItems.map(item =>
                     item._id === itemId
-                        ? { ...item, images: updatedImages }
+                        ? { ...item, images: finalImages }
                         : item
                 )
                 setAllClothingItems(updatedAllItems)
@@ -252,9 +261,7 @@ export function AdminClothing() {
 
             const response = await fetch(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.clothing}/${itemId}/images`, {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: getAuthHeaders(),
                 body: JSON.stringify({
                     images: updatedImages
                 })
@@ -263,9 +270,10 @@ export function AdminClothing() {
             const result = await response.json()
 
             if (response.ok && result.success) {
+                const finalImages = result.data?.images || updatedImages
                 const updatedAllItems = allClothingItems.map(item =>
                     item._id === itemId
-                        ? { ...item, images: updatedImages }
+                        ? { ...item, images: finalImages }
                         : item
                 )
                 setAllClothingItems(updatedAllItems)
