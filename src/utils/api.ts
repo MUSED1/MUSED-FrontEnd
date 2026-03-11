@@ -9,7 +9,9 @@ export const API_CONFIG = {
         clothingImage: '/clothing/image',
         usersPicks: '/users/picks',
         usersReservations: '/users/reservations',
-        auth: '/auth'
+        auth: '/auth',
+        createCheckout: '/create-checkout-session',
+        adminReservations: '/api/admin/reservations'
     },
     pagination: {
         defaultLimit: 20,
@@ -22,11 +24,12 @@ export const buildPaginatedUrl = (endpoint: string, page: number, limit: number 
     return `${API_CONFIG.baseURL}${endpoint}?page=${page}&limit=${limit}`;
 };
 
-// Add the missing fetchPaginated function
+// Helper function for fetching paginated data
 export async function fetchPaginated<T>(
     endpoint: string,
     page: number = 1,
-    limit: number = 20
+    limit: number = 20,
+    token?: string
 ): Promise<{
     data: T[];
     pagination: {
@@ -36,15 +39,19 @@ export async function fetchPaginated<T>(
         itemsPerPage: number;
         hasNextPage: boolean;
         hasPrevPage: boolean;
-    };
+    }
 }> {
     const url = buildPaginatedUrl(endpoint, page, limit);
 
-    const response = await fetch(url, {
-        headers: {
-            'Content-Type': 'application/json',
-        },
-    });
+    const headers: HeadersInit = {
+        'Content-Type': 'application/json'
+    };
+
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(url, { headers });
 
     if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -69,8 +76,13 @@ export async function fetchPaginated<T>(
     };
 }
 
-// Add the missing compressImage function
-export async function compressImage(base64Image: string, maxSizeMB: number = 1): Promise<string> {
+// Helper function to get image URL
+export function getImageUrl(itemId: string, imageIndex: number = 0): string {
+    return `${API_CONFIG.baseURL}${API_CONFIG.endpoints.clothingImage}/${itemId}/${imageIndex}`;
+}
+
+// Helper function to compress image
+export async function compressImage(base64Image: string): Promise<string> {
     return new Promise((resolve, reject) => {
         const img = new Image();
         img.src = `data:image/jpeg;base64,${base64Image}`;
@@ -80,14 +92,20 @@ export async function compressImage(base64Image: string, maxSizeMB: number = 1):
             let width = img.width;
             let height = img.height;
 
-            // Calculate new dimensions while maintaining aspect ratio
-            const maxDimension = 1200; // Max width or height
-            if (width > height && width > maxDimension) {
-                height = (height / width) * maxDimension;
-                width = maxDimension;
-            } else if (height > maxDimension) {
-                width = (width / height) * maxDimension;
-                height = maxDimension;
+            // Max dimensions
+            const MAX_WIDTH = 800;
+            const MAX_HEIGHT = 800;
+
+            if (width > height) {
+                if (width > MAX_WIDTH) {
+                    height *= MAX_WIDTH / width;
+                    width = MAX_WIDTH;
+                }
+            } else {
+                if (height > MAX_HEIGHT) {
+                    width *= MAX_HEIGHT / height;
+                    height = MAX_HEIGHT;
+                }
             }
 
             canvas.width = width;
@@ -95,26 +113,15 @@ export async function compressImage(base64Image: string, maxSizeMB: number = 1):
 
             const ctx = canvas.getContext('2d');
             if (!ctx) {
-                reject(new Error('Failed to get canvas context'));
+                reject(new Error('Could not get canvas context'));
                 return;
             }
 
             ctx.drawImage(img, 0, 0, width, height);
 
-            // Determine quality based on desired max size
-            let quality = 0.9;
-            const step = 0.1;
-            let compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
-
-            // If the compressed image is still too large, reduce quality
-            while (compressedDataUrl.length > maxSizeMB * 1024 * 1024 * 1.37 && quality > 0.1) {
-                quality -= step;
-                compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
-            }
-
-            // Extract base64 data from data URL
-            const base64Data = compressedDataUrl.split(',')[1];
-            resolve(base64Data);
+            // Compress to JPEG with 0.8 quality
+            const compressedBase64 = canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
+            resolve(compressedBase64);
         };
 
         img.onerror = () => {
@@ -123,25 +130,44 @@ export async function compressImage(base64Image: string, maxSizeMB: number = 1):
     });
 }
 
-// Optional: Add a utility function to validate image file before upload
-export function validateImageFile(file: File): { valid: boolean; error?: string } {
-    // Check file type
-    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-    if (!validTypes.includes(file.type)) {
-        return {
-            valid: false,
-            error: 'Invalid file type. Please upload JPEG, PNG, or WEBP images.'
-        };
-    }
+// Helper function to format date
+export function formatDate(dateString: string): string {
+    return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
 
-    // Check file size (default max 5MB)
-    const maxSize = 5 * 1024 * 1024; // 5MB
-    if (file.size > maxSize) {
-        return {
-            valid: false,
-            error: 'File too large. Maximum size is 5MB.'
-        };
+// Helper function to get status color classes
+export function getStatusColor(status: string): string {
+    switch (status) {
+        case 'available': return 'bg-green-100 text-green-800';
+        case 'reserved': return 'bg-yellow-100 text-yellow-800';
+        case 'sold': return 'bg-red-100 text-red-800';
+        case 'active': return 'bg-green-100 text-green-800 border-green-200';
+        case 'completed': return 'bg-blue-100 text-blue-800 border-blue-200';
+        case 'cancelled': return 'bg-red-100 text-red-800 border-red-200';
+        default: return 'bg-gray-100 text-gray-800';
     }
+}
 
-    return { valid: true };
+// Helper function to get status icon
+export function getStatusIcon(status: string): { icon: string; color: string } {
+    switch (status) {
+        case 'available': return { icon: '✓', color: 'green' };
+        case 'reserved': return { icon: '⏳', color: 'yellow' };
+        case 'sold': return { icon: '✗', color: 'red' };
+        case 'active': return { icon: '✓', color: 'green' };
+        case 'completed': return { icon: '✓', color: 'blue' };
+        case 'cancelled': return { icon: '✗', color: 'red' };
+        default: return { icon: '•', color: 'gray' };
+    }
+}
+
+// Helper function to get pickup method label
+export function getPickupMethodLabel(method: string): string {
+    return method === 'without' ? 'No need to be present' : 'Must be present';
 }
