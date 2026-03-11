@@ -32,6 +32,7 @@ import { OAuthSuccess } from './components/OAuthSuccess'
 import { Terms } from './components/Terms'
 import { Privacy } from './components/Privacy'
 import { CollectionsM } from './components/CollectionsM';
+import { AdminReservations } from './components/AdminReservations';
 
 
 function HomePage() {
@@ -95,6 +96,7 @@ export function App() {
                     <Route path="/privacy" element={<Privacy />} />
                     <Route path="/cookies" element={<Privacy />} />
                     <Route path="/collections-m" element={<CollectionsM />} />
+                    <Route path="/admin/reservations" element={<AdminReservations />} />
 
                 </Routes>
             </Router>
