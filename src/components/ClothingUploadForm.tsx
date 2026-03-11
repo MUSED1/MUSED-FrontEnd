@@ -6,6 +6,7 @@ import { Footer } from './Footer';
 import { Upload, Plus, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { PhoneEdit } from './PhoneEdit';
+import { API_CONFIG, compressImage } from '../utils/api';
 
 interface ClothingItem {
     image: string;
@@ -17,12 +18,11 @@ export function ClothingUploadForm() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitMessage, setSubmitMessage] = useState<{type: 'success' | 'error', message: string} | null>(null);
     const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+    const [uploadProgress, setUploadProgress] = useState<number>(0);
 
-    // 👇 Obtener usuario autenticado
     const { user, isAuthenticated, loading } = useAuth();
     const navigate = useNavigate();
 
-    // 👇 REDIRIGIR SOLO CUANDO TERMINE DE CARGAR Y NO ESTÉ AUTENTICADO
     useEffect(() => {
         if (!loading) {
             setIsCheckingAuth(false);
@@ -34,7 +34,6 @@ export function ClothingUploadForm() {
         }
     }, [isAuthenticated, loading, navigate]);
 
-    // User information - AUTOCOMPLETADO con datos del usuario
     const [userInfo, setUserInfo] = useState({
         fullName: '',
         email: '',
@@ -43,7 +42,6 @@ export function ClothingUploadForm() {
         university: ''
     });
 
-    // Pickup information
     const [pickupInfo, setPickupInfo] = useState({
         pickupMethod: '',
         pickupTime: '',
@@ -52,13 +50,11 @@ export function ClothingUploadForm() {
         specialInstructions: ''
     });
 
-    // Clothing items - exactly 2 items, no more
     const [clothingItems, setClothingItems] = useState<ClothingItem[]>([
         { image: '', category: '', size: '' },
         { image: '', category: '', size: '' }
     ]);
 
-    // University options
     const universities = [
         { value: 'HKU', label: 'HKU' },
         { value: 'CUHK', label: 'CUHK' },
@@ -68,27 +64,23 @@ export function ClothingUploadForm() {
         { value: 'NA', label: 'NA' }
     ];
 
-    // Actualizar userInfo cuando cambie el usuario
     useEffect(() => {
         if (user) {
             setUserInfo(prev => ({
                 ...prev,
                 fullName: user.name,
                 email: user.email,
-                // Auto-complete phone number if it exists in user object
                 phoneNumber: user.phone || prev.phoneNumber || ''
             }));
         }
     }, [user]);
 
-    // Scroll to top when submit message changes
     useEffect(() => {
         if (submitMessage) {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     }, [submitMessage]);
 
-    // Si está cargando o verificando auth, mostrar loading
     if (loading || isCheckingAuth) {
         return (
             <div className="font-sans">
@@ -106,7 +98,6 @@ export function ClothingUploadForm() {
         );
     }
 
-    // Si no está autenticado, no renderizar nada (la redirección ya ocurrió)
     if (!isAuthenticated || !user) {
         return null;
     }
@@ -128,14 +119,34 @@ export function ClothingUploadForm() {
         );
     };
 
-    const handleImageUpload = (index: number, event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageUpload = async (index: number, event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file) {
+            // Check file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('File too large. Maximum size is 5MB.');
+                return;
+            }
+
+            setUploadProgress(0);
+
             const reader = new FileReader();
-            reader.onload = (e) => {
+            reader.onload = async (e) => {
                 const base64Image = e.target?.result as string;
                 const base64Data = base64Image.split(',')[1] || base64Image;
-                handleClothingItemChange(index, 'image', base64Data);
+
+                try {
+                    // Compress image
+                    setUploadProgress(50);
+                    const compressed = await compressImage(base64Data);
+                    setUploadProgress(100);
+                    handleClothingItemChange(index, 'image', compressed);
+                    setTimeout(() => setUploadProgress(0), 1000);
+                } catch (error) {
+                    console.error('Image compression error:', error);
+                    alert('Failed to process image. Please try another image.');
+                    setUploadProgress(0);
+                }
             };
             reader.readAsDataURL(file);
         }
@@ -151,7 +162,6 @@ export function ClothingUploadForm() {
         setSubmitMessage(null);
         window.scrollTo({ top: 0, behavior: 'smooth' });
 
-        // Validaciones
         if (!userInfo.phoneNumber || !userInfo.address || !userInfo.university) {
             setSubmitMessage({
                 type: 'error',
@@ -191,6 +201,13 @@ export function ClothingUploadForm() {
 
         try {
             const token = localStorage.getItem('token');
+
+            // Prepare items with proper image format
+            const processedItems = validItems.map(item => ({
+                ...item,
+                image: `data:image/jpeg;base64,${item.image}`
+            }));
+
             const submissionData = {
                 userInfo: {
                     fullName: user.name,
@@ -199,13 +216,13 @@ export function ClothingUploadForm() {
                     address: userInfo.address,
                     university: userInfo.university
                 },
-                clothingItems: validItems,
+                clothingItems: processedItems,
                 ...pickupInfo
             };
 
-            const API_URL = import.meta.env.VITE_API_URL?.replace('/auth', '') || 'https://mused-backend.onrender.com/api';
+            const API_URL = API_CONFIG.baseURL;
 
-            const response = await fetch(`${API_URL}/clothing`, {
+            const response = await fetch(`${API_URL}${API_CONFIG.endpoints.clothing}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -217,13 +234,11 @@ export function ClothingUploadForm() {
             const result = await response.json();
 
             if (response.ok && result.success) {
-                // Show success message briefly then redirect to profile
                 setSubmitMessage({
                     type: 'success',
                     message: 'Clothing items uploaded successfully! Redirecting to your profile...'
                 });
 
-                // Reset form
                 setUserInfo(prev => ({
                     ...prev,
                     phoneNumber: '',
@@ -242,7 +257,6 @@ export function ClothingUploadForm() {
                     { image: '', category: '', size: '' }
                 ]);
 
-                // Redirect to profile after 2 seconds
                 setTimeout(() => {
                     navigate('/profile');
                 }, 2000);
@@ -266,7 +280,6 @@ export function ClothingUploadForm() {
     const categories = ['Dresses', 'Tops', 'Bottoms', 'Outerwear', 'Accessories', 'Bags', 'Jewelry'];
     const sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXS', 'XXL', '32', '34', '36', '38', '40', '42', 'One Size'];
 
-    // 👇 UPDATED: New pickup dates and time slots
     const pickupDays = [
         { value: 'tuesday', label: 'Tuesday, March 10' },
         { value: 'wednesday', label: 'Wednesday, March 11' },
@@ -280,16 +293,15 @@ export function ClothingUploadForm() {
     };
 
     return (
-        <div className="font-sans" style={{ fontFamily: '"Inter", sans-serif' }}>
+        <div className="font-sans">
             <Header />
             <main className="min-h-screen bg-gradient-to-br from-cream to-amber-50 py-8">
                 <div className="container mx-auto px-4 max-w-4xl">
-                    {/* Header con mensaje personalizado - Only title in Kaldera */}
                     <div className="text-center mb-12">
                         <h1 className="text-5xl md:text-6xl font-bold text-plum mb-6" style={{ fontFamily: 'Kaldera, serif' }}>
                             Share Your <span className="text-rose">Style</span>
                         </h1>
-                        <p className="text-xl text-plum/80 max-w-2xl mx-auto inter-regular">
+                        <p className="text-xl text-plum/80 max-w-2xl mx-auto">
                             Welcome back, <span className="font-bold text-rose">{user.name}</span>!
                             Upload your pieces and become part of the MUSED community.
                         </p>
@@ -307,7 +319,7 @@ export function ClothingUploadForm() {
                                     Don't close this window
                                 </p>
                                 <div className="mt-4 bg-cream rounded-full h-2">
-                                    <div className="bg-gradient-to-r from-plum to-rose h-2 rounded-full animate-pulse"></div>
+                                    <div className="bg-gradient-to-r from-plum to-rose h-2 rounded-full animate-pulse" style={{ width: `${uploadProgress}%` }}></div>
                                 </div>
                             </div>
                         </div>
@@ -393,7 +405,6 @@ export function ClothingUploadForm() {
                                         />
                                     </div>
 
-                                    {/* 👇 NEW UNIVERSITY FIELD */}
                                     <div>
                                         <label className="block text-lg font-semibold text-plum mb-3">University *</label>
                                         <select
@@ -451,7 +462,6 @@ export function ClothingUploadForm() {
                                         </div>
                                     </div>
 
-                                    {/* Pickup options */}
                                     {pickupInfo.pickupMethod === 'without' && (
                                         <div className="space-y-4 p-4 bg-cream/30 rounded-xl">
                                             <div className="grid md:grid-cols-2 gap-4">
@@ -598,6 +608,11 @@ export function ClothingUploadForm() {
                                                                     />
                                                                     <div className="text-center">
                                                                         <p className="text-green-600 font-semibold text-lg">✓ Image Uploaded</p>
+                                                                        {uploadProgress > 0 && uploadProgress < 100 && (
+                                                                            <div className="w-full bg-cream rounded-full h-1 mt-2">
+                                                                                <div className="bg-green-500 h-1 rounded-full" style={{ width: `${uploadProgress}%` }}></div>
+                                                                            </div>
+                                                                        )}
                                                                         <p className="text-plum/60 text-sm mt-1">Click to change image</p>
                                                                     </div>
                                                                 </div>
@@ -606,7 +621,7 @@ export function ClothingUploadForm() {
                                                                     <Upload className="text-rose" size={32} />
                                                                     <div className="text-center">
                                                                         <p className="text-plum font-semibold text-lg">Upload Image for Item {index + 1}</p>
-                                                                        <p className="text-plum/60 text-sm mt-1">PNG, JPG, JPEG up to 10MB</p>
+                                                                        <p className="text-plum/60 text-sm mt-1">PNG, JPG, JPEG up to 5MB</p>
                                                                     </div>
                                                                 </div>
                                                             )}
@@ -687,7 +702,7 @@ export function ClothingUploadForm() {
                         </form>
                     </div>
 
-                    {/* "What happens next" Section - UPDATED WITH LIGHTER PURPLE */}
+                    {/* "What happens next" Section */}
                     <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 text-center">
                         <h3 className="text-3xl font-bold text-plum mb-6 font-kaldera">What happens next?</h3>
                         <div className="grid md:grid-cols-3 gap-6 text-plum">
