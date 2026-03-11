@@ -144,13 +144,34 @@ export function CollectionsM() {
 
             const token = localStorage.getItem('token');
 
-            const response = await axios.get(`${API_URL}/clothing/admin/all`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            // Fetch ALL pages from the server with status+date filters applied server-side.
+            // This prevents the old bug where client-side filtering on a single page
+            // would miss items sitting on later pages.
+            const allFetched: ClothingItem[] = [];
+            let page = 1;
+            let hasMore = true;
 
-            if (response.data.success) {
-                setAllItems(response.data.data);
+            while (hasMore) {
+                const response = await axios.get(`${API_URL}/clothing/admin/all`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                    params: {
+                        status: 'available',
+                        from: '2026-01-01',
+                        page,
+                        limit: 50
+                    }
+                });
+
+                if (response.data.success) {
+                    allFetched.push(...response.data.data);
+                    hasMore = response.data.pagination?.hasNextPage ?? false;
+                    page++;
+                } else {
+                    hasMore = false;
+                }
             }
+
+            setAllItems(allFetched);
         } catch (err) {
             console.error('Fetch error:', err);
             setError(err instanceof Error ? err.message : 'Error fetching items');
@@ -180,16 +201,12 @@ export function CollectionsM() {
     };
 
     const filterItems = () => {
-        const startDate2026 = new Date('2026-01-01T00:00:00.000Z');
+        // Date (2026+) and status (available) are now filtered server-side.
+        // Only apply category and size filters here.
         const filtered = allItems.filter(item => {
-            const itemDate = new Date(item.createdAt);
-            const isFrom2026 = itemDate >= startDate2026;
-            const isAvailable = item.status === 'available';
-
             const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
             const matchesSize = selectedSize === 'all' || item.size === selectedSize;
-
-            return isFrom2026 && isAvailable && matchesCategory && matchesSize;
+            return matchesCategory && matchesSize;
         });
 
         setFilteredItems(filtered);
@@ -239,9 +256,6 @@ export function CollectionsM() {
     };
 
     // Process payment via Stripe - FIXED VERSION
-// In CollectionsM.tsx, update the processPayment function:
-
-    // Process payment via Stripe - FIXED VERSION
     const processPayment = async (formData: ReservationFormData, outfit: ClothingItem) => {
         setProcessingPayment(true);
 
@@ -266,7 +280,7 @@ export function CollectionsM() {
                     agreeToTerms: formData.agreeToTerms
                 },
                 outfit: {
-                    id: outfit._id, // Make sure this is set correctly
+                    id: outfit._id,
                     _id: outfit._id,
                     name: outfit.fullName,
                     category: outfit.category,
@@ -305,6 +319,7 @@ export function CollectionsM() {
             throw new Error(err instanceof Error ? err.message : 'Failed to process payment');
         }
     };
+
     const getImageUrl = (itemId: string, index: number) => {
         return `${API_URL}/clothing/image/${itemId}/${index}`;
     };
@@ -911,6 +926,7 @@ function ReservationForm({
                 />
             </div>
 
+            {/* Terms and Conditions Agreement with Link */}
             <div className="bg-gradient-to-br from-cream to-amber-50 p-6 rounded-xl border-2 border-amber-200 transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
                 <div className="flex items-start space-x-4">
                     <input
@@ -922,7 +938,17 @@ function ReservationForm({
                         className="mt-1 w-5 h-5 text-rose focus:ring-rose border-gray-300 rounded transition-all duration-300"
                     />
                     <label className="text-sm text-plum font-medium">
-                        I agree to treat the borrowed item with care and cover any repair or replacement costs for damage beyond normal wear.
+                        I agree to the{' '}
+                        <a
+                            href="/terms"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-rose hover:text-burgundy underline underline-offset-2 transition-colors duration-200 font-semibold"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            Terms & Conditions
+                        </a>{' '}
+                        and agree to treat the borrowed item with care and cover any repair or replacement costs for damage beyond normal wear.
                     </label>
                 </div>
             </div>
