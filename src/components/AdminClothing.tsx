@@ -2,7 +2,8 @@
 import { useState, useEffect } from 'react'
 import { Header } from './Header'
 import { Footer } from './Footer'
-import { Edit, Trash2, Eye, Save, X, Plus } from 'lucide-react'
+import { Edit, Trash2, Eye, Save, X, Plus, ChevronLeft, ChevronRight } from 'lucide-react'
+import { API_CONFIG, fetchPaginated, compressImage } from '../utils/api'
 
 interface ClothingItem {
     _id: string;
@@ -23,6 +24,15 @@ interface ClothingItem {
     createdAt: string;
 }
 
+interface PaginationInfo {
+    currentPage: number;
+    totalPages: number;
+    totalItems: number;
+    itemsPerPage: number;
+    hasNextPage: boolean;
+    hasPrevPage: boolean;
+}
+
 export function AdminClothing() {
     const [allClothingItems, setAllClothingItems] = useState<ClothingItem[]>([])
     const [filteredItems, setFilteredItems] = useState<ClothingItem[]>([])
@@ -34,6 +44,17 @@ export function AdminClothing() {
     const [currentYear] = useState<number>(2026)
     const [uploadingForItem, setUploadingForItem] = useState<string | null>(null)
     const [deletingImageInfo, setDeletingImageInfo] = useState<{itemId: string, imageUrl: string} | null>(null)
+
+    // Pagination
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pagination, setPagination] = useState<PaginationInfo>({
+        currentPage: 1,
+        totalPages: 1,
+        totalItems: 0,
+        itemsPerPage: 20,
+        hasNextPage: false,
+        hasPrevPage: false
+    });
 
     const categories = [
         'Dresses', 'Tops', 'Bottoms', 'Outerwear', 'Accessories',
@@ -52,34 +73,24 @@ export function AdminClothing() {
     const statuses = ['available', 'reserved', 'sold']
 
     useEffect(() => {
-        fetchClothingItems()
-    }, [])
+        fetchClothingItems(currentPage)
+    }, [currentPage])
 
-    const fetchClothingItems = async () => {
+    const fetchClothingItems = async (page: number) => {
         try {
             setLoading(true)
             setError('')
 
-            const response = await fetch('https://mused-backend.onrender.com/api/clothing/admin/all', {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            })
+            const result = await fetchPaginated<ClothingItem>(
+                API_CONFIG.endpoints.clothingAdmin,
+                page,
+                20
+            );
 
-            if (!response.ok) {
-                throw new Error(`Server error: ${response.status}`)
-            }
+            setAllClothingItems(result.data)
+            setPagination(result.pagination)
+            filterItemsFrom2026(result.data)
 
-            const result = await response.json()
-
-            if (result.success) {
-                setAllClothingItems(result.data)
-                // Filter items from 2026 onwards
-                filterItemsFrom2026(result.data)
-            } else {
-                throw new Error(result.message || 'Failed to fetch items')
-            }
         } catch (err) {
             console.error('Fetch error:', err)
             setError(err instanceof Error ? err.message : 'Error fetching data')
@@ -104,7 +115,7 @@ export function AdminClothing() {
 
     const handleSave = async (id: string) => {
         try {
-            const response = await fetch(`https://mused-backend.onrender.com/api/clothing/${id}`, {
+            const response = await fetch(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.clothing}/${id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -115,15 +126,11 @@ export function AdminClothing() {
             const result = await response.json()
 
             if (response.ok && result.success) {
-                // Update both arrays
                 const updatedAllItems = allClothingItems.map(item =>
                     item._id === id ? { ...item, ...editForm } : item
                 )
                 setAllClothingItems(updatedAllItems)
-
-                // Re-filter the items
                 filterItemsFrom2026(updatedAllItems)
-
                 setEditingId(null)
                 setEditForm({})
             } else {
@@ -140,19 +147,15 @@ export function AdminClothing() {
         }
 
         try {
-            const response = await fetch(`https://mused-backend.onrender.com/api/clothing/${id}`, {
+            const response = await fetch(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.clothing}/${id}`, {
                 method: 'DELETE'
             })
 
             const result = await response.json()
 
             if (response.ok && result.success) {
-                // Update both arrays
-                const updatedAllItems = allClothingItems.filter(item => item._id !== id)
-                setAllClothingItems(updatedAllItems)
-
-                // Re-filter the items
-                filterItemsFrom2026(updatedAllItems)
+                // Refresh current page
+                fetchClothingItems(currentPage)
             } else {
                 throw new Error(result.message)
             }
@@ -173,29 +176,36 @@ export function AdminClothing() {
         }))
     }
 
-    // Function to handle image upload
     const handleImageUpload = async (itemId: string, file: File) => {
         try {
             setUploadingForItem(itemId)
             setError('')
 
+            // Check file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                throw new Error('File too large. Maximum size is 5MB.');
+            }
+
             // Convert file to base64
             const base64Image = await new Promise<string>((resolve, reject) => {
                 const reader = new FileReader()
                 reader.readAsDataURL(file)
-                reader.onload = () => resolve(reader.result as string)
+                reader.onload = () => {
+                    const base64 = (reader.result as string).split(',')[1];
+                    resolve(base64);
+                }
                 reader.onerror = error => reject(error)
             })
 
-            // Find the current item
+            // Compress image
+            const compressedImage = await compressImage(base64Image);
+
             const currentItem = allClothingItems.find(item => item._id === itemId)
             if (!currentItem) return
 
-            // Create updated images array with the new image
-            const updatedImages = [...currentItem.images, base64Image]
+            const updatedImages = [...currentItem.images, `data:image/jpeg;base64,${compressedImage}`]
 
-            // Use the dedicated images endpoint
-            const response = await fetch(`https://mused-backend.onrender.com/api/clothing/${itemId}/images`, {
+            const response = await fetch(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.clothing}/${itemId}/images`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -208,7 +218,6 @@ export function AdminClothing() {
             const result = await response.json()
 
             if (response.ok && result.success) {
-                // Update local state
                 const updatedAllItems = allClothingItems.map(item =>
                     item._id === itemId
                         ? { ...item, images: updatedImages }
@@ -227,7 +236,6 @@ export function AdminClothing() {
         }
     }
 
-    // Function to handle image deletion
     const handleImageDelete = async (itemId: string, imageUrl: string) => {
         if (!confirm('Are you sure you want to delete this image?')) {
             return
@@ -240,11 +248,9 @@ export function AdminClothing() {
             const currentItem = allClothingItems.find(item => item._id === itemId)
             if (!currentItem) return
 
-            // Filter out the deleted image
             const updatedImages = currentItem.images.filter(url => url !== imageUrl)
 
-            // Use the dedicated images endpoint
-            const response = await fetch(`https://mused-backend.onrender.com/api/clothing/${itemId}/images`, {
+            const response = await fetch(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.clothing}/${itemId}/images`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -257,7 +263,6 @@ export function AdminClothing() {
             const result = await response.json()
 
             if (response.ok && result.success) {
-                // Update local state
                 const updatedAllItems = allClothingItems.map(item =>
                     item._id === itemId
                         ? { ...item, images: updatedImages }
@@ -265,20 +270,17 @@ export function AdminClothing() {
                 )
                 setAllClothingItems(updatedAllItems)
                 filterItemsFrom2026(updatedAllItems)
-
-                console.log('Cloudinary deletion results:', result.data?.deletedFromCloudinary)
             } else {
                 throw new Error(result.message || 'Failed to delete image')
             }
         } catch (err) {
-            console.error('Delete error details:', err)
+            console.error('Delete error:', err)
             setError(err instanceof Error ? err.message : 'Error deleting image')
         } finally {
             setDeletingImageInfo(null)
         }
     }
 
-    // Helper function to handle image errors
     const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
         const target = e.target as HTMLImageElement;
         target.src = 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'400\' height=\'400\' viewBox=\'0 0 400 400\'%3E%3Crect width=\'400\' height=\'400\' fill=\'%23f0f0f0\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' font-family=\'Arial\' font-size=\'20\' fill=\'%23999\'%3EImage Not Found%3C/text%3E%3C/svg%3E';
@@ -302,6 +304,11 @@ export function AdminClothing() {
             default: return 'bg-gray-100 text-gray-800'
         }
     }
+
+    const goToPage = (page: number) => {
+        setCurrentPage(Math.max(1, Math.min(page, pagination.totalPages)));
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
 
     if (loading) {
         return (
@@ -331,12 +338,43 @@ export function AdminClothing() {
                             Clothing Management
                         </h1>
                         <p className="text-lg text-plum/80">
-                            Showing items from {currentYear} onwards ({filteredItems.length} items)
+                            Showing items from {currentYear} onwards ({filteredItems.length} items on this page)
                         </p>
                         <p className="text-sm text-plum/60 mt-2">
-                            Total items in database: {allClothingItems.length}
+                            Total items in database: {pagination.totalItems} | Page {pagination.currentPage} of {pagination.totalPages}
                         </p>
                     </div>
+
+                    {/* Pagination Controls - Top */}
+                    {pagination.totalPages > 1 && (
+                        <div className="flex justify-center items-center gap-4 mb-6">
+                            <button
+                                onClick={() => goToPage(currentPage - 1)}
+                                disabled={!pagination.hasPrevPage}
+                                className={`p-2 rounded-lg transition-colors ${
+                                    !pagination.hasPrevPage
+                                        ? 'text-plum/20 cursor-not-allowed'
+                                        : 'text-plum hover:bg-cream'
+                                }`}
+                            >
+                                <ChevronLeft size={24} />
+                            </button>
+                            <span className="text-plum">
+                                Page {currentPage} of {pagination.totalPages}
+                            </span>
+                            <button
+                                onClick={() => goToPage(currentPage + 1)}
+                                disabled={!pagination.hasNextPage}
+                                className={`p-2 rounded-lg transition-colors ${
+                                    !pagination.hasNextPage
+                                        ? 'text-plum/20 cursor-not-allowed'
+                                        : 'text-plum hover:bg-cream'
+                                }`}
+                            >
+                                <ChevronRight size={24} />
+                            </button>
+                        </div>
+                    )}
 
                     {/* Error Message */}
                     {error && (
@@ -409,8 +447,6 @@ export function AdminClothing() {
                                                             className="w-full h-32 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
                                                             onClick={() => setPreviewImage(imageUrl)}
                                                             onError={handleImageError}
-                                                            referrerPolicy="no-referrer"
-                                                            crossOrigin="anonymous"
                                                         />
                                                         <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all">
                                                             <button
@@ -675,6 +711,64 @@ export function AdminClothing() {
                         ))}
                     </div>
 
+                    {/* Pagination Controls - Bottom */}
+                    {pagination.totalPages > 1 && (
+                        <div className="flex justify-center items-center gap-4 mt-8">
+                            <button
+                                onClick={() => goToPage(currentPage - 1)}
+                                disabled={!pagination.hasPrevPage}
+                                className={`p-2 rounded-lg transition-colors ${
+                                    !pagination.hasPrevPage
+                                        ? 'text-plum/20 cursor-not-allowed'
+                                        : 'text-plum hover:bg-cream'
+                                }`}
+                            >
+                                <ChevronLeft size={24} />
+                            </button>
+
+                            <div className="flex items-center gap-2">
+                                {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+                                    let pageNum;
+                                    if (pagination.totalPages <= 5) {
+                                        pageNum = i + 1;
+                                    } else if (currentPage <= 3) {
+                                        pageNum = i + 1;
+                                    } else if (currentPage >= pagination.totalPages - 2) {
+                                        pageNum = pagination.totalPages - 4 + i;
+                                    } else {
+                                        pageNum = currentPage - 2 + i;
+                                    }
+
+                                    return (
+                                        <button
+                                            key={i}
+                                            onClick={() => goToPage(pageNum)}
+                                            className={`w-10 h-10 rounded-lg transition-colors ${
+                                                currentPage === pageNum
+                                                    ? 'bg-rose text-white'
+                                                    : 'hover:bg-cream text-plum'
+                                            }`}
+                                        >
+                                            {pageNum}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+
+                            <button
+                                onClick={() => goToPage(currentPage + 1)}
+                                disabled={!pagination.hasNextPage}
+                                className={`p-2 rounded-lg transition-colors ${
+                                    !pagination.hasNextPage
+                                        ? 'text-plum/20 cursor-not-allowed'
+                                        : 'text-plum hover:bg-cream'
+                                }`}
+                            >
+                                <ChevronRight size={24} />
+                            </button>
+                        </div>
+                    )}
+
                     {filteredItems.length === 0 && !loading && (
                         <div className="text-center py-12">
                             <p className="text-plum text-lg">No clothing items found from 2026 onwards.</p>
@@ -701,8 +795,6 @@ export function AdminClothing() {
                             alt="Preview"
                             className="max-w-full max-h-[90vh] object-contain rounded-lg"
                             onError={handleImageError}
-                            referrerPolicy="no-referrer"
-                            crossOrigin="anonymous"
                         />
                         <button
                             onClick={(e) => {
