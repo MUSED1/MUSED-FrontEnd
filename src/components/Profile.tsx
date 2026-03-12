@@ -47,23 +47,62 @@ export function Profile() {
     const [isLoadingPicks, setIsLoadingPicks] = useState(false);
     const [isLoadingReservations, setIsLoadingReservations] = useState(false);
 
+    // Add state for activity counts
+    const [activityCounts, setActivityCounts] = useState({
+        uploads: 0,
+        picks: 0,
+        reservations: 0
+    });
+
     useEffect(() => {
         if (!loading && !isAuthenticated) {
             navigate('/login');
         }
     }, [isAuthenticated, loading, navigate]);
 
+    // Fetch all activity data when component mounts
     useEffect(() => {
         if (isAuthenticated) {
-            if (activeTab === 'uploads') {
-                fetchUserUploads();
-            } else if (activeTab === 'picks') {
-                fetchUserPicks();
-            } else if (activeTab === 'reservations') {
-                fetchUserReservations();
-            }
+            fetchAllActivityData();
         }
-    }, [isAuthenticated, activeTab]);
+    }, [isAuthenticated]);
+
+    const fetchAllActivityData = async () => {
+        // Fetch uploads
+        try {
+            const token = localStorage.getItem('token');
+            const API_URL = import.meta.env.VITE_API_URL?.replace('/auth', '') || 'https://mused-backend.onrender.com/api';
+
+            // Fetch uploads
+            const uploadsResponse = await axios.get(`${API_URL}/clothing/my-items`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (uploadsResponse.data.success) {
+                setUploads(uploadsResponse.data.data);
+                setActivityCounts(prev => ({ ...prev, uploads: uploadsResponse.data.data.length }));
+            }
+
+            // Fetch picks
+            const picksResponse = await axios.get(`${API_URL}/users/picks`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (picksResponse.data.success) {
+                setPicks(picksResponse.data.data);
+                setActivityCounts(prev => ({ ...prev, picks: picksResponse.data.data.length }));
+            }
+
+            // Fetch reservations
+            const reservationsResponse = await axios.get(`${API_URL}/users/reservations`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (reservationsResponse.data.success) {
+                setReservations(reservationsResponse.data.data);
+                setActivityCounts(prev => ({ ...prev, reservations: reservationsResponse.data.data.length }));
+            }
+        } catch (error) {
+            console.error('Error fetching activity data:', error);
+        }
+    };
 
     const fetchUserUploads = async () => {
         setIsLoadingUploads(true);
@@ -75,6 +114,7 @@ export function Profile() {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setUploads(response.data.data);
+            setActivityCounts(prev => ({ ...prev, uploads: response.data.data.length }));
         } catch (error) {
             console.error('Error fetching uploads:', error);
         } finally {
@@ -94,6 +134,7 @@ export function Profile() {
 
             if (response.data.success) {
                 setPicks(response.data.data);
+                setActivityCounts(prev => ({ ...prev, picks: response.data.data.length }));
             }
         } catch (error) {
             console.error('Error fetching picks:', error);
@@ -115,6 +156,7 @@ export function Profile() {
 
             if (response.data.success) {
                 setReservations(response.data.data);
+                setActivityCounts(prev => ({ ...prev, reservations: response.data.data.length }));
             }
         } catch (error) {
             console.error('Error fetching reservations:', error);
@@ -143,6 +185,7 @@ export function Profile() {
             });
 
             setPicks(prev => prev.filter(item => item._id !== itemId));
+            setActivityCounts(prev => ({ ...prev, picks: prev.picks - 1 }));
         } catch (error) {
             console.error('Error removing pick:', error);
         }
@@ -244,9 +287,9 @@ export function Profile() {
                             <span className="flex items-center gap-2">
                                 <Heart size={16} />
                                 My Picks
-                                {picks.length > 0 && (
+                                {activityCounts.picks > 0 && (
                                     <span className="bg-rose text-white text-xs px-2 py-0.5 rounded-full">
-                                        {picks.length}
+                                        {activityCounts.picks}
                                     </span>
                                 )}
                             </span>
@@ -262,9 +305,9 @@ export function Profile() {
                             <span className="flex items-center gap-2">
                                 <CheckCircle size={16} />
                                 My Reservations
-                                {reservations.length > 0 && (
+                                {activityCounts.reservations > 0 && (
                                     <span className="bg-green-500 text-white text-xs px-2 py-0.5 rounded-full">
-                                        {reservations.length}
+                                        {activityCounts.reservations}
                                     </span>
                                 )}
                             </span>
@@ -317,23 +360,23 @@ export function Profile() {
                                     </div>
                                 </div>
 
-                                {/* Activity Summary */}
+                                {/* Activity Summary - Now using real data */}
                                 <div className="border-t border-cream pt-6 mt-6">
                                     <h3 className="text-lg font-kaldera text-plum mb-4">Activity Summary</h3>
                                     <div className="grid grid-cols-3 gap-4">
                                         <div className="bg-cream/30 rounded-xl p-4 text-center">
                                             <Package className="mx-auto text-rose mb-2" size={24} />
-                                            <div className="text-2xl font-bold text-plum">{uploads.length}</div>
+                                            <div className="text-2xl font-bold text-plum">{activityCounts.uploads}</div>
                                             <div className="text-sm text-plum/60">Items Uploaded</div>
                                         </div>
                                         <div className="bg-cream/30 rounded-xl p-4 text-center">
                                             <Heart className="mx-auto text-rose mb-2" size={24} />
-                                            <div className="text-2xl font-bold text-plum">{picks.length}</div>
+                                            <div className="text-2xl font-bold text-plum">{activityCounts.picks}</div>
                                             <div className="text-sm text-plum/60">Items Picked</div>
                                         </div>
                                         <div className="bg-cream/30 rounded-xl p-4 text-center">
                                             <CheckCircle className="mx-auto text-green-600 mb-2" size={24} />
-                                            <div className="text-2xl font-bold text-plum">{reservations.length}</div>
+                                            <div className="text-2xl font-bold text-plum">{activityCounts.reservations}</div>
                                             <div className="text-sm text-plum/60">Reservations</div>
                                         </div>
                                     </div>
@@ -379,7 +422,6 @@ export function Profile() {
                                             <CheckCircle size={18} />
                                             View My Reservations
                                         </button>
-                                        {/* New Browse Collection Button */}
                                         <button
                                             onClick={() => navigate('/collections-m')}
                                             className="flex items-center gap-2 px-6 py-3 border-2 border-plum/20 text-plum rounded-lg hover:bg-plum/5 transition-all"
@@ -466,7 +508,7 @@ export function Profile() {
                                         My Picks
                                     </h2>
                                     <span className="text-sm text-plum/60 bg-cream/50 px-3 py-1 rounded-full">
-                                        {picks.length} items saved
+                                        {activityCounts.picks} items saved
                                     </span>
                                 </div>
 
@@ -546,7 +588,7 @@ export function Profile() {
                                         My Reservations
                                     </h2>
                                     <span className="text-sm text-plum/60 bg-cream/50 px-3 py-1 rounded-full">
-                                        {reservations.length} confirmed
+                                        {activityCounts.reservations} confirmed
                                     </span>
                                 </div>
 
