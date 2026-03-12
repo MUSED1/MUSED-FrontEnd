@@ -5,7 +5,7 @@ import { Header } from './Header';
 import { Footer } from './Footer';
 import { PhoneEdit } from './PhoneEdit';
 import { useAuth } from '../hooks/useAuth';
-import { User, Package, Heart, LogOut, Star, CheckCircle } from 'lucide-react';
+import { User, Package, Heart, LogOut, Star, CheckCircle, Search } from 'lucide-react';
 import axios from 'axios';
 
 interface ClothingItem {
@@ -378,6 +378,14 @@ export function Profile() {
                                         >
                                             <CheckCircle size={18} />
                                             View My Reservations
+                                        </button>
+                                        {/* New Browse Collection Button */}
+                                        <button
+                                            onClick={() => navigate('/collections-m')}
+                                            className="flex items-center gap-2 px-6 py-3 border-2 border-plum/20 text-plum rounded-lg hover:bg-plum/5 transition-all"
+                                        >
+                                            <Search size={18} />
+                                            Browse Collection
                                         </button>
                                     </div>
                                 </div>
