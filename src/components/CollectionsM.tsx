@@ -293,9 +293,36 @@ export function CollectionsM() {
             try {
                 localStorage.setItem('pendingReservation', JSON.stringify(reservationSession));
                 console.log('✅ Reservation data saved to localStorage:', reservationSession);
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
             } catch (e) {
                 console.warn('LocalStorage unavailable, proceeding without storage');
             }
+
+            // Parse delivery/return day values (format: "sunday-4-6" → day + time)
+            const parseDay = (raw: string) => {
+                if (!raw) return { day: '', time: '' };
+                const parts = raw.split('-');
+                if (parts.length >= 3) {
+                    return { day: parts[0], time: `${parts[1]}-${parts[2]} pm` };
+                }
+                return { day: raw, time: '' };
+            };
+            const delivery = parseDay(formData.deliveryDay);
+            const ret = parseDay(formData.returnDay);
+
+            // Build the reservation payload the webhook will use server-side
+            const reservationData = {
+                fullName: formData.name,
+                email: formData.email,
+                phoneNumber: formData.phone,
+                pickupMethod: formData.deliveryMethod || 'without',
+                pickupDay: delivery.day,
+                pickupTime: delivery.time || formData.deliveryTime || '',
+                pickupInstructions: formData.instructions || '',
+                specialInstructions: formData.instructions || '',
+                returnDay: ret.day,
+                returnTime: ret.time || formData.returnTime || '',
+            };
 
             // Call your backend to create a Stripe Checkout session
             const response = await axios.post(`${API_URL}/create-checkout-session`, {
@@ -303,7 +330,8 @@ export function CollectionsM() {
                 itemName: `${outfit.fullName}'s ${outfit.category}`,
                 amount: 290, // HKD
                 customerEmail: formData.email,
-                sessionId: sessionId
+                sessionId: sessionId,
+                reservationData  // ✅ Sent to backend so the webhook can save the reservation server-side
             });
 
             if (response.data.success && response.data.url) {
