@@ -1,4 +1,4 @@
-// components/SecondDinner.tsx
+// components/ThirdDinner.tsx
 import { useState, useEffect } from 'react';
 import { Header } from './Header';
 import { Footer } from './Footer';
@@ -19,10 +19,10 @@ interface ImageData {
 
 const API_BASE_URL = 'https://mused-backend.onrender.com';
 
-// Only show images uploaded BEFORE March 20, 2026 (Third Dinner date)
-const SECOND_DINNER_END_DATE = new Date('2026-03-20T00:00:00Z');
+// Only show images uploaded ON or AFTER March 20, 2026 (Third Dinner date)
+const THIRD_DINNER_START_DATE = new Date('2026-03-20T00:00:00Z');
 
-export function SecondDinner() {
+export function ThirdDinner() {
     const [selectedImage, setSelectedImage] = useState<ImageData | null>(null);
     const [images, setImages] = useState<ImageData[]>([]);
     const [loading, setLoading] = useState(true);
@@ -75,14 +75,14 @@ export function SecondDinner() {
                 }
             }
 
-            // Filter: only images uploaded BEFORE the Third Dinner (March 20, 2026)
-            const secondDinnerImages = allImages.filter((image: ImageData) => {
+            // Filter: only images uploaded ON or AFTER the Third Dinner date (March 20, 2026)
+            const thirdDinnerImages = allImages.filter((image: ImageData) => {
                 const uploadDate = new Date(image.createdAt);
-                return uploadDate < SECOND_DINNER_END_DATE;
+                return uploadDate >= THIRD_DINNER_START_DATE;
             });
 
-            console.log(`Total images fetched: ${allImages.length}, Second Dinner images: ${secondDinnerImages.length}`);
-            setImages(secondDinnerImages);
+            console.log(`Total images fetched: ${allImages.length}, Third Dinner images: ${thirdDinnerImages.length}`);
+            setImages(thirdDinnerImages);
         } catch (err) {
             console.error('Error fetching images:', err);
             setError(err instanceof Error ? err.message : 'Failed to load images');
@@ -94,7 +94,7 @@ export function SecondDinner() {
     const downloadImage = (image: ImageData, index: number) => {
         const link = document.createElement('a');
         link.href = image.cloudinaryUrl;
-        link.download = `second-dinner-photo-${index + 1}`;
+        link.download = `third-dinner-photo-${index + 1}`;
         link.target = '_blank';
         document.body.appendChild(link);
         link.click();
@@ -158,10 +158,10 @@ export function SecondDinner() {
                     {/* Header Section */}
                     <div className="text-center mb-12">
                         <h1 className="text-5xl md:text-6xl font-bold text-plum mb-6">
-                            Second <span className="text-gold">Dinner</span>
+                            Third <span className="text-gold">Dinner</span>
                         </h1>
                         <p className="text-xl text-plum/80 max-w-2xl mx-auto">
-                            Relive the magic of our second MUSED Diner event.
+                            Relive the magic of our third MUSED Diner event.
                             Browse through the gallery and download your favorite moments.
                         </p>
                     </div>
@@ -171,7 +171,7 @@ export function SecondDinner() {
                         <div className="text-center py-20">
                             <div className="text-5xl mb-4">📷</div>
                             <h3 className="text-2xl font-bold text-plum mb-2">No Images Yet</h3>
-                            <p className="text-plum/80 mb-6">Check back soon for photos from our second dinner event!</p>
+                            <p className="text-plum/80 mb-6">Check back soon for photos from our third dinner event!</p>
                         </div>
                     ) : (
                         <>

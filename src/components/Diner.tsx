@@ -51,22 +51,6 @@ export function Diner() {
                         </div>
                     </div>
 
-                    {/* Dinner Pictures Buttons */}
-                    <div className="text-center mb-16 flex justify-center space-x-6">
-                        <Link
-                            to="/first-dinner"
-                            className="bg-plum text-cream px-8 py-3 rounded-full hover:bg-gold hover:text-plum transition-all duration-300 font-semibold inline-block"
-                        >
-                            First Dinner Pictures
-                        </Link>
-                        <Link
-                            to="/second-dinner"
-                            className="bg-gold text-plum px-8 py-3 rounded-full hover:bg-plum hover:text-cream transition-all duration-300 font-semibold inline-block"
-                        >
-                            Second Dinner Pictures
-                        </Link>
-                    </div>
-
                     {/* Past Events Section */}
                 </div>
             </main>

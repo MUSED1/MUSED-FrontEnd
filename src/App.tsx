@@ -33,6 +33,8 @@ import { Terms } from './components/Terms'
 import { Privacy } from './components/Privacy'
 import { CollectionsM } from './components/CollectionsM';
 import { AdminReservations } from './components/AdminReservations';
+import { Gallery } from './components/Gallery'
+import { ThirdDinner } from './components/ThirdDinner';
 
 
 function HomePage() {
@@ -97,6 +99,8 @@ export function App() {
                     <Route path="/cookies" element={<Privacy />} />
                     <Route path="/collections-m" element={<CollectionsM />} />
                     <Route path="/admin/reservations" element={<AdminReservations />} />
+                    <Route path="/gallery" element={<Gallery />} />
+                    <Route path="/third-dinner" element={<ThirdDinner />} />
 
                 </Routes>
             </Router>
