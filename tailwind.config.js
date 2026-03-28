@@ -3,9 +3,10 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Kaldera Regular', 'system-ui', 'sans-serif'],
-                serif: ['Kaldera Regular', 'Georgia', 'serif'],
+                sans: ['Inter', 'system-ui', 'sans-serif'],
+                serif: ['Kaldera', 'Georgia', 'serif'],
                 amandine: ['Amandine', 'cursive', 'serif'],
+                kaldera: ['Kaldera', 'serif'],
             },
             colors: {
                 burgundy: {

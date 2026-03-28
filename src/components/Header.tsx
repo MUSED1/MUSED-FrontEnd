@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Search, ShoppingBag, User, Menu, X } from 'lucide-react'
+import { User, Menu, X } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 export function Header() {
@@ -20,7 +20,7 @@ export function Header() {
                     {/* Logo */}
                     <div className="flex-1 md:flex-none text-center md:text-left">
                         <Link to="/">
-                            <h1 className="text-2xl md:text-3xl font-bold tracking-wider text-cream transition-all duration-300 ease-in-out hover:text-gold hover:scale-105 cursor-pointer">
+                            <h1 className="text-2xl md:text-3xl font-bold tracking-wider text-cream transition-all duration-300 ease-in-out hover:text-gold hover:scale-105 cursor-pointer font-kaldera">
                                 MUSED
                             </h1>
                         </Link>
@@ -32,7 +32,7 @@ export function Header() {
                             <li>
                                 <Link
                                     to="/"
-                                    className="text-cream hover:text-gold font-medium transition-all duration-300 ease-in-out transform hover:scale-105 hover:font-semibold"
+                                    className="text-cream hover:text-gold font-medium transition-all duration-300 ease-in-out transform hover:scale-105 hover:font-semibold font-kaldera"
                                 >
                                     Home
                                 </Link>
@@ -40,23 +40,23 @@ export function Header() {
                             <li>
                                 <Link
                                     to="/diner"
-                                    className="text-cream hover:text-gold font-medium transition-all duration-300 ease-in-out transform hover:scale-105 hover:font-semibold"
+                                    className="text-cream hover:text-gold font-medium transition-all duration-300 ease-in-out transform hover:scale-105 hover:font-semibold font-kaldera"
                                 >
                                     Dinner
                                 </Link>
                             </li>
                             <li>
                                 <Link
-                                    to="/collections"
-                                    className="text-cream hover:text-gold font-medium transition-all duration-300 ease-in-out transform hover:scale-105 hover:font-semibold"
+                                    to="/gallery"
+                                    className="text-cream hover:text-gold font-medium transition-all duration-300 ease-in-out transform hover:scale-105 hover:font-semibold font-kaldera"
                                 >
-                                    Collections
+                                    Gallery
                                 </Link>
                             </li>
                             <li>
                                 <Link
                                     to="/about"
-                                    className="text-cream hover:text-gold font-medium transition-all duration-300 ease-in-out transform hover:scale-105 hover:font-semibold"
+                                    className="text-cream hover:text-gold font-medium transition-all duration-300 ease-in-out transform hover:scale-105 hover:font-semibold font-kaldera"
                                 >
                                     About
                                 </Link>
@@ -66,21 +66,12 @@ export function Header() {
 
                     {/* Icons */}
                     <div className="flex items-center space-x-4">
-                        <button className="text-cream hover:text-gold transition-all duration-300 ease-in-out transform hover:scale-110">
-                            <Search size={20} />
-                        </button>
                         <Link
                             to="/profile"
                             className="text-cream hover:text-gold transition-all duration-300 ease-in-out transform hover:scale-110"
                         >
                             <User size={20} />
                         </Link>
-                        <button className="text-cream hover:text-gold transition-all duration-300 ease-in-out transform hover:scale-110 relative">
-                            <ShoppingBag size={20} />
-                            <span className="absolute -top-1 -right-1 bg-gold text-[#5b1b3a] rounded-full w-4 h-4 flex items-center justify-center text-xs transition-all duration-300 ease-in-out hover:bg-cream hover:scale-110">
-                                0
-                            </span>
-                        </button>
                     </div>
                 </div>
 
@@ -91,7 +82,7 @@ export function Header() {
                             <li>
                                 <Link
                                     to="/"
-                                    className="block text-cream hover:text-gold font-medium transition-all duration-300 ease-in-out transform hover:translate-x-2 hover:font-semibold"
+                                    className="block text-cream hover:text-gold font-medium transition-all duration-300 ease-in-out transform hover:translate-x-2 hover:font-semibold font-kaldera"
                                     onClick={() => setIsMenuOpen(false)}
                                 >
                                     Home
@@ -100,7 +91,7 @@ export function Header() {
                             <li>
                                 <Link
                                     to="/diner"
-                                    className="block text-cream hover:text-gold font-medium transition-all duration-300 ease-in-out transform hover:translate-x-2 hover:font-semibold"
+                                    className="block text-cream hover:text-gold font-medium transition-all duration-300 ease-in-out transform hover:translate-x-2 hover:font-semibold font-kaldera"
                                     onClick={() => setIsMenuOpen(false)}
                                 >
                                     Dinner
@@ -108,17 +99,17 @@ export function Header() {
                             </li>
                             <li>
                                 <Link
-                                    to="/collections"
-                                    className="block text-cream hover:text-gold font-medium transition-all duration-300 ease-in-out transform hover:translate-x-2 hover:font-semibold"
+                                    to="/gallery"
+                                    className="block text-cream hover:text-gold font-medium transition-all duration-300 ease-in-out transform hover:translate-x-2 hover:font-semibold font-kaldera"
                                     onClick={() => setIsMenuOpen(false)}
                                 >
-                                    Collections
+                                    Gallery
                                 </Link>
                             </li>
                             <li>
                                 <Link
                                     to="/about"
-                                    className="block text-cream hover:text-gold font-medium transition-all duration-300 ease-in-out transform hover:translate-x-2 hover:font-semibold"
+                                    className="block text-cream hover:text-gold font-medium transition-all duration-300 ease-in-out transform hover:translate-x-2 hover:font-semibold font-kaldera"
                                     onClick={() => setIsMenuOpen(false)}
                                 >
                                     About

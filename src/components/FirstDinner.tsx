@@ -1,8 +1,7 @@
-// components/FirstDinner.tsx
 import { useState } from 'react';
 import { Header } from './Header';
 import { Footer } from './Footer';
-import { Link } from 'react-router-dom'; // Añadir esta importación
+import { Link } from 'react-router-dom';
 
 export function FirstDinner() {
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -35,19 +34,6 @@ export function FirstDinner() {
                             Relive the magic of our inaugural MUSED Diner event.
                             Browse through the gallery and download your favorite moments.
                         </p>
-
-                        {/* Botón para navegar a Second Dinner */}
-                        <div className="mt-8">
-                            <Link
-                                to="/second-dinner"
-                                className="inline-flex items-center gap-2 bg-gold text-plum px-6 py-3 rounded-full hover:bg-plum hover:text-cream transition-all duration-300 font-semibold"
-                            >
-                                View Second Dinner Gallery
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                                </svg>
-                            </Link>
-                        </div>
                     </div>
 
                     {/* Gallery Grid */}
@@ -73,6 +59,19 @@ export function FirstDinner() {
                                 </div>
                             </div>
                         ))}
+                    </div>
+
+                    {/* Back to Gallery Button */}
+                    <div className="text-center pb-8">
+                        <Link
+                            to="/gallery"
+                            className="inline-flex items-center gap-2 bg-plum text-cream px-8 py-3 rounded-full hover:bg-gold hover:text-plum transition-all duration-300 font-semibold"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                            </svg>
+                            Back to Gallery
+                        </Link>
                     </div>
 
                     {/* Modal for enlarged image */}
