@@ -161,7 +161,7 @@ export function SecondDinner() {
                             Second <span className="text-gold">Dinner</span>
                         </h1>
                         <p className="text-xl text-plum/80 max-w-2xl mx-auto">
-                            Relive the magic of our second MUSED Diner event.
+                            Step inside our second Wear Something Borrowed Dinner event.
                             Browse through the gallery and download your favorite moments.
                         </p>
                     </div>
