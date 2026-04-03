@@ -156,9 +156,8 @@ export function CollectionsM() {
                     headers: { Authorization: `Bearer ${token}` },
                     params: {
                         status: 'available',
-                        // Show items uploaded AFTER Jan 1, 2026 AND BEFORE April 2, 2026
                         from: '2026-01-01',
-                        to: '2026-04-02',
+                        to: '2026-04-01',  // ✅ changed from '2026-04-02' to '2026-04-01'
                         page,
                         limit: 50
                     }
