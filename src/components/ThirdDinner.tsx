@@ -21,7 +21,7 @@ const API_BASE_URL = 'https://mused-backend.onrender.com';
 
 // Only show images uploaded ON or AFTER March 20, 2026 AND BEFORE April 2, 2026 (Third Dinner date range)
 const THIRD_DINNER_START_DATE = new Date('2026-03-20T00:00:00Z');
-const THIRD_DINNER_END_DATE = new Date('2026-04-02T00:00:00Z');
+const THIRD_DINNER_END_DATE = new Date('2026-04-01T00:00:00Z');
 
 export function ThirdDinner() {
     const [selectedImage, setSelectedImage] = useState<ImageData | null>(null);
