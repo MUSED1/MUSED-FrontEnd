@@ -158,7 +158,7 @@ export function CollectionsM() {
                         status: 'available',
                         // Show items uploaded AFTER Jan 1, 2026 AND BEFORE April 2, 2026
                         from: '2026-01-01',
-                        to: '2026-04-02',  // ← Added this line (April 2, 2026)
+                        to: '2026-04-02',
                         page,
                         limit: 50
                     }
@@ -203,7 +203,7 @@ export function CollectionsM() {
     };
 
     const filterItems = () => {
-        // Date (2026+) and status (available) are now filtered server-side.
+        // Date (Jan 1, 2026 to Apr 2, 2026) and status (available) are now filtered server-side.
         // Only apply category and size filters here.
         const filtered = allItems.filter(item => {
             const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
