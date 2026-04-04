@@ -383,13 +383,7 @@ export function ClothingUploadForm() {
                         </div>
                     )}
 
-                    {/* ── Processing notice banner ─────────────────────────────────────── */}
-                    <div className="bg-gradient-to-r from-plum/10 to-rose/10 border border-rose/30 rounded-2xl px-6 py-4 mb-6">
-                        <p className="text-plum text-sm text-center">
-                            Your photos will be professionally processed after upload.
-                        </p>
-                    </div>
-
+                    
                     {/* ── Form ─────────────────────────────────────────────────── */}
                     <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
                         <form onSubmit={handleSubmit} className="space-y-8">
