@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from './Header';
 import { Footer } from './Footer';
-import { Upload, Plus, AlertTriangle, Sparkles } from 'lucide-react';
+import { Upload, Plus, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { PhoneEdit } from './PhoneEdit';
 import { API_CONFIG, compressImage } from '../utils/api';
@@ -14,10 +14,10 @@ interface ClothingItem {
     size: string;
 }
 
-// Rotating messages shown while AI processes images
-const AI_LOADING_MESSAGES = [
+// Loading messages shown while processing images
+const LOADING_MESSAGES = [
     'Uploading your images to the cloud...',
-    'Running AI ghost-mannequin transformation...',
+    'Processing your images...',
     'Enhancing lighting and background...',
     'Saving your styled items...',
 ];
@@ -27,7 +27,7 @@ export function ClothingUploadForm() {
     const [submitMessage, setSubmitMessage] = useState<{type: 'success' | 'error', message: string} | null>(null);
     const [isCheckingAuth, setIsCheckingAuth] = useState(true);
     const [uploadProgress, setUploadProgress] = useState<number>(0);
-    const [aiLoadingStep, setAiLoadingStep] = useState(0);
+    const [loadingStep, setLoadingStep] = useState(0);
 
     const { user, isAuthenticated, loading } = useAuth();
     const navigate = useNavigate();
@@ -43,14 +43,14 @@ export function ClothingUploadForm() {
         }
     }, [isAuthenticated, loading, navigate]);
 
-    // Cycle through AI loading messages while submitting
+    // Cycle through loading messages while submitting
     useEffect(() => {
         if (!isSubmitting) {
-            setAiLoadingStep(0);
+            setLoadingStep(0);
             return;
         }
         const interval = setInterval(() => {
-            setAiLoadingStep(prev => (prev + 1) % AI_LOADING_MESSAGES.length);
+            setLoadingStep(prev => (prev + 1) % LOADING_MESSAGES.length);
         }, 3500);
         return () => clearInterval(interval);
     }, [isSubmitting]);
@@ -221,8 +221,7 @@ export function ClothingUploadForm() {
         try {
             const token = localStorage.getItem('token');
 
-            // Send base64 images — the server will upload to Cloudinary
-            // and run the AI transformation automatically
+            // Send base64 images — the server will process them automatically
             const processedItems = validItems.map(item => ({
                 ...item,
                 image: `data:image/jpeg;base64,${item.image}`
@@ -256,7 +255,7 @@ export function ClothingUploadForm() {
             if (response.ok && result.success) {
                 setSubmitMessage({
                     type: 'success',
-                    message: '✨ Your items have been uploaded and AI-styled! Redirecting to your profile...'
+                    message: '✨ Your items have been uploaded successfully! Redirecting to your profile...'
                 });
 
                 setUserInfo(prev => ({
@@ -327,35 +326,32 @@ export function ClothingUploadForm() {
                         </p>
                     </div>
 
-                    {/* ── AI Processing Loading Overlay ────────────────────────── */}
+                    {/* ── Processing Loading Overlay ────────────────────────── */}
                     {isSubmitting && (
                         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center">
                             <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md mx-4 text-center">
-                                {/* Animated sparkle icon */}
+                                {/* Animated icon */}
                                 <div className="relative w-20 h-20 mx-auto mb-6">
                                     <div className="w-20 h-20 border-4 border-rose/30 border-t-rose rounded-full animate-spin"></div>
-                                    <div className="absolute inset-0 flex items-center justify-center">
-                                        <Sparkles className="text-rose" size={28} />
-                                    </div>
                                 </div>
 
-                                <h3 className="text-2xl font-bold text-plum mb-2">AI Magic in Progress</h3>
+                                <h3 className="text-2xl font-bold text-plum mb-2">Processing Your Items</h3>
                                 <p className="text-plum/60 text-sm mb-4">This may take up to 30 seconds per item</p>
 
                                 {/* Animated step message */}
                                 <div className="bg-cream/60 rounded-xl px-4 py-3 mb-5 min-h-[48px] flex items-center justify-center">
                                     <p className="text-plum font-medium text-sm transition-all duration-500">
-                                        {AI_LOADING_MESSAGES[aiLoadingStep]}
+                                        {LOADING_MESSAGES[loadingStep]}
                                     </p>
                                 </div>
 
                                 {/* Step dots */}
                                 <div className="flex justify-center gap-2 mb-5">
-                                    {AI_LOADING_MESSAGES.map((_, i) => (
+                                    {LOADING_MESSAGES.map((_, i) => (
                                         <div
                                             key={i}
                                             className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                                                i === aiLoadingStep ? 'bg-rose scale-125' : 'bg-rose/25'
+                                                i === loadingStep ? 'bg-rose scale-125' : 'bg-rose/25'
                                             }`}
                                         />
                                     ))}
@@ -387,11 +383,10 @@ export function ClothingUploadForm() {
                         </div>
                     )}
 
-                    {/* ── AI notice banner ─────────────────────────────────────── */}
-                    <div className="bg-gradient-to-r from-plum/10 to-rose/10 border border-rose/30 rounded-2xl px-6 py-4 mb-6 flex items-center gap-3">
-                        <Sparkles className="text-rose flex-shrink-0" size={20} />
-                        <p className="text-plum text-sm">
-                            <span className="font-bold">AI styling included:</span> Your photos are automatically transformed into premium ghost-mannequin product shots after upload.
+                    {/* ── Processing notice banner ─────────────────────────────────────── */}
+                    <div className="bg-gradient-to-r from-plum/10 to-rose/10 border border-rose/30 rounded-2xl px-6 py-4 mb-6">
+                        <p className="text-plum text-sm text-center">
+                            Your photos will be professionally processed after upload.
                         </p>
                     </div>
 
@@ -655,11 +650,6 @@ export function ClothingUploadForm() {
                                                                             </div>
                                                                         )}
                                                                         <p className="text-plum/60 text-sm mt-1">Click to change image</p>
-                                                                        {/* AI badge */}
-                                                                        <div className="inline-flex items-center gap-1 mt-2 bg-rose/10 text-rose text-xs font-semibold px-2 py-1 rounded-full">
-                                                                            <Sparkles size={10} />
-                                                                            AI will style this
-                                                                        </div>
                                                                     </div>
                                                                 </div>
                                                             ) : (
@@ -734,13 +724,13 @@ export function ClothingUploadForm() {
                                 >
                                     {isSubmitting ? (
                                         <>
-                                            <Sparkles size={20} className="animate-pulse" />
-                                            <span>AI Styling in Progress...</span>
+                                            <div className="w-5 h-5 border-2 border-cream border-t-transparent rounded-full animate-spin" />
+                                            <span>Processing...</span>
                                         </>
                                     ) : (
                                         <>
                                             <Plus size={20} />
-                                            <span>Upload &amp; Style with AI</span>
+                                            <span>Upload Items</span>
                                         </>
                                     )}
                                 </button>
