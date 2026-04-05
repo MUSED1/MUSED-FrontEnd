@@ -1,6 +1,6 @@
 // components/Profile.tsx
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Header } from './Header';
 import { Footer } from './Footer';
 import { PhoneEdit } from './PhoneEdit';
@@ -40,6 +40,10 @@ interface Reservation {
 export function Profile() {
     const { user, isAuthenticated, loading, logout } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
+    const [showUploadSuccess, setShowUploadSuccess] = useState(
+        (location.state as { uploadSuccess?: boolean })?.uploadSuccess === true
+    );
     const [activeTab, setActiveTab] = useState<'profile' | 'uploads' | 'picks' | 'reservations' | 'settings'>('profile');
     const [uploads, setUploads] = useState<ClothingItem[]>([]);
     const [picks, setPicks] = useState<ClothingItem[]>([]);
@@ -60,6 +64,13 @@ export function Profile() {
             navigate('/login');
         }
     }, [isAuthenticated, loading, navigate]);
+
+    // Auto-dismiss upload success banner after 6 seconds
+    useEffect(() => {
+        if (!showUploadSuccess) return;
+        const timer = setTimeout(() => setShowUploadSuccess(false), 6000);
+        return () => clearTimeout(timer);
+    }, [showUploadSuccess]);
 
     // Fetch all activity data when component mounts
     useEffect(() => {
@@ -218,6 +229,26 @@ export function Profile() {
             <Header />
             <main className="min-h-screen bg-gradient-to-br from-cream to-amber-50 py-12">
                 <div className="container mx-auto px-4 max-w-6xl">
+                    {/* Upload success banner */}
+                    {showUploadSuccess && (
+                        <div className="flex items-center justify-between gap-4 bg-green-50 border border-green-200 text-green-800 rounded-xl px-5 py-4 mb-6 shadow-sm animate-fadeIn">
+                            <div className="flex items-center gap-3">
+                                <CheckCircle size={22} className="text-green-500 shrink-0" />
+                                <div>
+                                    <p className="font-semibold">Thank you for your upload! </p>
+                                    <p className="text-sm text-green-700">Your clothing items were uploaded successfully and are now live in the collection.</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setShowUploadSuccess(false)}
+                                className="text-green-500 hover:text-green-700 transition-colors shrink-0 text-lg leading-none"
+                                aria-label="Dismiss"
+                            >
+                                ✕
+                            </button>
+                        </div>
+                    )}
+
                     {/* Profile Header */}
                     <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-8">
                         <div className="h-32 bg-gradient-to-r from-plum to-rose"></div>
