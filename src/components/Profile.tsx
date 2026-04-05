@@ -15,6 +15,7 @@ interface ClothingItem {
     size: string;
     status: string;
     createdAt: string;
+    aiProcessed?: boolean;
     university?: string;
     address?: string;
     pickupMethod?: string;
@@ -466,10 +467,24 @@ export function Profile() {
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                         {uploads.map((item) => (
                                             <div key={item._id} className="bg-cream/20 rounded-xl overflow-hidden border border-cream hover:shadow-lg transition-all group">
-                                                <div
-                                                    className="h-48 bg-cover bg-center group-hover:scale-105 transition-transform duration-300"
-                                                    style={{ backgroundImage: `url(${item.images[0]})` }}
-                                                />
+                                                {/* Image — shimmer while AI is still processing */}
+                                                {item.aiProcessed === false ? (
+                                                    <div className="h-48 bg-gradient-to-r from-cream via-amber-50 to-cream bg-[length:200%_100%] animate-[shimmer_1.5s_infinite] flex flex-col items-center justify-center gap-2 relative overflow-hidden">
+                                                        <style>{`
+                                                            @keyframes shimmer {
+                                                                0% { background-position: 200% 0; }
+                                                                100% { background-position: -200% 0; }
+                                                            }
+                                                        `}</style>
+                                                        <div className="w-6 h-6 border-2 border-rose/50 border-t-rose rounded-full animate-spin" />
+                                                        <p className="text-xs text-plum/50 font-medium">Enhancing with AI…</p>
+                                                    </div>
+                                                ) : (
+                                                    <div
+                                                        className="h-48 bg-cover bg-center group-hover:scale-105 transition-transform duration-300"
+                                                        style={{ backgroundImage: `url(${item.images[0]})` }}
+                                                    />
+                                                )}
                                                 <div className="p-4">
                                                     <div className="flex justify-between items-start mb-2">
                                                         <div>
