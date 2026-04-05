@@ -277,7 +277,7 @@ export function ClothingUploadForm() {
                 ]);
 
                 setTimeout(() => {
-                    navigate('/profile');
+                    navigate('/profile', { state: { uploadSuccess: true } });
                 }, 2000);
             } else {
                 setSubmitMessage({
@@ -383,7 +383,7 @@ export function ClothingUploadForm() {
                         </div>
                     )}
 
-                    
+
                     {/* ── Form ─────────────────────────────────────────────────── */}
                     <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
                         <form onSubmit={handleSubmit} className="space-y-8">
