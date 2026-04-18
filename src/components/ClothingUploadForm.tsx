@@ -12,6 +12,7 @@ interface ClothingItem {
     image: string;
     category: string;
     size: string;
+    specialInstructions: string; // Added per-item special instructions
 }
 
 // Loading messages shown while processing images
@@ -60,23 +61,19 @@ export function ClothingUploadForm() {
         email: '',
         phoneNumber: '',
         address: '',
-        needsPickupHere: '' // Changed from university to pickup preference
+        needsPickupHere: ''
     });
 
     const [pickupInfo, setPickupInfo] = useState({
-        pickupMethod: '',
-        pickupTime: '',
         pickupDay: '',
+        pickupTime: '',
         pickupInstructions: '',
-        specialInstructions: ''
     });
 
     const [clothingItems, setClothingItems] = useState<ClothingItem[]>([
-        { image: '', category: '', size: '' },
-        { image: '', category: '', size: '' }
+        { image: '', category: '', size: '', specialInstructions: '' },
+        { image: '', category: '', size: '', specialInstructions: '' }
     ]);
-
-    // Removed universities array - no longer needed
 
     useEffect(() => {
         if (user) {
@@ -183,15 +180,6 @@ export function ClothingUploadForm() {
             return;
         }
 
-        if (!pickupInfo.pickupMethod) {
-            setSubmitMessage({
-                type: 'error',
-                message: 'Please select a pickup method'
-            });
-            setIsSubmitting(false);
-            return;
-        }
-
         const validItems = clothingItems.filter(item => item.image && item.category && item.size);
         if (validItems.length === 0) {
             setSubmitMessage({
@@ -216,7 +204,9 @@ export function ClothingUploadForm() {
 
             // Send base64 images — the server will process them automatically
             const processedItems = validItems.map(item => ({
-                ...item,
+                category: item.category,
+                size: item.size,
+                specialInstructions: item.specialInstructions || '',
                 image: `data:image/jpeg;base64,${item.image}`
             }));
 
@@ -229,7 +219,9 @@ export function ClothingUploadForm() {
                     needsPickupHere: userInfo.needsPickupHere
                 },
                 clothingItems: processedItems,
-                ...pickupInfo
+                pickupDay: pickupInfo.pickupDay,
+                pickupTime: pickupInfo.pickupTime,
+                pickupInstructions: pickupInfo.pickupInstructions,
             };
 
             const API_URL = API_CONFIG.baseURL;
@@ -258,15 +250,13 @@ export function ClothingUploadForm() {
                     needsPickupHere: ''
                 }));
                 setPickupInfo({
-                    pickupMethod: '',
-                    pickupTime: '',
                     pickupDay: '',
+                    pickupTime: '',
                     pickupInstructions: '',
-                    specialInstructions: ''
                 });
                 setClothingItems([
-                    { image: '', category: '', size: '' },
-                    { image: '', category: '', size: '' }
+                    { image: '', category: '', size: '', specialInstructions: '' },
+                    { image: '', category: '', size: '', specialInstructions: '' }
                 ]);
 
                 setTimeout(() => {
@@ -292,20 +282,14 @@ export function ClothingUploadForm() {
     const categories = ['Dresses', 'Tops', 'Bottoms', 'Outerwear', 'Accessories', 'Bags', 'Jewelry'];
     const sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXS', 'XXL', '32', '34', '36', '38', '40', '42', 'One Size'];
 
-    // Updated pickup days based on new schedule
+    // Updated pickup days - only Tuesday
     const pickupDays = [
-        { value: 'monday', label: 'Monday' },
-        { value: 'tuesday', label: 'Tuesday' },
-        { value: 'wednesday', label: 'Wednesday' },
-        { value: 'thursday', label: 'Thursday' }
+        { value: 'tuesday', label: 'Tuesday' }
     ];
 
-    // Updated time slots based on availability
+    // Updated time slots for Tuesday
     const timeSlots: Record<string, string[]> = {
-        'monday': ['8:00 AM - 2:00 PM', '6:00 PM - 9:00 PM'],
-        'tuesday': ['After 2:00 PM'],
-        'wednesday': ['8:00 AM - 2:00 PM', '6:00 PM - 9:00 PM'],
-        'thursday': ['After 10:00 AM']
+        'tuesday': ['After 2:00 PM']
     };
 
     return (
@@ -477,139 +461,58 @@ export function ClothingUploadForm() {
                                 </div>
                             </div>
 
-                            {/* Pickup Method */}
+                            {/* Pickup Section - Simplified with only Tuesday */}
                             <div className="border-t border-cream pt-8">
-                                <h3 className="text-2xl font-bold text-plum mb-6">Pickup Method</h3>
-                                <div className="grid md:grid-cols-2 gap-4">
-                                    {['without', 'in-person'].map(method => (
-                                        <label
-                                            key={method}
-                                            className={`flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 ${
-                                                pickupInfo.pickupMethod === method
-                                                    ? 'border-rose bg-rose/10'
-                                                    : 'border-cream hover:border-rose/50'
-                                            }`}
-                                        >
-                                            <input
-                                                type="radio"
-                                                name="pickupMethod"
-                                                value={method}
-                                                checked={pickupInfo.pickupMethod === method}
+                                <h3 className="text-2xl font-bold text-plum mb-6">Pickup Details</h3>
+                                <div className="space-y-4 p-4 bg-cream/30 rounded-xl">
+                                    <div className="grid md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-lg font-semibold text-plum mb-3">Preferred pickup day</label>
+                                            <select
+                                                name="pickupDay"
+                                                value={pickupInfo.pickupDay}
                                                 onChange={handlePickupInfoChange}
-                                                className="accent-rose"
+                                                className="w-full px-4 py-3 border-2 border-cream rounded-xl focus:border-rose focus:ring-2 focus:ring-rose/20 transition-all duration-300 bg-white text-plum"
                                                 disabled={isSubmitting}
-                                            />
-                                            <span className="text-plum font-medium capitalize">
-                                                {method === 'without' ? 'We come to you' : 'In-person drop-off'}
-                                            </span>
-                                        </label>
-                                    ))}
-                                </div>
-
-                                {pickupInfo.pickupMethod === 'without' && (
-                                    <div className="space-y-4 mt-4 p-4 bg-cream/30 rounded-xl">
-                                        <div className="grid md:grid-cols-2 gap-4">
-                                            <div>
-                                                <label className="block text-lg font-semibold text-plum mb-3">Preferred pickup day</label>
-                                                <select
-                                                    name="pickupDay"
-                                                    value={pickupInfo.pickupDay}
-                                                    onChange={handlePickupInfoChange}
-                                                    className="w-full px-4 py-3 border-2 border-cream rounded-xl focus:border-rose focus:ring-2 focus:ring-rose/20 transition-all duration-300 bg-white text-plum"
-                                                    disabled={isSubmitting}
-                                                >
-                                                    <option value="">Select day</option>
-                                                    {pickupDays.map(day => (
-                                                        <option key={day.value} value={day.value}>{day.label}</option>
-                                                    ))}
-                                                </select>
-                                            </div>
-                                            <div>
-                                                <label className="block text-lg font-semibold text-plum mb-3">Preferred time</label>
-                                                <select
-                                                    name="pickupTime"
-                                                    value={pickupInfo.pickupTime}
-                                                    onChange={handlePickupInfoChange}
-                                                    className="w-full px-4 py-3 border-2 border-cream rounded-xl focus:border-rose focus:ring-2 focus:ring-rose/20 transition-all duration-300 bg-white text-plum"
-                                                    disabled={isSubmitting}
-                                                >
-                                                    <option value="">Select time window</option>
-                                                    {pickupInfo.pickupDay && timeSlots[pickupInfo.pickupDay]?.map((time, idx) => (
-                                                        <option key={idx} value={time}>{time}</option>
-                                                    ))}
-                                                </select>
-                                            </div>
+                                            >
+                                                <option value="">Select day</option>
+                                                {pickupDays.map(day => (
+                                                    <option key={day.value} value={day.value}>{day.label}</option>
+                                                ))}
+                                            </select>
                                         </div>
                                         <div>
-                                            <label className="block text-lg font-semibold text-plum mb-3">Any pickup instructions?</label>
-                                            <textarea
-                                                name="pickupInstructions"
-                                                value={pickupInfo.pickupInstructions}
+                                            <label className="block text-lg font-semibold text-plum mb-3">Preferred time</label>
+                                            <select
+                                                name="pickupTime"
+                                                value={pickupInfo.pickupTime}
                                                 onChange={handlePickupInfoChange}
-                                                rows={3}
-                                                className="w-full px-4 py-3 border-2 border-cream rounded-xl focus:border-rose focus:ring-2 focus:ring-rose/20 transition-all duration-300 bg-white text-plum placeholder-plum/40 resize-none"
-                                                placeholder="Example: 'Leave with concierge,' 'Door code 12A,' etc."
+                                                className="w-full px-4 py-3 border-2 border-cream rounded-xl focus:border-rose focus:ring-2 focus:ring-rose/20 transition-all duration-300 bg-white text-plum"
                                                 disabled={isSubmitting}
-                                            />
+                                            >
+                                                <option value="">Select time window</option>
+                                                {pickupInfo.pickupDay && timeSlots[pickupInfo.pickupDay]?.map((time, idx) => (
+                                                    <option key={idx} value={time}>{time}</option>
+                                                ))}
+                                            </select>
                                         </div>
                                     </div>
-                                )}
-
-                                {pickupInfo.pickupMethod === 'in-person' && (
-                                    <div className="space-y-4 mt-4 p-4 bg-cream/30 rounded-xl">
-                                        <div className="grid md:grid-cols-2 gap-4">
-                                            <div>
-                                                <label className="block text-lg font-semibold text-plum mb-3">Choose a day</label>
-                                                <select
-                                                    name="pickupDay"
-                                                    value={pickupInfo.pickupDay}
-                                                    onChange={handlePickupInfoChange}
-                                                    className="w-full px-4 py-3 border-2 border-cream rounded-xl focus:border-rose focus:ring-2 focus:ring-rose/20 transition-all duration-300 bg-white text-plum"
-                                                    required
-                                                    disabled={isSubmitting}
-                                                >
-                                                    <option value="">Select day</option>
-                                                    {pickupDays.map(day => (
-                                                        <option key={day.value} value={day.value}>{day.label}</option>
-                                                    ))}
-                                                </select>
-                                            </div>
-                                            <div>
-                                                <label className="block text-lg font-semibold text-plum mb-3">Choose a time slot</label>
-                                                <select
-                                                    name="pickupTime"
-                                                    value={pickupInfo.pickupTime}
-                                                    onChange={handlePickupInfoChange}
-                                                    className="w-full px-4 py-3 border-2 border-cream rounded-xl focus:border-rose focus:ring-2 focus:ring-rose/20 transition-all duration-300 bg-white text-plum"
-                                                    required
-                                                    disabled={isSubmitting}
-                                                >
-                                                    <option value="">Select time</option>
-                                                    {pickupInfo.pickupDay && timeSlots[pickupInfo.pickupDay]?.map((time, index) => (
-                                                        <option key={index} value={time}>{time}</option>
-                                                    ))}
-                                                </select>
-                                            </div>
-                                        </div>
+                                    <div>
+                                        <label className="block text-lg font-semibold text-plum mb-3">Any pickup instructions?</label>
+                                        <textarea
+                                            name="pickupInstructions"
+                                            value={pickupInfo.pickupInstructions}
+                                            onChange={handlePickupInfoChange}
+                                            rows={3}
+                                            className="w-full px-4 py-3 border-2 border-cream rounded-xl focus:border-rose focus:ring-2 focus:ring-rose/20 transition-all duration-300 bg-white text-plum placeholder-plum/40 resize-none"
+                                            placeholder="Example: 'Leave with concierge,' 'Door code 12A,' etc."
+                                            disabled={isSubmitting}
+                                        />
                                     </div>
-                                )}
+                                </div>
                             </div>
 
-                            {/* Special Instructions */}
-                            <div>
-                                <label className="block text-lg font-semibold text-plum mb-3">Special Instructions (Optional)</label>
-                                <textarea
-                                    name="specialInstructions"
-                                    value={pickupInfo.specialInstructions}
-                                    onChange={handlePickupInfoChange}
-                                    rows={4}
-                                    className="w-full px-4 py-3 border-2 border-cream rounded-xl focus:border-rose focus:ring-2 focus:ring-rose/20 transition-all duration-300 bg-cream/30 text-plum placeholder-plum/40 resize-none"
-                                    placeholder="Any special care instructions, notes about the items, or pickup preferences..."
-                                    disabled={isSubmitting}
-                                />
-                            </div>
-
-                            {/* Clothing Items Section */}
+                            {/* Clothing Items Section with per-item special instructions */}
                             <div className="border-t border-cream pt-8">
                                 <div className="flex justify-between items-center mb-6">
                                     <h3 className="text-2xl font-bold text-plum">Your Clothing Items</h3>
@@ -676,7 +579,7 @@ export function ClothingUploadForm() {
                                                     )}
                                                 </div>
 
-                                                {/* Category and Size */}
+                                                {/* Category, Size, and Special Instructions */}
                                                 <div className="space-y-4">
                                                     <div>
                                                         <label className="block text-lg font-semibold text-plum mb-3">Category *</label>
@@ -709,6 +612,18 @@ export function ClothingUploadForm() {
                                                             ))}
                                                         </select>
                                                     </div>
+
+                                                    <div>
+                                                        <label className="block text-lg font-semibold text-plum mb-3">Special Instructions (Optional)</label>
+                                                        <textarea
+                                                            value={item.specialInstructions}
+                                                            onChange={(e) => handleClothingItemChange(index, 'specialInstructions', e.target.value)}
+                                                            rows={3}
+                                                            className="w-full px-4 py-3 border-2 border-cream rounded-xl focus:border-rose focus:ring-2 focus:ring-rose/20 transition-all duration-300 bg-white text-plum placeholder-plum/40 resize-none"
+                                                            placeholder="Any special care instructions, notes about this item..."
+                                                            disabled={isSubmitting}
+                                                        />
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -731,7 +646,7 @@ export function ClothingUploadForm() {
                                     ) : (
                                         <>
                                             <Plus size={20} />
-                                            <span>Upload Items</span>
+                                            <span>Submit your pieces </span>
                                         </>
                                     )}
                                 </button>
@@ -739,7 +654,7 @@ export function ClothingUploadForm() {
                         </form>
                     </div>
 
-                    {/* "What happens next" Section - Updated with March 25th date */}
+                    {/* "What happens next" Section - Updated to April 25th */}
                     <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 text-center">
                         <h3 className="text-3xl font-bold text-plum mb-6 font-kaldera">What happens next?</h3>
                         <div className="grid md:grid-cols-3 gap-6 text-plum">
@@ -749,7 +664,7 @@ export function ClothingUploadForm() {
                             </div>
                             <div className="space-y-3">
                                 <div className="w-12 h-12 bg-rose rounded-full flex items-center justify-center text-plum font-bold text-xl mx-auto mb-3">2</div>
-                                <p className="font-semibold text-lg">Dinner collection launches March 25th</p>
+                                <p className="font-semibold text-lg">Dinner collection launches April 25th</p>
                                 <p className="text-sm text-plum/70">choose your items then</p>
                             </div>
                             <div className="space-y-3">
