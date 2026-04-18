@@ -20,6 +20,16 @@ export const Login: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
+    // Get the redirect URL from state (where user originally wanted to go)
+    const from = (location.state as any)?.from || '/profile';
+    const redirectMessage = (location.state as any)?.message;
+
+    useEffect(() => {
+        if (redirectMessage) {
+            setLocalError(redirectMessage);
+        }
+    }, [redirectMessage]);
+
     // Check for error in URL (from OAuth redirect)
     useEffect(() => {
         const params = new URLSearchParams(location.search);
@@ -30,6 +40,28 @@ export const Login: React.FC = () => {
             setLocalError('Facebook login failed. Please try again.');
         }
     }, [location]);
+
+    // ✅ FIX: Extract the ref from location.state.from (e.g. "/upload?ref=<id>")
+    // because when redirected from /upload?ref=<id>, the ref lives in state, not the current URL.
+    const getRefCode = (): string | null => {
+        // 1. Check if ref is directly in the current URL (e.g. user landed on /login?ref=...)
+        const currentRef = new URLSearchParams(location.search).get('ref');
+        if (currentRef) return currentRef;
+
+        // 2. Check the "from" path stored in router state (e.g. "/upload?ref=<id>")
+        const fromPath = (location.state as any)?.from || '';
+        const fromSearch = fromPath.includes('?') ? fromPath.split('?')[1] : '';
+        const fromRef = new URLSearchParams(fromSearch).get('ref');
+        if (fromRef) return fromRef;
+
+        return null;
+    };
+
+    // Build the signup URL, always preserving the ref so new users get referredBy set
+    const getSignupUrl = (): string => {
+        const ref = getRefCode();
+        return ref ? `/signup?ref=${ref}` : '/signup';
+    };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
         const { name, value } = e.target;
@@ -47,8 +79,8 @@ export const Login: React.FC = () => {
         const result = await login(formData);
 
         if (result.success) {
-            // Redirect to profile instead of upload
-            navigate('/profile', { replace: true });
+            // ✅ Redirect to the original intended URL (preserves referral)
+            navigate(from, { replace: true });
         } else {
             setLocalError(result.error || 'Login failed');
         }
@@ -59,19 +91,26 @@ export const Login: React.FC = () => {
     const handleGoogleLogin = () => {
         const API_URL = import.meta.env.VITE_API_URL || 'https://mused-backend.onrender.com/api';
         const BASE_URL = API_URL.replace('/auth', '');
-        window.location.href = `${BASE_URL}/auth/google`;
+
+        // ✅ Preserve referral param when redirecting to Google
+        const ref = getRefCode();
+        const url = ref ? `${BASE_URL}/auth/google?ref=${ref}` : `${BASE_URL}/auth/google`;
+        window.location.href = url;
     };
 
     const handleFacebookLogin = () => {
         const API_URL = import.meta.env.VITE_API_URL || 'https://mused-backend.onrender.com/api';
         const BASE_URL = API_URL.replace('/auth', '');
-        window.location.href = `${BASE_URL}/auth/facebook`;
+
+        // ✅ Preserve referral param when redirecting to Facebook
+        const ref = getRefCode();
+        const url = ref ? `${BASE_URL}/auth/facebook?ref=${ref}` : `${BASE_URL}/auth/facebook`;
+        window.location.href = url;
     };
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-cream via-cream to-rose/30 py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-md w-full">
-                {/* Decorative element */}
                 <div className="absolute top-0 left-0 w-full h-64 bg-burgundy/5 -z-10" />
 
                 <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-8 md:p-10 border border-gold/20">
@@ -95,7 +134,6 @@ export const Login: React.FC = () => {
                         )}
 
                         <div className="space-y-4">
-                            {/* Email Field */}
                             <div>
                                 <label className="block text-sm font-medium text-plum/80 mb-1.5 font-inter">
                                     Email Address
@@ -112,7 +150,6 @@ export const Login: React.FC = () => {
                                 />
                             </div>
 
-                            {/* Password Field */}
                             <div>
                                 <label className="block text-sm font-medium text-plum/80 mb-1.5 font-inter">
                                     Password
@@ -130,7 +167,6 @@ export const Login: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Forgot Password Link */}
                         <div className="flex items-center justify-end">
                             <button
                                 type="button"
@@ -141,7 +177,6 @@ export const Login: React.FC = () => {
                             </button>
                         </div>
 
-                        {/* Submit Button */}
                         <button
                             type="submit"
                             disabled={loading}
@@ -161,7 +196,6 @@ export const Login: React.FC = () => {
                         </button>
                     </form>
 
-                    {/* Social Login Section */}
                     <div className="mt-8">
                         <div className="relative">
                             <div className="absolute inset-0 flex items-center">
@@ -175,7 +209,6 @@ export const Login: React.FC = () => {
                         </div>
 
                         <div className="mt-6 grid grid-cols-2 gap-3">
-                            {/* Google Login Button */}
                             <button
                                 type="button"
                                 onClick={handleGoogleLogin}
@@ -183,27 +216,14 @@ export const Login: React.FC = () => {
                                 className="flex items-center justify-center gap-3 px-4 py-3 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gold/30 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 <svg className="h-5 w-5" viewBox="0 0 24 24">
-                                    <path
-                                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                                        fill="#4285F4"
-                                    />
-                                    <path
-                                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                                        fill="#34A853"
-                                    />
-                                    <path
-                                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                                        fill="#FBBC05"
-                                    />
-                                    <path
-                                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                                        fill="#EA4335"
-                                    />
+                                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+                                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+                                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
                                 </svg>
                                 <span className="text-sm text-plum font-inter">Google</span>
                             </button>
 
-                            {/* Facebook Login Button */}
                             <button
                                 type="button"
                                 onClick={handleFacebookLogin}
@@ -211,19 +231,19 @@ export const Login: React.FC = () => {
                                 className="flex items-center justify-center gap-3 px-4 py-3 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gold/30 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 <svg className="h-5 w-5" fill="#1877F2" viewBox="0 0 24 24">
-                                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
                                 </svg>
                                 <span className="text-sm text-plum font-inter">Facebook</span>
                             </button>
                         </div>
                     </div>
 
-                    {/* Signup Link */}
                     <div className="text-center pt-6">
                         <p className="text-plum/60 text-sm font-inter">
                             Don't have an account?{' '}
+                            {/* ✅ FIX: Use getSignupUrl() so the ref is never lost */}
                             <Link
-                                to="/signup"
+                                to={getSignupUrl()}
                                 className="text-burgundy font-medium hover:text-gold transition-colors"
                             >
                                 Create one
@@ -232,7 +252,6 @@ export const Login: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Decorative element */}
                 <div className="absolute bottom-0 right-0 w-64 h-64 bg-gold/5 rounded-full blur-3xl -z-10" />
             </div>
         </div>
