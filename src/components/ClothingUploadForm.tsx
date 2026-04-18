@@ -121,7 +121,12 @@ export function ClothingUploadForm() {
 
     const handlePickupInfoChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
-        setPickupInfo(prev => ({ ...prev, [name]: value }));
+        // Reset pickup time when day changes
+        if (name === 'pickupDay') {
+            setPickupInfo(prev => ({ ...prev, [name]: value, pickupTime: '' }));
+        } else {
+            setPickupInfo(prev => ({ ...prev, [name]: value }));
+        }
     };
 
     const handleClothingItemChange = (index: number, field: keyof ClothingItem, value: string) => {
@@ -282,14 +287,20 @@ export function ClothingUploadForm() {
     const categories = ['Dresses', 'Tops', 'Bottoms', 'Outerwear', 'Accessories', 'Bags', 'Jewelry'];
     const sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXS', 'XXL', '32', '34', '36', '38', '40', '42', 'One Size'];
 
-    // Updated pickup days - only Tuesday
+    // Updated pickup days - Monday through Thursday (April 20-24)
     const pickupDays = [
-        { value: 'tuesday', label: 'Tuesday' }
+        { value: 'monday', label: 'Monday (April 20)' },
+        { value: 'tuesday', label: 'Tuesday (April 21)' },
+        { value: 'wednesday', label: 'Wednesday (April 22)' },
+        { value: 'thursday', label: 'Thursday (April 23)' }
     ];
 
-    // Updated time slots for Tuesday
+    // Updated time slots for each day
     const timeSlots: Record<string, string[]> = {
-        'tuesday': ['After 2:00 PM']
+        'monday': ['8:00 AM - 2:00 PM', '6:00 PM - 9:00 PM'],
+        'tuesday': ['After 2:00 PM'],
+        'wednesday': ['8:00 AM - 2:00 PM', '6:00 PM - 9:00 PM'],
+        'thursday': ['After 10:00 AM']
     };
 
     return (
@@ -461,19 +472,20 @@ export function ClothingUploadForm() {
                                 </div>
                             </div>
 
-                            {/* Pickup Section - Simplified with only Tuesday */}
+                            {/* Pickup Section - Updated with correct days and times */}
                             <div className="border-t border-cream pt-8">
                                 <h3 className="text-2xl font-bold text-plum mb-6">Pickup Details</h3>
                                 <div className="space-y-4 p-4 bg-cream/30 rounded-xl">
                                     <div className="grid md:grid-cols-2 gap-4">
                                         <div>
-                                            <label className="block text-lg font-semibold text-plum mb-3">Preferred pickup day</label>
+                                            <label className="block text-lg font-semibold text-plum mb-3">Preferred pickup day *</label>
                                             <select
                                                 name="pickupDay"
                                                 value={pickupInfo.pickupDay}
                                                 onChange={handlePickupInfoChange}
                                                 className="w-full px-4 py-3 border-2 border-cream rounded-xl focus:border-rose focus:ring-2 focus:ring-rose/20 transition-all duration-300 bg-white text-plum"
                                                 disabled={isSubmitting}
+                                                required
                                             >
                                                 <option value="">Select day</option>
                                                 {pickupDays.map(day => (
@@ -482,19 +494,23 @@ export function ClothingUploadForm() {
                                             </select>
                                         </div>
                                         <div>
-                                            <label className="block text-lg font-semibold text-plum mb-3">Preferred time</label>
+                                            <label className="block text-lg font-semibold text-plum mb-3">Preferred time window *</label>
                                             <select
                                                 name="pickupTime"
                                                 value={pickupInfo.pickupTime}
                                                 onChange={handlePickupInfoChange}
                                                 className="w-full px-4 py-3 border-2 border-cream rounded-xl focus:border-rose focus:ring-2 focus:ring-rose/20 transition-all duration-300 bg-white text-plum"
-                                                disabled={isSubmitting}
+                                                disabled={isSubmitting || !pickupInfo.pickupDay}
+                                                required
                                             >
                                                 <option value="">Select time window</option>
                                                 {pickupInfo.pickupDay && timeSlots[pickupInfo.pickupDay]?.map((time, idx) => (
                                                     <option key={idx} value={time}>{time}</option>
                                                 ))}
                                             </select>
+                                            {!pickupInfo.pickupDay && (
+                                                <p className="text-sm text-plum/60 mt-1">Please select a day first</p>
+                                            )}
                                         </div>
                                     </div>
                                     <div>
@@ -654,7 +670,7 @@ export function ClothingUploadForm() {
                         </form>
                     </div>
 
-                    {/* "What happens next" Section - Updated to April 25th */}
+                    {/* "What happens next" Section */}
                     <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 text-center">
                         <h3 className="text-3xl font-bold text-plum mb-6 font-kaldera">What happens next?</h3>
                         <div className="grid md:grid-cols-3 gap-6 text-plum">
