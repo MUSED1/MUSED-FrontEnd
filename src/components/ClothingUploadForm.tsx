@@ -37,8 +37,12 @@ export function ClothingUploadForm() {
         if (!loading) {
             setIsCheckingAuth(false);
             if (!isAuthenticated) {
+                const ref = new URLSearchParams(window.location.search).get('ref');
                 navigate('/login', {
-                    state: { from: '/upload', message: 'Please login to upload clothing items' }
+                    state: {
+                        from: ref ? `/upload?ref=${ref}` : '/upload',
+                        message: 'Please login to upload clothing items'
+                    }
                 });
             }
         }
@@ -243,11 +247,7 @@ export function ClothingUploadForm() {
             const result = await response.json();
 
             if (response.ok && result.success) {
-                setSubmitMessage({
-                    type: 'success',
-                    message: '✨ Your items have been uploaded successfully! Redirecting to your profile...'
-                });
-
+                // Reset form state
                 setUserInfo(prev => ({
                     ...prev,
                     phoneNumber: '',
@@ -264,10 +264,9 @@ export function ClothingUploadForm() {
                     { image: '', category: '', size: '', specialInstructions: '' }
                 ]);
 
-                setTimeout(() => {
-                    navigate('/profile', { state: { uploadSuccess: true } });
-                }, 2000);
-            } else {
+                // Navigate straight to the success / referral page
+                navigate('/submission-success');
+            }else {
                 setSubmitMessage({
                     type: 'error',
                     message: result.message || 'Error uploading clothing items. Please try again.'

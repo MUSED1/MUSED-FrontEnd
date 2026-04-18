@@ -7,12 +7,17 @@ interface User {
     id: string;
     name: string;
     email: string;
-    phone?: string; // 👈 AÑADIMOS PHONE OPCIONAL
+    phone?: string;
     role: 'user' | 'admin';
     avatar?: string;
     provider?: 'local' | 'google' | 'facebook';
+    referralCode?: string;
+    referralCount?: number;
+    referredBy?: string | { _id: string; name: string; email: string };
+    referralCompleted?: boolean;
 }
 
+// Add to AuthContextType interface
 interface AuthContextType {
     user: User | null;
     loading: boolean;
@@ -21,6 +26,7 @@ interface AuthContextType {
     login: (credentials: LoginData) => Promise<AuthResponse>;
     loginWithToken: (token: string) => Promise<AuthResponse>;
     logout: () => void;
+    updateUser: (userData: Partial<User>) => void;  // Already there, ensure it's implemented
     isAuthenticated: boolean;
     isAdmin: boolean;
 }
@@ -28,8 +34,9 @@ interface AuthContextType {
 interface SignupData {
     name: string;
     email: string;
-    phone: string; // 👈 AÑADIMOS PHONE REQUERIDO
+    phone: string;
     password: string;
+    ref?: string;
 }
 
 interface LoginData {
@@ -41,6 +48,11 @@ interface AuthResponse {
     success: boolean;
     user?: User;
     error?: string;
+    referral?: {
+        success: boolean;
+        referrerId?: string;
+        referrerName?: string;
+    };
 }
 
 interface AuthProviderProps {
@@ -51,19 +63,15 @@ interface ApiErrorResponse {
     message?: string;
 }
 
-// Create context
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Auth Provider component
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
-    // Get API URL from environment variable
     const API_URL = import.meta.env.VITE_API_URL || 'https://mused-backend.onrender.com/api';
 
-    // Set auth token in axios headers
     const setAuthToken = (token: string | null): void => {
         if (token) {
             axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -72,7 +80,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
     };
 
-    // Load user from token on mount
     useEffect(() => {
         const loadUser = async (): Promise<void> => {
             const token = localStorage.getItem('token');
@@ -80,7 +87,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             if (token) {
                 try {
                     setAuthToken(token);
-                    const res = await axios.get<{ success: boolean; user: User }>(`${API_URL}/me`);
+                    const res = await axios.get<{ success: boolean; user: User }>(`${API_URL}/auth/me`);
                     setUser(res.data.user);
                 } catch (error) {
                     console.error('Failed to load user:', error);
@@ -94,12 +101,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         loadUser();
     }, [API_URL]);
 
-    // Signup function
     const signup = async (userData: SignupData): Promise<AuthResponse> => {
         try {
             setError(null);
-            const res = await axios.post<{ success: boolean; token: string; user: User }>(
-                `${API_URL}/signup`,
+            const res = await axios.post<{
+                success: boolean;
+                token: string;
+                user: User;
+                referral?: { success: boolean; referrerId: string; referrerName: string };
+            }>(
+                `${API_URL}/auth/signup`,
                 userData
             );
 
@@ -107,7 +118,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 localStorage.setItem('token', res.data.token);
                 setAuthToken(res.data.token);
                 setUser(res.data.user);
-                return { success: true, user: res.data.user };
+                return {
+                    success: true,
+                    user: res.data.user,
+                    referral: res.data.referral
+                };
             }
 
             return { success: false, error: 'Signup failed' };
@@ -119,12 +134,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
     };
 
-    // Login function
     const login = async (credentials: LoginData): Promise<AuthResponse> => {
         try {
             setError(null);
             const res = await axios.post<{ success: boolean; token: string; user: User }>(
-                `${API_URL}/login`,
+                `${API_URL}/auth/login`,
                 credentials
             );
 
@@ -144,12 +158,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
     };
 
-    // Login with token (for OAuth)
     const loginWithToken = async (token: string): Promise<AuthResponse> => {
         try {
             setAuthToken(token);
             const res = await axios.post<{ success: boolean; user: User }>(
-                `${API_URL}/token-login`,
+                `${API_URL}/auth/token-login`,
                 { token }
             );
 
@@ -168,11 +181,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
     };
 
-    // Logout function
     const logout = (): void => {
         localStorage.removeItem('token');
         setAuthToken(null);
         setUser(null);
+    };
+
+    const updateUser = (userData: Partial<User>): void => {
+        if (user) {
+            setUser({ ...user, ...userData });
+        }
     };
 
     const value: AuthContextType = {
@@ -183,6 +201,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         login,
         loginWithToken,
         logout,
+        updateUser,
         isAuthenticated: !!user,
         isAdmin: user?.role === 'admin'
     };

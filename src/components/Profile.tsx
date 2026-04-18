@@ -235,8 +235,8 @@ export function Profile() {
                             <div className="flex items-center gap-3">
                                 <CheckCircle size={22} className="text-green-500 shrink-0" />
                                 <div>
-                                    <p className="font-semibold">Thank you for your upload! </p>
-                                    <p className="text-sm text-green-700">Your clothing items were uploaded successfully and are now live in the collection.</p>
+                                    <p className="font-semibold">Thank you for your submission! </p>
+                                    <p className="text-sm text-green-700">Your clothing items were uploaded successfully and are now being reviewed.</p>
                                 </div>
                             </div>
                             <button
@@ -422,7 +422,7 @@ export function Profile() {
                                             className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-plum to-rose text-cream rounded-lg hover:shadow-lg transition-all"
                                         >
                                             <Package size={18} />
-                                            Upload New Item
+                                            Be Part Of The Collection APPLY HERE
                                         </button>
                                         <button
                                             onClick={() => {
