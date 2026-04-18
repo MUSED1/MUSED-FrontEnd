@@ -35,7 +35,7 @@ import { CollectionsM } from './components/CollectionsM';
 import { AdminReservations } from './components/AdminReservations';
 import { Gallery } from './components/Gallery'
 import { ThirdDinner } from './components/ThirdDinner';
-
+import { OAuthCallback } from './components/OAuthCallback';
 
 function HomePage() {
     return (
@@ -101,6 +101,7 @@ export function App() {
                     <Route path="/admin/reservations" element={<AdminReservations />} />
                     <Route path="/gallery" element={<Gallery />} />
                     <Route path="/third-dinner" element={<ThirdDinner />} />
+                    <Route path="/oauth/callback" element={<OAuthCallback />} />
 
                 </Routes>
             </Router>
