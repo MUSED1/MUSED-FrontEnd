@@ -60,7 +60,7 @@ export function ClothingUploadForm() {
         email: '',
         phoneNumber: '',
         address: '',
-        university: ''
+        needsPickupHere: '' // Changed from university to pickup preference
     });
 
     const [pickupInfo, setPickupInfo] = useState({
@@ -76,14 +76,7 @@ export function ClothingUploadForm() {
         { image: '', category: '', size: '' }
     ]);
 
-    const universities = [
-        { value: 'HKU', label: 'HKU' },
-        { value: 'CUHK', label: 'CUHK' },
-        { value: 'PolyU', label: 'PolyU' },
-        { value: 'HKUST', label: 'HKUST' },
-        { value: 'Baptist', label: 'Baptist' },
-        { value: 'NA', label: 'NA' }
-    ];
+    // Removed universities array - no longer needed
 
     useEffect(() => {
         if (user) {
@@ -181,10 +174,10 @@ export function ClothingUploadForm() {
         setSubmitMessage(null);
         window.scrollTo({ top: 0, behavior: 'smooth' });
 
-        if (!userInfo.phoneNumber || !userInfo.address || !userInfo.university) {
+        if (!userInfo.phoneNumber || !userInfo.address) {
             setSubmitMessage({
                 type: 'error',
-                message: 'Please complete phone number, address, and university'
+                message: 'Please complete phone number and address'
             });
             setIsSubmitting(false);
             return;
@@ -233,7 +226,7 @@ export function ClothingUploadForm() {
                     email: user.email,
                     phoneNumber: userInfo.phoneNumber,
                     address: userInfo.address,
-                    university: userInfo.university
+                    needsPickupHere: userInfo.needsPickupHere
                 },
                 clothingItems: processedItems,
                 ...pickupInfo
@@ -262,7 +255,7 @@ export function ClothingUploadForm() {
                     ...prev,
                     phoneNumber: '',
                     address: '',
-                    university: ''
+                    needsPickupHere: ''
                 }));
                 setPickupInfo({
                     pickupMethod: '',
@@ -299,16 +292,20 @@ export function ClothingUploadForm() {
     const categories = ['Dresses', 'Tops', 'Bottoms', 'Outerwear', 'Accessories', 'Bags', 'Jewelry'];
     const sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXS', 'XXL', '32', '34', '36', '38', '40', '42', 'One Size'];
 
+    // Updated pickup days based on new schedule
     const pickupDays = [
-        { value: 'tuesday', label: 'Tuesday, March 10' },
-        { value: 'wednesday', label: 'Wednesday, March 11' },
-        { value: 'thursday', label: 'Thursday, March 12' }
+        { value: 'monday', label: 'Monday' },
+        { value: 'tuesday', label: 'Tuesday' },
+        { value: 'wednesday', label: 'Wednesday' },
+        { value: 'thursday', label: 'Thursday' }
     ];
 
-    const timeSlots = {
-        'tuesday': ['12:00 PM - 3:00 PM', '3:00 PM - 6:00 PM', '6:00 PM - 9:00 PM'],
-        'wednesday': ['10:00 AM - 12:00 PM', '12:00 PM - 3:00 PM', '5:00 PM - 7:00 PM'],
-        'thursday': ['12:00 PM - 3:00 PM', '3:00 PM - 6:00 PM']
+    // Updated time slots based on availability
+    const timeSlots: Record<string, string[]> = {
+        'monday': ['8:00 AM - 2:00 PM', '6:00 PM - 9:00 PM'],
+        'tuesday': ['After 2:00 PM'],
+        'wednesday': ['8:00 AM - 2:00 PM', '6:00 PM - 9:00 PM'],
+        'thursday': ['After 10:00 AM']
     };
 
     return (
@@ -318,7 +315,7 @@ export function ClothingUploadForm() {
                 <div className="container mx-auto px-4 max-w-4xl">
                     <div className="text-center mb-12">
                         <h1 className="text-5xl md:text-6xl font-bold text-plum mb-6" style={{ fontFamily: 'Kaldera, serif' }}>
-                            Share Your <span className="text-rose">Style</span>
+                            BECOME PART OF THE <span className="text-rose">COLLECTION</span>
                         </h1>
                         <p className="text-xl text-plum/80 max-w-2xl mx-auto">
                             Welcome back, <span className="font-bold text-rose">{user.name}</span>!
@@ -390,7 +387,7 @@ export function ClothingUploadForm() {
 
                             {/* Your Information Section */}
                             <div>
-                                <h3 className="text-2xl font-bold text-plum mb-6">Your Information</h3>
+                                <h3 className="text-2xl font-bold text-plum mb-6">Your Details</h3>
                                 <div className="space-y-6">
                                     <div>
                                         <label className="block text-lg font-semibold text-plum mb-3">Full Name *</label>
@@ -448,20 +445,34 @@ export function ClothingUploadForm() {
                                     </div>
 
                                     <div>
-                                        <label className="block text-lg font-semibold text-plum mb-3">University *</label>
-                                        <select
-                                            name="university"
-                                            value={userInfo.university}
-                                            onChange={handleUserInfoChange}
-                                            className="w-full px-4 py-3 border-2 border-cream rounded-xl focus:border-rose focus:ring-2 focus:ring-rose/20 transition-all duration-300 bg-white text-plum"
-                                            required
-                                            disabled={isSubmitting}
-                                        >
-                                            <option value="">Select your university</option>
-                                            {universities.map(u => (
-                                                <option key={u.value} value={u.value}>{u.label}</option>
-                                            ))}
-                                        </select>
+                                        <label className="block text-lg font-semibold text-plum mb-3">Do you need to be present for pickup? *</label>
+                                        <div className="flex gap-4">
+                                            <label className="flex items-center gap-2">
+                                                <input
+                                                    type="radio"
+                                                    name="needsPickupHere"
+                                                    value="yes"
+                                                    checked={userInfo.needsPickupHere === 'yes'}
+                                                    onChange={handleUserInfoChange}
+                                                    className="accent-rose"
+                                                    disabled={isSubmitting}
+                                                />
+                                                <span className="text-plum">Yes</span>
+                                            </label>
+                                            <label className="flex items-center gap-2">
+                                                <input
+                                                    type="radio"
+                                                    name="needsPickupHere"
+                                                    value="no"
+                                                    checked={userInfo.needsPickupHere === 'no'}
+                                                    onChange={handleUserInfoChange}
+                                                    className="accent-rose"
+                                                    disabled={isSubmitting}
+                                                />
+                                                <span className="text-plum">No (leave at door/concierge)</span>
+                                            </label>
+                                        </div>
+                                        <p className="text-sm text-plum/60 mt-1">Let us know if someone needs to be present when we pick up</p>
                                     </div>
                                 </div>
                             </div>
@@ -489,7 +500,7 @@ export function ClothingUploadForm() {
                                                 disabled={isSubmitting}
                                             />
                                             <span className="text-plum font-medium capitalize">
-                                                {method === 'without' ? 'Without (we come to you)' : 'In-person drop-off'}
+                                                {method === 'without' ? 'We come to you' : 'In-person drop-off'}
                                             </span>
                                         </label>
                                     ))}
@@ -523,13 +534,9 @@ export function ClothingUploadForm() {
                                                     disabled={isSubmitting}
                                                 >
                                                     <option value="">Select time window</option>
-                                                    {pickupInfo.pickupDay && (
-                                                        <>
-                                                            <option value="morning">Morning (8:00–11:00)</option>
-                                                            <option value="afternoon">Afternoon (12:00–16:00)</option>
-                                                            <option value="evening">Evening (17:00–20:00)</option>
-                                                        </>
-                                                    )}
+                                                    {pickupInfo.pickupDay && timeSlots[pickupInfo.pickupDay]?.map((time, idx) => (
+                                                        <option key={idx} value={time}>{time}</option>
+                                                    ))}
                                                 </select>
                                             </div>
                                         </div>
@@ -578,7 +585,7 @@ export function ClothingUploadForm() {
                                                     disabled={isSubmitting}
                                                 >
                                                     <option value="">Select time</option>
-                                                    {pickupInfo.pickupDay && timeSlots[pickupInfo.pickupDay as keyof typeof timeSlots]?.map((time, index) => (
+                                                    {pickupInfo.pickupDay && timeSlots[pickupInfo.pickupDay]?.map((time, index) => (
                                                         <option key={index} value={time}>{time}</option>
                                                     ))}
                                                 </select>
@@ -732,7 +739,7 @@ export function ClothingUploadForm() {
                         </form>
                     </div>
 
-                    {/* "What happens next" Section */}
+                    {/* "What happens next" Section - Updated with March 25th date */}
                     <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 text-center">
                         <h3 className="text-3xl font-bold text-plum mb-6 font-kaldera">What happens next?</h3>
                         <div className="grid md:grid-cols-3 gap-6 text-plum">
@@ -742,7 +749,7 @@ export function ClothingUploadForm() {
                             </div>
                             <div className="space-y-3">
                                 <div className="w-12 h-12 bg-rose rounded-full flex items-center justify-center text-plum font-bold text-xl mx-auto mb-3">2</div>
-                                <p className="font-semibold text-lg">Dinner collection launches March 11th</p>
+                                <p className="font-semibold text-lg">Dinner collection launches March 25th</p>
                                 <p className="text-sm text-plum/70">choose your items then</p>
                             </div>
                             <div className="space-y-3">
