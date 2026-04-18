@@ -1,80 +1,66 @@
 // components/OAuthCallback.tsx
 import { useEffect, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 
-export const OAuthCallback: React.FC = () => {
-    const { loginWithToken } = useAuth();
+export const OAuthCallback = () => {
+    const [searchParams] = useSearchParams();
     const navigate = useNavigate();
-    const location = useLocation();
+    const { loginWithToken } = useAuth();
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        const params = new URLSearchParams(location.search);
-        const token = params.get('token');
-        const userParam = params.get('user');
-        const errorParam = params.get('error');
+        const handleOAuthCallback = async () => {
+            const token = searchParams.get('token');
+            const userStr = searchParams.get('user');
 
-        if (errorParam) {
-            setError(errorParam);
-            setTimeout(() => navigate('/login', { state: { error: errorParam } }), 2000);
-            return;
-        }
+            console.log('🔍 OAuthCallback - Token present:', !!token);
+            console.log('🔍 OAuthCallback - User data present:', !!userStr);
 
-        if (token) {
-            // Store token and user data
-            localStorage.setItem('token', token);
-
-            if (userParam) {
-                try {
-                    JSON.parse(userParam);
-// Update auth context
-                    loginWithToken(token).then(() => {
-                        // Redirect to upload page
-                        navigate('/upload', { replace: true });
-                    }).catch(err => {
-                        console.error('Login with token failed:', err);
-                        setError('Authentication failed');
-                        setTimeout(() => navigate('/login'), 2000);
-                    });
-                } catch (err) {
-                    console.error('Failed to parse user data:', err);
-                    setError('Invalid user data');
-                    setTimeout(() => navigate('/login'), 2000);
-                }
-            } else {
-                // If no user data in URL, fetch it
-                loginWithToken(token).then(() => {
-                    navigate('/upload', { replace: true });
-                }).catch(err => {
-                    console.error('Login with token failed:', err);
-                    setError('Authentication failed');
-                    setTimeout(() => navigate('/login'), 2000);
-                });
+            if (!token) {
+                setError('No token received');
+                setTimeout(() => navigate('/login?error=oauth_error'), 2000);
+                return;
             }
-        } else {
-            setError('No authentication token received');
-            setTimeout(() => navigate('/login'), 2000);
-        }
-    }, [location, loginWithToken, navigate]);
+
+            try {
+                // ✅ FIX: Use loginWithToken - it will use the correct API URL internally
+                const result = await loginWithToken(token);
+
+                if (result.success) {
+                    console.log('✅ OAuth login successful, redirecting to profile');
+                    navigate('/profile', { replace: true });
+                } else {
+                    console.error('❌ OAuth login failed:', result.error);
+                    setError(result.error || 'Login failed');
+                    setTimeout(() => navigate('/login?error=oauth_error'), 2000);
+                }
+            } catch (err) {
+                console.error('❌ OAuth callback error:', err);
+                setError('Authentication failed');
+                setTimeout(() => navigate('/login?error=oauth_error'), 2000);
+            }
+        };
+
+        handleOAuthCallback();
+    }, [searchParams, navigate, loginWithToken]);
+
+    if (error) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="text-center">
+                    <p className="text-red-600 mb-4">{error}</p>
+                    <p className="text-gray-600">Redirecting to login...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-cream via-cream to-rose/30">
-            <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-8 md:p-10 border border-gold/20 text-center">
-                {error ? (
-                    <>
-                        <div className="text-red-600 text-xl mb-4">⚠️</div>
-                        <h2 className="text-2xl font-bold text-red-600 mb-2">Authentication Error</h2>
-                        <p className="text-plum/70">{error}</p>
-                        <p className="text-plum/50 text-sm mt-4">Redirecting to login...</p>
-                    </>
-                ) : (
-                    <>
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-burgundy mx-auto mb-4"></div>
-                        <h2 className="text-2xl font-bold text-burgundy mb-2">Completing Login...</h2>
-                        <p className="text-plum/70">Please wait while we redirect you.</p>
-                    </>
-                )}
+        <div className="min-h-screen flex items-center justify-center">
+            <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-burgundy mx-auto mb-4"></div>
+                <p className="text-gray-600">Completing your sign in...</p>
             </div>
         </div>
     );
