@@ -36,7 +36,7 @@ import { AdminReservations } from './components/AdminReservations';
 import { Gallery } from './components/Gallery'
 import { ThirdDinner } from './components/ThirdDinner';
 import { OAuthCallback } from './components/OAuthCallback';
-import {SubmissionSuccess} from "./components/SubsmissionSuccess.tsx";
+import { SubmissionSuccess } from "./components/SubsmissionSuccess";
 
 function HomePage() {
     return (
