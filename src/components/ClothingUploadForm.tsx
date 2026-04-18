@@ -287,12 +287,13 @@ export function ClothingUploadForm() {
     const categories = ['Dresses', 'Tops', 'Bottoms', 'Outerwear', 'Accessories', 'Bags', 'Jewelry'];
     const sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXS', 'XXL', '32', '34', '36', '38', '40', '42', 'One Size'];
 
-    // Updated pickup days - Monday through Thursday (April 20-24)
+    // Updated pickup days - Monday through Friday (April 20-24)
     const pickupDays = [
         { value: 'monday', label: 'Monday (April 20)' },
         { value: 'tuesday', label: 'Tuesday (April 21)' },
         { value: 'wednesday', label: 'Wednesday (April 22)' },
-        { value: 'thursday', label: 'Thursday (April 23)' }
+        { value: 'thursday', label: 'Thursday (April 23)' },
+        { value: 'friday', label: 'Friday (April 24)' }
     ];
 
     // Updated time slots for each day
@@ -300,7 +301,8 @@ export function ClothingUploadForm() {
         'monday': ['8:00 AM - 2:00 PM', '6:00 PM - 9:00 PM'],
         'tuesday': ['After 2:00 PM'],
         'wednesday': ['8:00 AM - 2:00 PM', '6:00 PM - 9:00 PM'],
-        'thursday': ['After 10:00 AM']
+        'thursday': ['After 10:00 AM'],
+        'friday': ['8:00 AM - 2:00 PM', '6:00 PM - 9:00 PM']
     };
 
     return (
@@ -441,38 +443,8 @@ export function ClothingUploadForm() {
 
                                 </div>
                             </div>
-                            <div>
-                                <label className="block text-lg font-semibold text-plum mb-3">Do you need to be present for pickup? *</label>
-                                <div className="flex gap-4">
-                                    <label className="flex items-center gap-2">
-                                        <input
-                                            type="radio"
-                                            name="needsPickupHere"
-                                            value="yes"
-                                            checked={userInfo.needsPickupHere === 'yes'}
-                                            onChange={handleUserInfoChange}
-                                            className="accent-rose"
-                                            disabled={isSubmitting}
-                                        />
-                                        <span className="text-plum">Yes</span>
-                                    </label>
-                                    <label className="flex items-center gap-2">
-                                        <input
-                                            type="radio"
-                                            name="needsPickupHere"
-                                            value="no"
-                                            checked={userInfo.needsPickupHere === 'no'}
-                                            onChange={handleUserInfoChange}
-                                            className="accent-rose"
-                                            disabled={isSubmitting}
-                                        />
-                                        <span className="text-plum">No (leave at door/concierge)</span>
-                                    </label>
-                                </div>
-                                <p className="text-sm text-plum/60 mt-1">Let us know if someone needs to be present when we pick up</p>
-                            </div>
 
-                            {/* Pickup Section - Updated with correct days and times */}
+                            {/* Pickup Section - MOVED FIRST */}
                             <div className="border-t border-cream pt-8">
                                 <h3 className="text-2xl font-bold text-plum mb-6">Pickup Details</h3>
                                 <div className="space-y-4 p-4 bg-cream/30 rounded-xl">
@@ -526,6 +498,38 @@ export function ClothingUploadForm() {
                                         />
                                     </div>
                                 </div>
+                            </div>
+
+                            {/* Do you need to be present for pickup? - MOVED SECOND */}
+                            <div className="border-t border-cream pt-8">
+                                <label className="block text-lg font-semibold text-plum mb-3">Do you need to be present for pickup? *</label>
+                                <div className="flex gap-4">
+                                    <label className="flex items-center gap-2">
+                                        <input
+                                            type="radio"
+                                            name="needsPickupHere"
+                                            value="yes"
+                                            checked={userInfo.needsPickupHere === 'yes'}
+                                            onChange={handleUserInfoChange}
+                                            className="accent-rose"
+                                            disabled={isSubmitting}
+                                        />
+                                        <span className="text-plum">Yes</span>
+                                    </label>
+                                    <label className="flex items-center gap-2">
+                                        <input
+                                            type="radio"
+                                            name="needsPickupHere"
+                                            value="no"
+                                            checked={userInfo.needsPickupHere === 'no'}
+                                            onChange={handleUserInfoChange}
+                                            className="accent-rose"
+                                            disabled={isSubmitting}
+                                        />
+                                        <span className="text-plum">No (leave at door/concierge)</span>
+                                    </label>
+                                </div>
+                                <p className="text-sm text-plum/60 mt-1">Let us know if someone needs to be present when we pick up</p>
                             </div>
 
                             {/* Clothing Items Section with per-item special instructions */}
@@ -670,23 +674,24 @@ export function ClothingUploadForm() {
                         </form>
                     </div>
 
-                    {/* "What happens next" Section */}
+                    {/* "What happens next" Section - UPDATED */}
                     <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 text-center">
                         <h3 className="text-3xl font-bold text-plum mb-6 font-kaldera">What happens next?</h3>
                         <div className="grid md:grid-cols-3 gap-6 text-plum">
                             <div className="space-y-3">
                                 <div className="w-12 h-12 bg-rose rounded-full flex items-center justify-center text-plum font-bold text-xl mx-auto mb-3">1</div>
-                                <p className="font-semibold text-lg">We'll pick up your items at your selected time</p>
+                                <p className="font-semibold text-lg">We collect</p>
+                                <p className="text-sm text-plum/70">We'll verify your submission & pick up your item at your selected time</p>
                             </div>
                             <div className="space-y-3">
                                 <div className="w-12 h-12 bg-rose rounded-full flex items-center justify-center text-plum font-bold text-xl mx-auto mb-3">2</div>
-                                <p className="font-semibold text-lg">Dinner collection launches April 25th</p>
-                                <p className="text-sm text-plum/70">choose your items then</p>
+                                <p className="font-semibold text-lg">You choose</p>
+                                <p className="text-sm text-plum/70">Choose your item, the collection drops 25th of April</p>
                             </div>
                             <div className="space-y-3">
                                 <div className="w-12 h-12 bg-rose rounded-full flex items-center justify-center text-plum font-bold text-xl mx-auto mb-3">3</div>
-                                <p className="font-semibold text-lg">Receive your items</p>
-                                <p className="text-sm text-plum/70">and you're all set for dinner</p>
+                                <p className="font-semibold text-lg">We deliver</p>
+                                <p className="text-sm text-plum/70">Receive your borrowed look at your door & come wearing something borrowed</p>
                             </div>
                         </div>
                         <div className="mt-8 pt-6 border-t border-cream">
