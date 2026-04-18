@@ -36,6 +36,7 @@ import { AdminReservations } from './components/AdminReservations';
 import { Gallery } from './components/Gallery'
 import { ThirdDinner } from './components/ThirdDinner';
 import { OAuthCallback } from './components/OAuthCallback';
+import {SubmissionSuccess} from "./components/SubsmissionSuccess.tsx";
 
 function HomePage() {
     return (
@@ -102,6 +103,8 @@ export function App() {
                     <Route path="/gallery" element={<Gallery />} />
                     <Route path="/third-dinner" element={<ThirdDinner />} />
                     <Route path="/oauth/callback" element={<OAuthCallback />} />
+                    <Route path="/submission-success" element={<SubmissionSuccess />} />
+
 
                 </Routes>
             </Router>
