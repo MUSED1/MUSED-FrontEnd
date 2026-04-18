@@ -314,7 +314,7 @@ export function ClothingUploadForm() {
                         </h1>
                         <p className="text-xl text-plum/80 max-w-2xl mx-auto">
                             Welcome back, <span className="font-bold text-rose">{user.name}</span>!
-                            Upload your pieces and become part of the MUSED community.
+                            Submit your pieces and become part of the MUSED community.
                         </p>
                     </div>
 
@@ -439,37 +439,37 @@ export function ClothingUploadForm() {
                                         />
                                     </div>
 
-                                    <div>
-                                        <label className="block text-lg font-semibold text-plum mb-3">Do you need to be present for pickup? *</label>
-                                        <div className="flex gap-4">
-                                            <label className="flex items-center gap-2">
-                                                <input
-                                                    type="radio"
-                                                    name="needsPickupHere"
-                                                    value="yes"
-                                                    checked={userInfo.needsPickupHere === 'yes'}
-                                                    onChange={handleUserInfoChange}
-                                                    className="accent-rose"
-                                                    disabled={isSubmitting}
-                                                />
-                                                <span className="text-plum">Yes</span>
-                                            </label>
-                                            <label className="flex items-center gap-2">
-                                                <input
-                                                    type="radio"
-                                                    name="needsPickupHere"
-                                                    value="no"
-                                                    checked={userInfo.needsPickupHere === 'no'}
-                                                    onChange={handleUserInfoChange}
-                                                    className="accent-rose"
-                                                    disabled={isSubmitting}
-                                                />
-                                                <span className="text-plum">No (leave at door/concierge)</span>
-                                            </label>
-                                        </div>
-                                        <p className="text-sm text-plum/60 mt-1">Let us know if someone needs to be present when we pick up</p>
-                                    </div>
                                 </div>
+                            </div>
+                            <div>
+                                <label className="block text-lg font-semibold text-plum mb-3">Do you need to be present for pickup? *</label>
+                                <div className="flex gap-4">
+                                    <label className="flex items-center gap-2">
+                                        <input
+                                            type="radio"
+                                            name="needsPickupHere"
+                                            value="yes"
+                                            checked={userInfo.needsPickupHere === 'yes'}
+                                            onChange={handleUserInfoChange}
+                                            className="accent-rose"
+                                            disabled={isSubmitting}
+                                        />
+                                        <span className="text-plum">Yes</span>
+                                    </label>
+                                    <label className="flex items-center gap-2">
+                                        <input
+                                            type="radio"
+                                            name="needsPickupHere"
+                                            value="no"
+                                            checked={userInfo.needsPickupHere === 'no'}
+                                            onChange={handleUserInfoChange}
+                                            className="accent-rose"
+                                            disabled={isSubmitting}
+                                        />
+                                        <span className="text-plum">No (leave at door/concierge)</span>
+                                    </label>
+                                </div>
+                                <p className="text-sm text-plum/60 mt-1">Let us know if someone needs to be present when we pick up</p>
                             </div>
 
                             {/* Pickup Section - Updated with correct days and times */}
