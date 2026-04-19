@@ -129,8 +129,7 @@ export function SubmissionSuccess() {
 
                             <p className="text-plum/70 font-inter text-base max-w-sm mx-auto leading-relaxed">
                                 Your pieces are now under review.
-                                We will contact you if invited to{' '}
-                                <span className="text-plum font-semibold">The Dinner Collection</span>.
+                                Upon successful verification of your profile, we will be in touch with the next steps.
                             </p>
 
                             {/* Show referral success message if applicable */}
@@ -139,7 +138,7 @@ export function SubmissionSuccess() {
                                     <div className="flex items-center gap-2 justify-center mb-1">
                                         <Gift size={16} className="text-green-600" />
                                         <p className="text-green-700 font-medium text-sm">
-                                            🎉 Referral credited!
+                                             Referral credited!
                                         </p>
                                     </div>
                                     <p className="text-green-600 text-sm">
@@ -151,7 +150,7 @@ export function SubmissionSuccess() {
                             {user.referredBy && !referralProcessed && (
                                 <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
                                     <p className="text-amber-700 text-sm">
-                                        ✨ You were referred by someone! They'll get credit for your submission.
+                                         You were referred by someone! They'll get credit for your submission.
                                     </p>
                                 </div>
                             )}
@@ -181,11 +180,9 @@ export function SubmissionSuccess() {
                                     Bring your circle
                                 </p>
                                 <h2 className="font-kaldera text-3xl text-plum">
-                                    Get 1 entry for every friend
                                 </h2>
                                 <p className="text-plum/60 font-inter text-sm max-w-xs mx-auto leading-relaxed">
-                                    Share your link — your entry is confirmed once your
-                                    friend uploads their piece.
+                                    Share your link — and make the community bigger
                                 </p>
                             </div>
 
@@ -241,7 +238,6 @@ export function SubmissionSuccess() {
                             )}
 
                             <p className="text-plum/40 font-inter text-xs">
-                                Entry only counts after your friend submits their piece
                             </p>
                         </div>
                     </div>
