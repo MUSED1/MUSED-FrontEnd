@@ -160,15 +160,6 @@ export function SubmissionSuccess() {
                                 <span className="font-kaldera text-rose text-xl tracking-widest">MUSED</span>
                                 <div className="flex-1 h-px bg-rose/30" />
                             </div>
-
-                            <div className="bg-cream/60 rounded-2xl p-6 space-y-1">
-                                <p className="font-kaldera text-2xl text-plum">
-                                    Your dinner & outfit
-                                </p>
-                                <p className="font-kaldera text-2xl text-rose">
-                                    on the house
-                                </p>
-                            </div>
                         </div>
                     </div>
 
@@ -182,7 +173,8 @@ export function SubmissionSuccess() {
                                 <h2 className="font-kaldera text-3xl text-plum">
                                 </h2>
                                 <p className="text-plum/60 font-inter text-sm max-w-xs mx-auto leading-relaxed">
-                                    Share your link — and make the community bigger
+                                    Share your link — Bring your favourite fashionistas instead of circle
+
                                 </p>
                             </div>
 
