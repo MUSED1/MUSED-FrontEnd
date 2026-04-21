@@ -168,12 +168,12 @@ export function SubmissionSuccess() {
                         <div className="p-10 text-center space-y-8">
                             <div className="space-y-2">
                                 <p className="text-sm tracking-[0.2em] uppercase text-plum/50 font-inter">
-                                    Bring your circle
+                                    REFER A FRIEND
                                 </p>
                                 <h2 className="font-kaldera text-3xl text-plum">
                                 </h2>
                                 <p className="text-plum/60 font-inter text-sm max-w-xs mx-auto leading-relaxed">
-                                    Share your link — Bring your favourite fashionistas instead of circle
+                                    Share your link & bring in your favourite fashionistas
 
                                 </p>
                             </div>
