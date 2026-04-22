@@ -15,6 +15,7 @@ interface User {
     referralCount?: number;
     referredBy?: string | { _id: string; name: string; email: string };
     referralCompleted?: boolean;
+    createdAt?: string;  // Add this line
 }
 
 // Add to AuthContextType interface
