@@ -38,14 +38,14 @@ export function LoadingScreen() {
     return (
         <div className={`fixed inset-0 bg-burgundy flex flex-col items-center justify-center z-50 transition-all duration-500 ${showBackground ? 'opacity-100' : 'opacity-0'}`}>
             <div className="text-center flex flex-col items-center justify-center">
-                {/* MUSED Logo - Using Kaldera font */}
-                <h1 className={`text-cream text-8xl md:text-9xl lg:text-10xl font-kaldera font-bold transition-all duration-500 ${showMused ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
+                {/* MUSED Logo - Using Kaldera font with burgundy color */}
+                <h1 className={`text-cream text-8xl md:text-9xl lg:text-10xl font-kaldera font-bold transition-all duration-500 ${showMused ? 'opacity-100 scale-100' : 'opacity-0 scale-95'} text-burgundy`}>
                     MUSED
                 </h1>
 
-                {/* 852 Text - Using Kaldera font */}
+                {/* 852 Text - Using Kaldera font with burgundy color */}
                 <div className={`mt-5 transition-all duration-500 ${show852 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'}`}>
-                    <span className="text-6xl md:text-7xl lg:text-8xl font-kaldera font-bold text-cream">
+                    <span className="text-6xl md:text-7xl lg:text-8xl font-kaldera font-bold text-burgundy">
                         852
                     </span>
                 </div>

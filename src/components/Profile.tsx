@@ -1,11 +1,11 @@
 // components/Profile.tsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Header } from './Header';
 import { Footer } from './Footer';
 import { PhoneEdit } from './PhoneEdit';
 import { useAuth } from '../hooks/useAuth';
-import { User, Package, Heart, LogOut, Star, CheckCircle, Search } from 'lucide-react';
+import { User, Package, Heart, LogOut, Star, CheckCircle, AlertCircle, Camera, X } from 'lucide-react';
 import axios from 'axios';
 
 interface ClothingItem {
@@ -38,7 +38,7 @@ interface Reservation {
 }
 
 export function Profile() {
-    const { user, isAuthenticated, loading, logout } = useAuth();
+    const { user, isAuthenticated, loading, logout, updateUser } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
     const [showUploadSuccess, setShowUploadSuccess] = useState(
@@ -51,6 +51,13 @@ export function Profile() {
     const [isLoadingUploads, setIsLoadingUploads] = useState(false);
     const [isLoadingPicks, setIsLoadingPicks] = useState(false);
     const [isLoadingReservations, setIsLoadingReservations] = useState(false);
+    const [showPhoneRequiredWarning, setShowPhoneRequiredWarning] = useState(false);
+
+    // Avatar states
+    const [avatar, setAvatar] = useState<string | null>(user?.avatar || null);
+    const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+    const [avatarError, setAvatarError] = useState<string | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Add state for activity counts
     const [activityCounts, setActivityCounts] = useState({
@@ -72,12 +79,129 @@ export function Profile() {
         return () => clearTimeout(timer);
     }, [showUploadSuccess]);
 
+    // Auto-dismiss phone warning after 6 seconds
+    useEffect(() => {
+        if (!showPhoneRequiredWarning) return;
+        const timer = setTimeout(() => setShowPhoneRequiredWarning(false), 6000);
+        return () => clearTimeout(timer);
+    }, [showPhoneRequiredWarning]);
+
     // Fetch all activity data when component mounts
     useEffect(() => {
         if (isAuthenticated) {
             fetchAllActivityData();
         }
     }, [isAuthenticated]);
+
+    // Sync avatar when user changes
+    useEffect(() => {
+        if (user?.avatar) {
+            setAvatar(user.avatar);
+        }
+    }, [user?.avatar]);
+
+    // Check if user has phone number
+    const hasPhoneNumber = () => {
+        return user?.phone && user.phone.trim().length > 0;
+    };
+
+    // Wrapper function for actions that require phone number
+    const requirePhoneNumber = (action: () => void) => {
+        if (hasPhoneNumber()) {
+            action();
+        } else {
+            setShowPhoneRequiredWarning(true);
+            // Scroll to the warning
+            setTimeout(() => {
+                document.getElementById('phone-required-warning')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+        }
+    };
+
+    // Avatar upload handler
+    const handleAvatarUpload = async (file: File) => {
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            setAvatarError('Please select an image file');
+            setTimeout(() => setAvatarError(null), 3000);
+            return;
+        }
+
+        // Validate file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            setAvatarError('Image must be less than 5MB');
+            setTimeout(() => setAvatarError(null), 3000);
+            return;
+        }
+
+        setIsUploadingAvatar(true);
+        setAvatarError(null);
+
+        try {
+            const token = localStorage.getItem('token');
+            const API_URL = import.meta.env.VITE_API_URL?.replace('/auth', '') || 'https://mused-backend.onrender.com/api';
+
+            const formData = new FormData();
+            formData.append('avatar', file);
+
+            const response = await axios.post(`${API_URL}/profile/avatar`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            if (response.data.success) {
+                setAvatar(response.data.avatar);
+                // Update user context with new avatar
+                updateUser({ avatar: response.data.avatar });
+            }
+        } catch (error) {
+            console.error('Error uploading avatar:', error);
+            setAvatarError('Failed to upload image. Please try again.');
+            setTimeout(() => setAvatarError(null), 3000);
+        } finally {
+            setIsUploadingAvatar(false);
+        }
+    };
+
+    // Avatar removal handler
+    const handleRemoveAvatar = async () => {
+        if (!avatar) return;
+
+        setIsUploadingAvatar(true);
+        setAvatarError(null);
+
+        try {
+            const token = localStorage.getItem('token');
+            const API_URL = import.meta.env.VITE_API_URL?.replace('/auth', '') || 'https://mused-backend.onrender.com/api';
+
+            await axios.delete(`${API_URL}/profile/avatar`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            setAvatar(null);
+            updateUser({ avatar: undefined });
+        } catch (error) {
+            console.error('Error removing avatar:', error);
+            setAvatarError('Failed to remove image. Please try again.');
+            setTimeout(() => setAvatarError(null), 3000);
+        } finally {
+            setIsUploadingAvatar(false);
+        }
+    };
+
+    // File selection handler
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            handleAvatarUpload(file);
+        }
+        // Reset input so same file can be selected again
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+    };
 
     const fetchAllActivityData = async () => {
         // Fetch uploads
@@ -185,6 +309,12 @@ export function Profile() {
 
     const handlePhoneUpdate = (newPhone: string) => {
         console.log('Phone updated to:', newPhone);
+        // Refresh user data or update local state
+        if (user) {
+            user.phone = newPhone;
+        }
+        // Dismiss warning if it was showing
+        setShowPhoneRequiredWarning(false);
     };
 
     const handleRemovePick = async (itemId: string) => {
@@ -229,6 +359,26 @@ export function Profile() {
             <Header />
             <main className="min-h-screen bg-gradient-to-br from-cream to-amber-50 py-12">
                 <div className="container mx-auto px-4 max-w-6xl">
+                    {/* Phone Required Warning Banner */}
+                    {showPhoneRequiredWarning && !hasPhoneNumber() && (
+                        <div id="phone-required-warning" className="flex items-center justify-between gap-4 bg-amber-50 border border-amber-200 text-amber-800 rounded-xl px-5 py-4 mb-6 shadow-sm animate-fadeIn">
+                            <div className="flex items-center gap-3">
+                                <AlertCircle size={22} className="text-amber-500 shrink-0" />
+                                <div>
+                                    <p className="font-semibold">Phone Number Required </p>
+                                    <p className="text-sm text-amber-700">Please add your phone number in the Profile Info tab before accessing these features.</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setShowPhoneRequiredWarning(false)}
+                                className="text-amber-500 hover:text-amber-700 transition-colors shrink-0 text-lg leading-none"
+                                aria-label="Dismiss"
+                            >
+                                ✕
+                            </button>
+                        </div>
+                    )}
+
                     {/* Upload success banner */}
                     {showUploadSuccess && (
                         <div className="flex items-center justify-between gap-4 bg-green-50 border border-green-200 text-green-800 rounded-xl px-5 py-4 mb-6 shadow-sm animate-fadeIn">
@@ -254,15 +404,79 @@ export function Profile() {
                         <div className="h-32 bg-gradient-to-r from-plum to-rose"></div>
                         <div className="px-8 pb-8 relative">
                             <div className="flex flex-col md:flex-row md:items-end gap-6 -mt-16">
-                                <div className="w-32 h-32 bg-cream rounded-2xl border-4 border-white shadow-lg flex items-center justify-center">
-                                    <User size={48} className="text-plum/40" />
+                                {/* Avatar Section with Upload */}
+                                <div className="relative group">
+                                    <div className="w-32 h-32 bg-cream rounded-2xl border-4 border-white shadow-lg overflow-hidden">
+                                        {avatar ? (
+                                            <img
+                                                src={avatar}
+                                                alt={user.name}
+                                                className="w-full h-full object-cover"
+                                                onError={() => setAvatar(null)}
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center">
+                                                <User size={48} className="text-plum/40" />
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Upload button overlay - appears on hover */}
+                                    <div className="absolute inset-0 bg-black/50 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                        <button
+                                            onClick={() => fileInputRef.current?.click()}
+                                            disabled={isUploadingAvatar}
+                                            className="p-2 bg-white rounded-full hover:bg-cream transition-colors disabled:opacity-50"
+                                            title="Upload photo"
+                                        >
+                                            <Camera size={18} className="text-plum" />
+                                        </button>
+                                        {avatar && (
+                                            <button
+                                                onClick={handleRemoveAvatar}
+                                                disabled={isUploadingAvatar}
+                                                className="p-2 bg-white rounded-full hover:bg-red-50 transition-colors disabled:opacity-50"
+                                                title="Remove photo"
+                                            >
+                                                <X size={18} className="text-red-500" />
+                                            </button>
+                                        )}
+                                    </div>
+
+                                    {/* Hidden file input */}
+                                    <input
+                                        ref={fileInputRef}
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleFileSelect}
+                                        className="hidden"
+                                    />
+
+                                    {/* Loading spinner */}
+                                    {isUploadingAvatar && (
+                                        <div className="absolute inset-0 bg-white/80 rounded-2xl flex items-center justify-center">
+                                            <div className="w-6 h-6 border-2 border-rose border-t-transparent rounded-full animate-spin" />
+                                        </div>
+                                    )}
                                 </div>
+
+                                {/* Avatar error message */}
+                                {avatarError && (
+                                    <p className="text-red-500 text-xs mt-1 absolute left-36 bottom-0">{avatarError}</p>
+                                )}
+
                                 <div className="flex-1">
                                     <h1 className="text-3xl font-kaldera text-plum">{user.name}</h1>
                                     <p className="text-plum/60">{user.email}</p>
                                     {user.phone && (
                                         <p className="text-plum/60 text-sm mt-1">
                                             {user.phone}
+                                        </p>
+                                    )}
+                                    {!user.phone && (
+                                        <p className="text-amber-600 text-sm mt-1 flex items-center gap-1">
+                                            <AlertCircle size={14} />
+                                            Phone number required for certain actions
                                         </p>
                                     )}
                                     <div className="flex items-center gap-2 mt-2">
@@ -372,7 +586,10 @@ export function Profile() {
                                         <div className="p-3 bg-cream/30 rounded-lg text-plum">{user.email}</div>
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-plum/60 mb-2">Phone Number</label>
+                                        <label className="block text-sm font-medium text-plum/60 mb-2">
+                                            Phone Number
+                                            {!user.phone && <span className="text-amber-500 ml-2">* Required for actions</span>}
+                                        </label>
                                         <div className="p-3 bg-cream/30 rounded-lg">
                                             <PhoneEdit
                                                 phone={user.phone || ''}
@@ -383,11 +600,11 @@ export function Profile() {
                                     <div>
                                         <label className="block text-sm font-medium text-plum/60 mb-2">Member Since</label>
                                         <div className="p-3 bg-cream/30 rounded-lg text-plum">
-                                            {new Date().toLocaleDateString('en-US', {
+                                            {user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', {
                                                 year: 'numeric',
                                                 month: 'long',
                                                 day: 'numeric'
-                                            })}
+                                            }) : 'N/A'}
                                         </div>
                                     </div>
                                 </div>
@@ -418,50 +635,70 @@ export function Profile() {
                                     <h3 className="text-lg font-kaldera text-plum mb-4">Quick Actions</h3>
                                     <div className="flex flex-wrap gap-4">
                                         <button
-                                            onClick={() => navigate('/upload')}
-                                            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-plum to-rose text-cream rounded-lg hover:shadow-lg transition-all"
+                                            onClick={() => requirePhoneNumber(() => navigate('/upload'))}
+                                            className={`flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-plum to-rose text-cream rounded-lg hover:shadow-lg transition-all ${
+                                                !hasPhoneNumber() ? 'opacity-50 cursor-not-allowed' : ''
+                                            }`}
+                                            title={!hasPhoneNumber() ? 'Phone number required' : ''}
                                         >
                                             <Package size={18} />
                                             Be Part Of The Collection APPLY HERE
                                         </button>
                                         <button
-                                            onClick={() => {
+                                            onClick={() => requirePhoneNumber(() => {
                                                 setActiveTab('uploads');
                                                 fetchUserUploads();
-                                            }}
-                                            className="flex items-center gap-2 px-6 py-3 border-2 border-rose text-plum rounded-lg hover:bg-rose/10 transition-all"
+                                            })}
+                                            className={`flex items-center gap-2 px-6 py-3 border-2 border-rose text-plum rounded-lg hover:bg-rose/10 transition-all ${
+                                                !hasPhoneNumber() ? 'opacity-50 cursor-not-allowed' : ''
+                                            }`}
+                                            title={!hasPhoneNumber() ? 'Phone number required' : ''}
                                         >
                                             <Heart size={18} />
                                             View My Uploads
                                         </button>
                                         <button
-                                            onClick={() => {
+                                            onClick={() => requirePhoneNumber(() => {
                                                 setActiveTab('picks');
                                                 fetchUserPicks();
-                                            }}
-                                            className="flex items-center gap-2 px-6 py-3 border-2 border-plum/20 text-plum rounded-lg hover:bg-plum/5 transition-all"
+                                            })}
+                                            className={`flex items-center gap-2 px-6 py-3 border-2 border-plum/20 text-plum rounded-lg hover:bg-plum/5 transition-all ${
+                                                !hasPhoneNumber() ? 'opacity-50 cursor-not-allowed' : ''
+                                            }`}
+                                            title={!hasPhoneNumber() ? 'Phone number required' : ''}
                                         >
                                             <Star size={18} />
                                             View My Picks
                                         </button>
                                         <button
-                                            onClick={() => {
+                                            onClick={() => requirePhoneNumber(() => {
                                                 setActiveTab('reservations');
                                                 fetchUserReservations();
-                                            }}
-                                            className="flex items-center gap-2 px-6 py-3 border-2 border-green-600/20 text-green-700 rounded-lg hover:bg-green-50 transition-all"
+                                            })}
+                                            className={`flex items-center gap-2 px-6 py-3 border-2 border-green-600/20 text-green-700 rounded-lg hover:bg-green-50 transition-all ${
+                                                !hasPhoneNumber() ? 'opacity-50 cursor-not-allowed' : ''
+                                            }`}
+                                            title={!hasPhoneNumber() ? 'Phone number required' : ''}
                                         >
                                             <CheckCircle size={18} />
                                             View My Reservations
                                         </button>
                                         <button
-                                            onClick={() => navigate('/collections-m')}
-                                            className="flex items-center gap-2 px-6 py-3 border-2 border-plum/20 text-plum rounded-lg hover:bg-plum/5 transition-all"
+                                            onClick={() => requirePhoneNumber(() => navigate('/collections-m'))}
+                                            className={`flex items-center gap-2 px-6 py-3 border-2 border-plum/20 text-plum rounded-lg hover:bg-plum/5 transition-all ${
+                                                !hasPhoneNumber() ? 'opacity-50 cursor-not-allowed' : ''
+                                            }`}
+                                            title={!hasPhoneNumber() ? 'Phone number required' : ''}
                                         >
-                                            <Search size={18} />
                                             Browse Collection
                                         </button>
                                     </div>
+                                    {!hasPhoneNumber() && (
+                                        <p className="text-sm text-amber-600 mt-4 flex items-center gap-2">
+                                            <AlertCircle size={16} />
+                                            Please add your phone number in the Profile Info section to access these features.
+                                        </p>
+                                    )}
                                 </div>
                             </div>
                         )}
