@@ -683,15 +683,15 @@ export function Profile() {
                                             <CheckCircle size={18} />
                                             View My Reservations
                                         </button>
-                                        <button
-                                            onClick={() => requirePhoneNumber(() => navigate('/collections-m'))}
-                                            className={`flex items-center gap-2 px-6 py-3 border-2 border-plum/20 text-plum rounded-lg hover:bg-plum/5 transition-all ${
-                                                !hasPhoneNumber() ? 'opacity-50 cursor-not-allowed' : ''
-                                            }`}
-                                            title={!hasPhoneNumber() ? 'Phone number required' : ''}
-                                        >
-                                            Browse Collection
-                                        </button>
+                                        {/* <button
+    onClick={() => requirePhoneNumber(() => navigate('/collections-m'))}
+    className={`flex items-center gap-2 px-6 py-3 border-2 border-plum/20 text-plum rounded-lg hover:bg-plum/5 transition-all ${
+        !hasPhoneNumber() ? 'opacity-50 cursor-not-allowed' : ''
+    }`}
+    title={!hasPhoneNumber() ? 'Phone number required' : ''}
+>
+    Browse Collection
+</button> */}
                                     </div>
                                     {!hasPhoneNumber() && (
                                         <p className="text-sm text-amber-600 mt-4 flex items-center gap-2">
