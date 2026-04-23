@@ -1,7 +1,6 @@
 // components/Diner.tsx
 import { Header } from './Header'
 import { Footer } from './Footer'
-import { Link } from 'react-router-dom'
 
 export function Diner() {
     return (
@@ -12,10 +11,10 @@ export function Diner() {
                     {/* Hero Section */}
                     <div className="text-center mb-16">
                         <h1 className="text-5xl md:text-6xl font-bold text-plum mb-6">
-                            MUSED <span className="text-gold">Diner</span>
+                            MUSED <span className="text-gold">EVENT</span>
                         </h1>
                         <p className="text-xl text-plum/80 max-w-2xl mx-auto font-amandine">
-                            Be Mused and meet your muse around a table.
+                            Be Mused and meet your muse.
                             Mused is more than sharing style, it's sharing an experience.
                         </p>
                     </div>
@@ -26,18 +25,12 @@ export function Diner() {
                             <div className="md:w-1/2 p-8">
                                 <h2 className="text-3xl font-bold text-plum mb-4">Wear Something Borrowed Dinner</h2>
                                 <p className="text-plum/80 mb-6 leading-relaxed font-amandine">
-                                    Come to dinner wearing a borrowed piece from the dinner collection. This is where muses
+                                    Come to dinner wearing a borrowed piece from the  collection. This is where muses
                                     can meet the mused. Get to know who you are lending to and borrowing from. Share your
                                     style, share a moment.
                                 </p>
                                 <div className="flex justify-between items-center">
-                                    <span className="text-2xl font-bold text-gold">290 HKD</span>
-                                    <Link
-                                        to="/collections-m"
-                                        className="bg-plum text-cream px-8 py-3 rounded-full hover:bg-gold transition-all duration-300 font-semibold"
-                                    >
-                                        PICK YOUR OUTFIT
-                                    </Link>
+
                                 </div>
                             </div>
                             <div className="md:w-1/2 bg-gradient-to-br from-plum to-gold p-8 flex items-center justify-center">

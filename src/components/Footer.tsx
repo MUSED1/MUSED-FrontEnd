@@ -91,27 +91,6 @@ export function Footer() {
                         </ul>
                     </div>
 
-                    <div>
-                        <h4 className="text-lg font-medium mb-4">Partner with us</h4>
-                        <ul className="space-y-2">
-                            <li>
-                                <Link
-                                    to="/partner"
-                                    className="text-cream/70 hover:text-gold transition-colors"
-                                >
-                                    Become a Partner
-                                </Link>
-                            </li>
-                            <li>
-                                <Link
-                                    to="/events"
-                                    className="text-cream/70 hover:text-gold transition-colors"
-                                >
-                                    Events
-                                </Link>
-                            </li>
-                        </ul>
-                    </div>
                 </div>
 
                 <div className="border-t border-burgundy-light/20 mt-12 pt-8 text-center text-cream/50 text-sm">
