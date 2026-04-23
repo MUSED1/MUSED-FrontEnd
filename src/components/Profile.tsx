@@ -957,9 +957,9 @@ export function Profile() {
                         {activeTab === 'settings' && (
                             <div>
                                 <h2 className="text-2xl font-kaldera text-plum mb-6">Account Settings</h2>
-                                <p className="text-plum/60 mb-8">Settings panel coming soon...</p>
+
                                 <div className="bg-cream/30 rounded-xl p-6">
-                                    <p className="text-plum">You'll be able to update your password, email preferences, and more here.</p>
+                                    <p className="text-plum">If you have an issue with your account or have forgotten your password, please DM us on Instagram. We’ll be in touch within 24 hours. .</p>
                                 </div>
                             </div>
                         )}
