@@ -37,6 +37,7 @@ import { Gallery } from './components/Gallery'
 import { ThirdDinner } from './components/ThirdDinner';
 import { OAuthCallback } from './components/OAuthCallback';
 import { SubmissionSuccess } from "./components/SubsmissionSuccess";
+import {AdminPickups} from "./components/AdminPickups.tsx";
 
 function HomePage() {
     return (
@@ -104,6 +105,7 @@ export function App() {
                     <Route path="/third-dinner" element={<ThirdDinner />} />
                     <Route path="/oauth/callback" element={<OAuthCallback />} />
                     <Route path="/submission-success" element={<SubmissionSuccess />} />
+                    <Route path="/admin/pickups" element={<AdminPickups />} />
 
 
                 </Routes>
