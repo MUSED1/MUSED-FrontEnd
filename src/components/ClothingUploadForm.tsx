@@ -286,22 +286,18 @@ export function ClothingUploadForm() {
     const categories = ['Dresses', 'Tops', 'Bottoms', 'Outerwear', 'Accessories', 'Bags', 'Jewelry'];
     const sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXS', 'XXL', '32', '34', '36', '38', '40', '42', 'One Size'];
 
-    // Updated pickup days - Monday through Friday (April 20-24)
+    // Updated pickup days - Friday, Saturday, Sunday only
     const pickupDays = [
-        { value: 'monday', label: 'Monday (April 20)' },
-        { value: 'tuesday', label: 'Tuesday (April 21)' },
-        { value: 'wednesday', label: 'Wednesday (April 22)' },
-        { value: 'thursday', label: 'Thursday (April 23)' },
-        { value: 'friday', label: 'Friday (April 24)' }
+        { value: 'friday', label: 'Friday (April 25)' },
+        { value: 'saturday', label: 'Saturday (April 26)' },
+        { value: 'sunday', label: 'Sunday (April 27)' }
     ];
 
     // Updated time slots for each day
     const timeSlots: Record<string, string[]> = {
-        'monday': ['8:00 AM - 2:00 PM', '6:00 PM - 9:00 PM'],
-        'tuesday': ['After 2:00 PM'],
-        'wednesday': ['8:00 AM - 2:00 PM', '6:00 PM - 9:00 PM'],
-        'thursday': ['After 10:00 AM'],
-        'friday': ['8:00 AM - 2:00 PM', '6:00 PM - 9:00 PM']
+        'friday': ['8:00 AM - 2:00 PM', '6:00 PM - 9:00 PM'],
+        'saturday': ['12:00 AM - 2:00 PM', '3:00 PM - 5:00 PM', '6:00 PM - 9:00 PM'],
+        'sunday': ['10:00 AM - 2:00 PM', '3:00 PM - 7:00 PM']
     };
 
     return (
