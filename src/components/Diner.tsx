@@ -1,6 +1,7 @@
 // components/Diner.tsx
 import { Header } from './Header'
 import { Footer } from './Footer'
+import {Link} from "react-router-dom";
 
 // Make sure react-router-dom is installed
 
@@ -34,7 +35,14 @@ export function Diner() {
                                 <div className="flex justify-between items-center">
                                     <div className="flex items-center gap-2">
                                         <span className="text-2xl font-bold text-gold">$46</span>
+
                                     </div>
+                                    <Link
+                                        to="/collections-ny"
+                                        className="bg-plum text-cream px-8 py-3 rounded-full hover:bg-gold transition-all duration-300 font-semibold"
+                                    >
+                                        PICK YOUR OUTFIT
+                                    </Link>
 
                                 </div>
                             </div>
