@@ -239,6 +239,10 @@ export function AdminClothing() {
                 )
                 setAllClothingItems(updatedAllItems)
                 filterItemsFrom2026(updatedAllItems)
+                // ✅ FIX: Keep editForm in sync so Save doesn't overwrite new images
+                if (editingId === itemId) {
+                    setEditForm(prev => ({ ...prev, images: finalImages }))
+                }
             } else {
                 throw new Error(result.message || 'Failed to update clothing images')
             }
@@ -284,6 +288,10 @@ export function AdminClothing() {
                 )
                 setAllClothingItems(updatedAllItems)
                 filterItemsFrom2026(updatedAllItems)
+                // ✅ FIX: Keep editForm in sync so Save doesn't restore deleted image
+                if (editingId === itemId) {
+                    setEditForm(prev => ({ ...prev, images: finalImages }))
+                }
             } else {
                 throw new Error(result.message || 'Failed to delete image')
             }
