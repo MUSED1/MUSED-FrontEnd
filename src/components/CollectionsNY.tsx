@@ -9,7 +9,7 @@ import axios from 'axios';
 
 interface ClothingItem {
     _id: string;
-    images: string[];
+    images: string[];  // Direct Cloudinary URLs from the DB
     size: string;
     category: string;
     status: 'available' | 'reserved' | 'sold';
@@ -333,8 +333,16 @@ export function CollectionsNY() {
         }
     };
 
-    const getImageUrl = (itemId: string, index: number) => {
-        return `${API_URL}/clothing/image/${itemId}/${index}`;
+    // ✅ FIX: Use the Cloudinary URL directly from the item's images array.
+    // The old approach used /clothing/image/:id/:index which returns a 301
+    // permanent redirect cached by browsers for 1 year — so updated images
+    // would never show. The images[] array from the API always has fresh URLs.
+    const getImageUrl = (item: ClothingItem, index: number = 0): string => {
+        if (item.images && item.images.length > index && item.images[index]) {
+            return item.images[index];
+        }
+        // fallback to proxy only if images array is somehow missing
+        return `${API_URL}/clothing/image/${item._id}/${index}`;
     };
 
     const getFirstName = (fullName: string) => fullName?.split(' ')[0] || fullName;
@@ -494,7 +502,7 @@ export function CollectionsNY() {
                                     >
                                         <div className="relative aspect-square overflow-hidden">
                                             <img
-                                                src={getImageUrl(item._id, 0)}
+                                                src={getImageUrl(item, 0)}
                                                 alt={`${getFirstName(item.fullName)}'s ${item.category}`}
                                                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                                                 onError={(e) => {
@@ -643,7 +651,7 @@ export function CollectionsNY() {
                     <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto transform animate-scaleIn">
                         <div className="relative">
                             <img
-                                src={getImageUrl(selectedOutfit._id, 0)}
+                                src={getImageUrl(selectedOutfit, 0)}
                                 alt={selectedOutfit.fullName}
                                 className="w-full h-64 object-cover"
                                 onError={(e) => {
