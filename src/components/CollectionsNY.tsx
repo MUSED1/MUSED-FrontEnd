@@ -313,7 +313,7 @@ export function CollectionsNY() {
             // Call your backend to create a Stripe Checkout session
             const response = await axios.post(`${API_URL}/create-checkout-session`, {
                 itemId: outfit._id,
-                itemName: `${outfit.fullName}'s ${outfit.category}`,
+                itemName: `${outfit.fullName.split(' ')[0]}'s ${outfit.category}`,
                 amount: 1,
                 customerEmail: formData.email,
                 sessionId: sessionId,
@@ -336,6 +336,8 @@ export function CollectionsNY() {
     const getImageUrl = (itemId: string, index: number) => {
         return `${API_URL}/clothing/image/${itemId}/${index}`;
     };
+
+    const getFirstName = (fullName: string) => fullName?.split(' ')[0] || fullName;
 
     // Pagination
     const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
@@ -493,7 +495,7 @@ export function CollectionsNY() {
                                         <div className="relative aspect-square overflow-hidden">
                                             <img
                                                 src={getImageUrl(item._id, 0)}
-                                                alt={`${item.fullName}'s ${item.category}`}
+                                                alt={`${getFirstName(item.fullName)}'s ${item.category}`}
                                                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                                                 onError={(e) => {
                                                     e.currentTarget.src = 'https://via.placeholder.com/400x400?text=Image+Not+Found';
@@ -526,7 +528,7 @@ export function CollectionsNY() {
                                         <div className="p-4">
                                             <div className="flex justify-between items-start mb-2">
                                                 <h3 className="font-semibold text-plum">
-                                                    {item.fullName}'s {item.category}
+                                                    {getFirstName(item.fullName)}'s {item.category}
                                                 </h3>
                                                 <span className="text-sm text-plum/60">Size {item.size}</span>
                                             </div>
@@ -658,7 +660,7 @@ export function CollectionsNY() {
 
                         <div className="p-8">
                             <h2 className="text-3xl font-bold text-plum mb-3">
-                                {selectedOutfit.fullName}'s {selectedOutfit.category}
+                                {selectedOutfit.fullName.split(' ')[0]}'s {selectedOutfit.category}
                             </h2>
                             <p className="text-gray-600 text-lg mb-6">Size: {selectedOutfit.size}</p>
 
