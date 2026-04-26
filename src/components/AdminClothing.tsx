@@ -74,15 +74,21 @@ export function AdminClothing() {
         fetchClothingItems(currentPage)
     }, [currentPage])
 
+    // In AdminClothing.tsx
     const fetchClothingItems = async (page: number) => {
         try {
             setLoading(true)
             setError('')
 
+            // Get the token from localStorage
+            const token = localStorage.getItem('token')
+
+            // Pass token to fetchPaginated
             const result = await fetchPaginated<ClothingItem>(
                 API_CONFIG.endpoints.clothingAdmin,
                 page,
-                20
+                20,
+                token  // ← Add this!
             );
 
             setAllClothingItems(result.data)
@@ -96,7 +102,6 @@ export function AdminClothing() {
             setLoading(false)
         }
     }
-
     const filterItemsFrom2026 = (items: ClothingItem[]) => {
         const startDate2026 = new Date('2026-01-01T00:00:00.000Z')
         const filtered = items.filter((item: ClothingItem) => {
