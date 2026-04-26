@@ -123,7 +123,8 @@ export function AdminClothing() {
 
     const handleSave = async (id: string) => {
         try {
-            const response = await fetch(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.clothing}/${id}`, {
+            const response = await fetch(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.clothingAdmin}/${id}`
+                , {
                 method: 'PUT',
                 headers: getAuthHeaders(),
                 body: JSON.stringify(editForm)
@@ -215,7 +216,8 @@ export function AdminClothing() {
 
             const updatedImages = [...currentItem.images, `data:image/jpeg;base64,${compressedImage}`]
 
-            const response = await fetch(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.clothing}/${itemId}/images`, {
+            const response = await fetch(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.clothingAdmin}/${itemId}/images`
+                , {
                 method: 'PUT',
                 headers: getAuthHeaders(),
                 body: JSON.stringify({
@@ -259,7 +261,8 @@ export function AdminClothing() {
 
             const updatedImages = currentItem.images.filter(url => url !== imageUrl)
 
-            const response = await fetch(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.clothing}/${itemId}/images`, {
+            const response = await fetch(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.clothingAdmin}/${itemId}/images`
+                , {
                 method: 'PUT',
                 headers: getAuthHeaders(),
                 body: JSON.stringify({
