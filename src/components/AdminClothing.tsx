@@ -80,15 +80,15 @@ export function AdminClothing() {
             setLoading(true)
             setError('')
 
-            // Get the token from localStorage
-            const token = localStorage.getItem('token')
+            // Get the token from localStorage and convert null to undefined
+            const token = localStorage.getItem('token') || undefined;  // ← FIX: || undefined
 
             // Pass token to fetchPaginated
             const result = await fetchPaginated<ClothingItem>(
                 API_CONFIG.endpoints.clothingAdmin,
                 page,
                 20,
-                token  // ← Add this!
+                token
             );
 
             setAllClothingItems(result.data)
