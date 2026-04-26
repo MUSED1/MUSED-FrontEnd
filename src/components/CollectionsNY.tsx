@@ -314,7 +314,7 @@ export function CollectionsNY() {
             const response = await axios.post(`${API_URL}/create-checkout-session`, {
                 itemId: outfit._id,
                 itemName: `${outfit.fullName}'s ${outfit.category}`,
-                amount: 46, // HKD
+                amount: 1,
                 customerEmail: formData.email,
                 sessionId: sessionId,
                 reservationData
