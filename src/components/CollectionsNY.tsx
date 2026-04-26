@@ -72,35 +72,23 @@ export function CollectionsNY() {
 
     // Delivery options
     const deliveryDays = [
-        { value: 'sunday-4-6', label: 'Sunday 15th: 4-6 pm' },
-        { value: 'sunday-6-8', label: 'Sunday 15th: 6-8 pm' },
-        { value: 'monday-12-2', label: 'Monday 16th: 12-2 pm' },
-        { value: 'monday-2-4', label: 'Monday 16th: 2-4 pm' },
-        { value: 'monday-4-6', label: 'Monday 16th: 4-6 pm' },
-        { value: 'tuesday-12-2', label: 'Tuesday 17th: 12-2 pm' },
-        { value: 'tuesday-2-4', label: 'Tuesday 17th: 2-4 pm' },
-        { value: 'tuesday-4-6', label: 'Tuesday 17th: 4-6 pm' },
-        { value: 'wednesday-12-2', label: 'Wednesday 18th: 12-2 pm' },
-        { value: 'wednesday-2-4', label: 'Wednesday 18th: 2-4 pm' },
-        { value: 'wednesday-4-6', label: 'Wednesday 18th: 4-6 pm' },
-        { value: 'other', label: 'Other (choose date before March 19th)' }
+        { value: 'sunday-18-21', label: 'Sunday Apr 26th: 6pm-9pm' },
+        { value: 'monday-10-12', label: 'Monday Apr 27th: 10am-12pm' },
+        { value: 'monday-12-14', label: 'Monday Apr 27th: 12pm-2pm' },
+        { value: 'monday-18-21', label: 'Monday Apr 27th: 6pm-9pm' },
+        { value: 'tuesday-15-17', label: 'Tuesday Apr 28th: 3pm-5pm' },
+        { value: 'tuesday-18-21', label: 'Tuesday Apr 28th: 6pm-9pm' },
+        { value: 'wednesday-10-12', label: 'Wednesday Apr 29th: 10am-12pm' },
+        { value: 'wednesday-12-14', label: 'Wednesday Apr 29th: 12pm-2pm' },
+        { value: 'wednesday-18-21', label: 'Wednesday Apr 29th: 6pm-9pm' },
     ];
 
     // Return options
     const returnDays = [
-        { value: 'friday-12-2', label: 'Friday 20th: 12-2 pm' },
-        { value: 'friday-2-4', label: 'Friday 20th: 2-4 pm' },
-        { value: 'friday-4-6', label: 'Friday 20th: 4-6 pm' },
-        { value: 'saturday-12-2', label: 'Saturday 21st: 12-2 pm' },
-        { value: 'saturday-2-4', label: 'Saturday 21st: 2-4 pm' },
-        { value: 'saturday-4-6', label: 'Saturday 21st: 4-6 pm' },
-        { value: 'monday-12-2', label: 'Monday 22nd: 12-2 pm' },
-        { value: 'monday-2-4', label: 'Monday 22nd: 2-4 pm' },
-        { value: 'monday-4-6', label: 'Monday 22nd: 4-6 pm' },
-        { value: 'tuesday-12-2', label: 'Tuesday 23rd: 12-2 pm' },
-        { value: 'tuesday-2-4', label: 'Tuesday 23rd: 2-4 pm' },
-        { value: 'tuesday-4-6', label: 'Tuesday 23rd: 4-6 pm' },
-        { value: 'other', label: 'Other (arrange separately)' }
+        { value: 'friday-10-12', label: 'Friday May 1st: 10am-12pm' },
+        { value: 'friday-18-21', label: 'Friday May 1st: 6pm-9pm' },
+        { value: 'saturday-10-12', label: 'Saturday May 2nd: 10am-12pm' },
+        { value: 'saturday-18-21', label: 'Saturday May 2nd: 6pm-9pm' },
     ];
 
     useEffect(() => {
