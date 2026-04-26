@@ -279,7 +279,7 @@ export function Confirmation() {
                                             </div>
                                             <div className="flex justify-between text-lg font-bold text-gold mt-4 pt-4 border-t border-amber-200">
                                                 <span>Amount Paid:</span>
-                                                <span>{paymentDetails?.amount || 290} HKD</span>
+                                                <span>{paymentDetails?.amount || 290} USD</span>
                                             </div>
                                             {paymentDetails?.promoCode && (
                                                 <div className="flex justify-between text-sm text-green-600">
