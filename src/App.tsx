@@ -32,12 +32,14 @@ import { OAuthSuccess } from './components/OAuthSuccess'
 import { Terms } from './components/Terms'
 import { Privacy } from './components/Privacy'
 import { CollectionsM } from './components/CollectionsM';
+import { CollectionsNY } from './components/CollectionsNY';
 import { AdminReservations } from './components/AdminReservations';
 import { Gallery } from './components/Gallery'
 import { ThirdDinner } from './components/ThirdDinner';
 import { OAuthCallback } from './components/OAuthCallback';
 import { SubmissionSuccess } from "./components/SubsmissionSuccess";
 import {AdminPickups} from "./components/AdminPickups.tsx";
+
 
 function HomePage() {
     return (
@@ -101,6 +103,8 @@ export function App() {
                     <Route path="/cookies" element={<Privacy />} />
                     <Route path="/collections-m" element={<CollectionsM />} />
                     <Route path="/admin/reservations" element={<AdminReservations />} />
+                    <Route path="/collections-ny" element={<CollectionsNY />} />
+
                     <Route path="/gallery" element={<Gallery />} />
                     <Route path="/third-dinner" element={<ThirdDinner />} />
                     <Route path="/oauth/callback" element={<OAuthCallback />} />
