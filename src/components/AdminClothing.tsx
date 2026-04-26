@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { Header } from './Header'
 import { Footer } from './Footer'
 import { Edit, Trash2, Eye, Save, X, Plus, ChevronLeft, ChevronRight } from 'lucide-react'
-import { API_CONFIG, fetchPaginated, compressImage } from '../utils/api'
+import { API_CONFIG, fetchPaginated } from '../utils/api'
 
 interface ClothingItem {
     _id: string;
@@ -14,7 +14,7 @@ interface ClothingItem {
     fullName: string;
     email: string;
     phoneNumber: string;
-    university: string;
+    needsPickupHere: 'yes' | 'no';
     pickupMethod: string;
     pickupTime: string;
     pickupDay: string;
@@ -66,9 +66,7 @@ export function AdminClothing() {
         '32', '34', '36', '38', '40', '42', 'One Size'
     ]
 
-    const universities = [
-        'HKU', 'CUHK', 'PolyU', 'HKUST', 'Baptist', 'NA'
-    ]
+    const pickupHereOptions = ['yes', 'no']
 
     const statuses = ['available', 'reserved', 'sold']
 
@@ -123,8 +121,7 @@ export function AdminClothing() {
 
     const handleSave = async (id: string) => {
         try {
-            const response = await fetch(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.clothingAdmin}/${id}`
-                , {
+            const response = await fetch(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.clothingAdmin}/${id}`, {
                 method: 'PUT',
                 headers: getAuthHeaders(),
                 body: JSON.stringify(editForm)
@@ -155,7 +152,7 @@ export function AdminClothing() {
 
         try {
             const token = localStorage.getItem('token')
-            const response = await fetch(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.clothing}/${id}`, {
+            const response = await fetch(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.clothingAdmin}/${id}`, {
                 method: 'DELETE',
                 headers: {
                     ...(token ? { 'Authorization': `Bearer ${token}` } : {})
@@ -165,7 +162,6 @@ export function AdminClothing() {
             const result = await response.json()
 
             if (response.ok && result.success) {
-                // Refresh current page
                 fetchClothingItems(currentPage)
             } else {
                 throw new Error(result.message)
@@ -192,52 +188,54 @@ export function AdminClothing() {
             setUploadingForItem(itemId)
             setError('')
 
-            // Check file size (max 5MB)
             if (file.size > 5 * 1024 * 1024) {
-                throw new Error('File too large. Maximum size is 5MB.');
+                throw new Error('File too large. Maximum size is 5MB.')
             }
 
-            // Convert file to base64
-            const base64Image = await new Promise<string>((resolve, reject) => {
-                const reader = new FileReader()
-                reader.readAsDataURL(file)
-                reader.onload = () => {
-                    const base64 = (reader.result as string).split(',')[1];
-                    resolve(base64);
-                }
-                reader.onerror = error => reject(error)
+            // Step 1: Upload file to Cloudinary via the images route
+            const token = localStorage.getItem('token')
+            const formData = new FormData()
+            formData.append('image', file)
+
+            const uploadRes = await fetch(`${API_CONFIG.baseURL}/api/images/upload`, {
+                method: 'POST',
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+                body: formData // multipart — do NOT set Content-Type manually
             })
 
-            // Compress image
-            const compressedImage = await compressImage(base64Image);
+            const uploadResult = await uploadRes.json()
+            if (!uploadRes.ok || !uploadResult.success) {
+                throw new Error(uploadResult.message || 'Failed to upload image to Cloudinary')
+            }
 
+            const newImageUrl: string = uploadResult.data.cloudinaryUrl
+
+            // Step 2: Append the new Cloudinary URL to the clothing item
             const currentItem = allClothingItems.find(item => item._id === itemId)
             if (!currentItem) return
 
-            const updatedImages = [...currentItem.images, `data:image/jpeg;base64,${compressedImage}`]
+            const updatedImages = [...currentItem.images, newImageUrl]
 
-            const response = await fetch(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.clothingAdmin}/${itemId}/images`
-                , {
-                method: 'PUT',
-                headers: getAuthHeaders(),
-                body: JSON.stringify({
-                    images: updatedImages
-                })
-            })
+            const response = await fetch(
+                `${API_CONFIG.baseURL}${API_CONFIG.endpoints.clothingAdmin}/${itemId}/images`,
+                {
+                    method: 'PUT',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ images: updatedImages })
+                }
+            )
 
             const result = await response.json()
 
             if (response.ok && result.success) {
                 const finalImages = result.data?.images || updatedImages
                 const updatedAllItems = allClothingItems.map(item =>
-                    item._id === itemId
-                        ? { ...item, images: finalImages }
-                        : item
+                    item._id === itemId ? { ...item, images: finalImages } : item
                 )
                 setAllClothingItems(updatedAllItems)
                 filterItemsFrom2026(updatedAllItems)
             } else {
-                throw new Error(result.message || 'Failed to upload image')
+                throw new Error(result.message || 'Failed to update clothing images')
             }
         } catch (err) {
             console.error('Upload error:', err)
@@ -261,14 +259,14 @@ export function AdminClothing() {
 
             const updatedImages = currentItem.images.filter(url => url !== imageUrl)
 
-            const response = await fetch(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.clothingAdmin}/${itemId}/images`
-                , {
-                method: 'PUT',
-                headers: getAuthHeaders(),
-                body: JSON.stringify({
-                    images: updatedImages
-                })
-            })
+            const response = await fetch(
+                `${API_CONFIG.baseURL}${API_CONFIG.endpoints.clothingAdmin}/${itemId}/images`,
+                {
+                    method: 'PUT',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ images: updatedImages })
+                }
+            )
 
             const result = await response.json()
 
@@ -541,19 +539,19 @@ export function AdminClothing() {
                                             </div>
 
                                             <div className="flex justify-between items-center">
-                                                <span className="font-semibold text-plum/80">University:</span>
+                                                <span className="font-semibold text-plum/80">Needs Pickup Here:</span>
                                                 {editingId === item._id ? (
                                                     <select
-                                                        value={editForm.university || ''}
-                                                        onChange={(e) => handleInputChange('university', e.target.value)}
+                                                        value={editForm.needsPickupHere || 'yes'}
+                                                        onChange={(e) => handleInputChange('needsPickupHere', e.target.value)}
                                                         className="border border-cream rounded px-2 py-1"
                                                     >
-                                                        {universities.map(uni => (
-                                                            <option key={uni} value={uni}>{uni}</option>
+                                                        {pickupHereOptions.map(opt => (
+                                                            <option key={opt} value={opt}>{opt}</option>
                                                         ))}
                                                     </select>
                                                 ) : (
-                                                    <span className="text-plum">{item.university}</span>
+                                                    <span className="text-plum capitalize">{item.needsPickupHere}</span>
                                                 )}
                                             </div>
 
