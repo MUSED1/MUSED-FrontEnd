@@ -2,6 +2,8 @@
 import { Header } from './Header'
 import { Footer } from './Footer'
 
+// Make sure react-router-dom is installed
+
 export function Diner() {
     return (
         <div className="font-sans">
@@ -25,11 +27,14 @@ export function Diner() {
                             <div className="md:w-1/2 p-8">
                                 <h2 className="text-3xl font-bold text-plum mb-4">Wear Something Borrowed Dinner</h2>
                                 <p className="text-plum/80 mb-6 leading-relaxed font-amandine">
-                                    Come to dinner wearing a borrowed piece from the  collection. This is where muses
+                                    Come to dinner wearing a borrowed piece from the collection. This is where muses
                                     can meet the mused. Get to know who you are lending to and borrowing from. Share your
                                     style, share a moment.
                                 </p>
                                 <div className="flex justify-between items-center">
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-2xl font-bold text-gold">$46</span>
+                                    </div>
 
                                 </div>
                             </div>
@@ -37,8 +42,8 @@ export function Diner() {
                                 <div className="text-center text-white">
                                     <h3 className="text-2xl font-bold mb-4">Next Event</h3>
                                     <p className="text-xl mb-2">Wear Something Borrowed</p>
-                                    <p className="text-3xl font-bold mb-4">Mar 19, 2025</p>
-                                    <p className="text-amber-100">8:00 PM - Central Hong Kong</p>
+                                    <p className="text-3xl font-bold mb-4">April 30, 2026</p>
+                                    <p className="text-amber-100">8:00 PM - FiDi, New York City</p>
                                 </div>
                             </div>
                         </div>
