@@ -43,7 +43,7 @@ export function Diner() {
                                     <h3 className="text-2xl font-bold mb-4">Next Event</h3>
                                     <p className="text-xl mb-2">Wear Something Borrowed</p>
                                     <p className="text-3xl font-bold mb-4">April 30, 2026</p>
-                                    <p className="text-amber-100">8:00 PM - FiDi, New York City</p>
+                                    <p className="text-amber-100">8:00 PM - Quick Eternity, 22 peck slip,New York City</p>
                                 </div>
                             </div>
                         </div>
