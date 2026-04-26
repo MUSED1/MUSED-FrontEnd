@@ -41,14 +41,14 @@ export function LoadingScreen() {
             <div className="text-center flex flex-col items-center justify-center">
                 {/* MUSED Logo - Using Kaldera font with cream color */}
                 <h1 className={`text-cream text-8xl md:text-9xl lg:text-10xl font-kaldera font-bold transition-all duration-500 ${showMused ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
-                    style={{ color: '#F5E6D3' }}>
+                    style={{ color: '#FFF0C8' }}>
                     MUSED
                 </h1>
 
                 {/* 852 Text - Using Kaldera font with cream color */}
                 <div className={`mt-5 transition-all duration-500 ${show852 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'}`}>
                     <span className="text-6xl md:text-7xl lg:text-8xl font-kaldera font-bold"
-                          style={{ color: '#F5E6D3' }}>
+                          style={{ color: '#FFF0C8' }}>
                         852
                     </span>
                 </div>

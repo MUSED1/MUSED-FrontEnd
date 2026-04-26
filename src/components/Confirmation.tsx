@@ -263,11 +263,11 @@ export function Confirmation() {
                                         <div className="space-y-3 text-plum/80">
                                             <div className="flex justify-between">
                                                 <span className="font-semibold">Event:</span>
-                                                <span>Wear Something Borrowed Dinner</span>
+                                                <span>Wear Something Borrowed </span>
                                             </div>
                                             <div className="flex justify-between">
                                                 <span className="font-semibold">Date:</span>
-                                                <span>March 19, 2025</span>
+                                                <span>April 30, 2026</span>
                                             </div>
                                             <div className="flex justify-between">
                                                 <span className="font-semibold">Time:</span>
@@ -275,18 +275,12 @@ export function Confirmation() {
                                             </div>
                                             <div className="flex justify-between">
                                                 <span className="font-semibold">Location:</span>
-                                                <span>Pazta 10 Hollywood road, central Hong Kong</span>
+                                                <span>Quick Eternity, 22 peck slip ,New York</span>
                                             </div>
                                             <div className="flex justify-between text-lg font-bold text-gold mt-4 pt-4 border-t border-amber-200">
                                                 <span>Amount Paid:</span>
                                                 <span>{paymentDetails?.amount || 290} HKD</span>
                                             </div>
-                                            {paymentDetails?.discountApplied && (
-                                                <div className="flex justify-between text-sm text-green-600">
-                                                    <span>Original Price:</span>
-                                                    <span className="line-through text-gray-400">{paymentDetails.originalAmount} HKD</span>
-                                                </div>
-                                            )}
                                             {paymentDetails?.promoCode && (
                                                 <div className="flex justify-between text-sm text-green-600">
                                                     <span>Promo Code Applied:</span>
@@ -328,7 +322,7 @@ export function Confirmation() {
 
                                 <div className="mt-4">
                                     <Link
-                                        to="/collections-m"
+                                        to="/collections-ny"
                                         className="text-plum/60 hover:text-plum transition-colors duration-300 text-sm underline"
                                     >
                                         Continue browsing collection
