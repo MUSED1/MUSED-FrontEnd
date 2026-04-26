@@ -197,10 +197,10 @@ export function AdminClothing() {
             const formData = new FormData()
             formData.append('image', file)
 
-            const uploadRes = await fetch(`${API_CONFIG.baseURL}/api/images/upload`, {
+            const uploadRes = await fetch(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.uploadImage}`, {
                 method: 'POST',
                 headers: token ? { 'Authorization': `Bearer ${token}` } : {},
-                body: formData // multipart — do NOT set Content-Type manually
+                body: formData
             })
 
             const uploadResult = await uploadRes.json()
@@ -217,7 +217,7 @@ export function AdminClothing() {
             const updatedImages = [...currentItem.images, newImageUrl]
 
             const response = await fetch(
-                `${API_CONFIG.baseURL}${API_CONFIG.endpoints.clothingAdmin}/${itemId}/images`,
+                `${API_CONFIG.baseURL}${API_CONFIG.endpoints.clothingAdminImages}/${itemId}/images`,
                 {
                     method: 'PUT',
                     headers: getAuthHeaders(),

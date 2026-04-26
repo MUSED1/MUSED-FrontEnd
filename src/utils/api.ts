@@ -4,14 +4,16 @@ export const API_CONFIG = {
     baseURL: import.meta.env.VITE_API_URL?.replace('/auth', '') || 'https://mused-backend.onrender.com/api',
     endpoints: {
         clothing: '/clothing',
-        clothingAdmin: '/clothing/admin/all',
+        clothingAdmin: '/admin/clothing',  // FIXED: matches backend route
+        clothingAdminImages: '/admin/clothing',  // For image updates
         clothingMyItems: '/clothing/my-items',
         clothingImage: '/clothing/image',
         usersPicks: '/users/picks',
         usersReservations: '/users/reservations',
         auth: '/auth',
         createCheckout: '/create-checkout-session',
-        adminReservations: '/api/admin/reservations'
+        adminReservations: '/admin/reservations',
+        uploadImage: '/images/upload'  // FIXED: correct path
     },
     pagination: {
         defaultLimit: 20,
@@ -92,7 +94,6 @@ export async function compressImage(base64Image: string): Promise<string> {
             let width = img.width;
             let height = img.height;
 
-            // Max dimensions
             const MAX_WIDTH = 800;
             const MAX_HEIGHT = 800;
 
@@ -119,7 +120,6 @@ export async function compressImage(base64Image: string): Promise<string> {
 
             ctx.drawImage(img, 0, 0, width, height);
 
-            // Compress to JPEG with 0.8 quality
             const compressedBase64 = canvas.toDataURL('image/jpeg', 0.8).split(',')[1];
             resolve(compressedBase64);
         };
