@@ -1,12 +1,14 @@
-
+// components/ForgotPassword.tsx
+// Ruta sugerida: /forgot-password
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 export const ForgotPassword: React.FC = () => {
     const [email, setEmail] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [sent, setSent] = useState(false);
+    useNavigate();
     const API_URL = import.meta.env.VITE_API_URL || 'https://mused-backend.onrender.com/api';
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -154,7 +156,7 @@ export const ResetPassword: React.FC = () => {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
 
-   
+    const navigate = useNavigate();
     const API_URL = import.meta.env.VITE_API_URL || 'https://mused-backend.onrender.com/api';
 
     // Leer token de la URL
