@@ -149,18 +149,28 @@ export function Gallery() {
 
     const collections = [
         {
+            id: 4,
+            title: "Fourth Dinner",
+            date: "2026",
+            image: "https://res.cloudinary.com/dapfjngt2/image/upload/v1777850352/mused-clothing/ugb3kphrjxuzr9kd5gpp.jpg",
+            path: "/fourth-dinner",
+            description: "The one where we celebrated our biggest milestone yet",
+            stats: { photos: 0, attendees: 0 },
+            color: "",
+            icon: "",
+            location: "NY"
+        },
+        {
             id: 3,
             title: "Third Dinner",
-
             date: "2025",
             image: "https://res.cloudinary.com/dapfjngt2/image/upload/v1774682644/WhatsApp_Image_2026-03-28_at_12.37.30_AM_ow9yhs.jpg",
             path: "/third-dinner",
             description: "The one in the former victoria prison",
             stats: { photos: 0, attendees: 0 },
-            color: "from-gold to-burgundy",
+            color: "",
             icon: "",
             location: "HK"
-
         },
         {
             id: 2,
@@ -169,10 +179,9 @@ export function Gallery() {
             path: "/second-dinner",
             description: "The one where we opened MUSED to everyone",
             stats: { photos: secondDinnerImages.length, attendees: 30 },
-            color: "from-plum to-gold",
+            color: "",
             icon: "",
             location: "HK"
-
         },
         {
             id: 1,
@@ -180,7 +189,7 @@ export function Gallery() {
             image: "/dinnerimages/fd1.jpeg",
             path: "/first-dinner",
             description: "The first table, The one where it all started ",
-            color: "from-amber-500 to-rose-500",
+            color: "",
             icon: "",
             location: "HK"
         }
@@ -211,7 +220,7 @@ export function Gallery() {
 
             {/* Collections Grid - Smaller container */}
             <section className="container mx-auto px-4 py-12">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
                     {collections.map((collection, index) => (
                         <div
                             key={collection.id}
@@ -221,60 +230,35 @@ export function Gallery() {
                         >
                             <Link
                                 to={collection.path}
-                                className="block group relative h-[450px] rounded-lg overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500"
+                                className="block group relative rounded-lg overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 aspect-[3/4]"
                             >
-                                {/* Background Image */}
+                                {/* Background Image - now fills the entire card */}
                                 <div className="absolute inset-0">
                                     <img
                                         src={collection.image}
                                         alt={collection.title}
-
+                                        className="w-full h-full object-cover"
                                         onError={(e) => {
                                             (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?q=80&w=2070&auto=format&fit=crop';
                                         }}
                                     />
-                                    {/* Gradient Overlay */}
-                                    <div className={`absolute inset-0 bg-gradient-to-t ${collection.color} opacity-80 group-hover:opacity-90 transition-opacity duration-500`}></div>
                                 </div>
 
-                                {/* Content */}
-                                <div className="absolute inset-0 flex flex-col justify-end p-6 text-white">
-                                    {/* Featured Badge */}
-
-
-                                    {/* Upcoming Badge */}
-
-                                    {/* Title and Description */}
-                                    <div className="relative z-10 transform transition-transform duration-500 group-hover:translate-y-[-10px]">
-                                        <div className="flex items-center gap-3 mb-3">
-                                            <div>
-
-                                                <h2 className="text-2xl font-bold font-kaldera">
-                                                    {collection.title}
-                                                </h2>
-                                            </div>
-                                        </div>
-
-                                        <p className="text-sm mb-3 text-cream/90 line-clamp-2">
+                                {/* Content - overlay on bottom */}
+                                <div className="absolute inset-0 flex flex-col justify-end p-4 text-white bg-gradient-to-t from-black/70 via-black/20 to-transparent">
+                                    <div className="relative z-10 transform transition-transform duration-500 group-hover:translate-y-[-5px]">
+                                        <h2 className="text-xl md:text-2xl font-bold font-kaldera mb-1">
+                                            {collection.title}
+                                        </h2>
+                                        <p className="text-xs md:text-sm text-cream/90 line-clamp-2 mb-2">
                                             {collection.description}
                                         </p>
-
-                                        {/* Location Icon with HK */}
                                         {collection.location && (
-                                            <div className="flex items-center gap-2 text-cream/80 text-sm mb-4">
-                                                <MapPin size={14} className="text-purple-400" />
+                                            <div className="flex items-center gap-1 text-cream/80 text-xs">
+                                                <MapPin size={12} className="text-purple-400" />
                                                 <span>{collection.location}</span>
                                             </div>
                                         )}
-
-                                        {/* Stats */}
-                                        <div className="flex gap-3 mb-4 text-sm">
-
-
-
-                                        </div>
-
-
                                     </div>
                                 </div>
                             </Link>
