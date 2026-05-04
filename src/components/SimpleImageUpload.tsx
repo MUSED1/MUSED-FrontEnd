@@ -13,7 +13,7 @@ interface UploadedImage {
     progress?: number;
 }
 
-type DinnerType = 'second' | 'third';
+type DinnerType = 'second' | 'third' | 'fourth';
 
 export function SimpleImageUpload() {
     const [images, setImages] = useState<UploadedImage[]>([]);
@@ -22,7 +22,7 @@ export function SimpleImageUpload() {
     const [currentFileIndex, setCurrentFileIndex] = useState(0);
     const [uploadedIds, setUploadedIds] = useState<string[]>([]);
     const [message, setMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
-    const [selectedDinner, setSelectedDinner] = useState<DinnerType>('third');
+    const [selectedDinner, setSelectedDinner] = useState<DinnerType>('fourth');
     const [batchMode, setBatchMode] = useState<'sequential' | 'parallel'>('sequential');
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [files, setFiles] = useState<File[]>([]);
@@ -146,7 +146,15 @@ export function SimpleImageUpload() {
     // Sequential upload (one by one) - better for memory
     const uploadSequentially = async () => {
         const uploadedImageIds: string[] = [];
-        const dinnerTag = selectedDinner === 'third' ? 'third-dinner' : 'second-dinner';
+        let dinnerTag = '';
+
+        if (selectedDinner === 'fourth') {
+            dinnerTag = 'fourth-dinner';
+        } else if (selectedDinner === 'third') {
+            dinnerTag = 'third-dinner';
+        } else {
+            dinnerTag = 'second-dinner';
+        }
 
         for (let i = 0; i < files.length; i++) {
             updateImageStatus(i, 'uploading', undefined, 0);
@@ -213,7 +221,16 @@ export function SimpleImageUpload() {
 
     // Parallel upload (multiple at once) - faster but more memory intensive
     const uploadInParallel = async () => {
-        const dinnerTag = selectedDinner === 'third' ? 'third-dinner' : 'second-dinner';
+        let dinnerTag = '';
+
+        if (selectedDinner === 'fourth') {
+            dinnerTag = 'fourth-dinner';
+        } else if (selectedDinner === 'third') {
+            dinnerTag = 'third-dinner';
+        } else {
+            dinnerTag = 'second-dinner';
+        }
+
         const uploadPromises = files.map(async (file, index) => {
             updateImageStatus(index, 'uploading', undefined, 0);
 
@@ -305,10 +322,15 @@ export function SimpleImageUpload() {
             const successCount = uploadedImageIds.length;
             const failCount = files.length - successCount;
 
+            let dinnerName = '';
+            if (selectedDinner === 'fourth') dinnerName = 'Fourth Dinner';
+            else if (selectedDinner === 'third') dinnerName = 'Third Dinner';
+            else dinnerName = 'Second Dinner';
+
             if (successCount > 0) {
                 setMessage({
                     type: 'success',
-                    text: `Successfully uploaded ${successCount} image(s) to ${selectedDinner === 'third' ? 'Third Dinner' : 'Second Dinner'} gallery!${failCount > 0 ? ` (${failCount} failed)` : ''}`
+                    text: `Successfully uploaded ${successCount} image(s) to ${dinnerName} gallery!${failCount > 0 ? ` (${failCount} failed)` : ''}`
                 });
             } else if (failCount === files.length) {
                 throw new Error('All uploads failed');
@@ -407,6 +429,15 @@ export function SimpleImageUpload() {
     const failedUploads = images.filter(img => img.status === 'error').length;
     const pendingUploads = images.filter(img => img.status === 'pending').length;
 
+    const getDinnerButtonStyle = (dinner: DinnerType) => {
+        if (selectedDinner === dinner) {
+            if (dinner === 'second') return 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg';
+            if (dinner === 'third') return 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg';
+            return 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg';
+        }
+        return 'bg-gray-100 text-gray-600 hover:bg-gray-200';
+    };
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4">
             <div className="max-w-6xl mx-auto">
@@ -436,11 +467,7 @@ export function SimpleImageUpload() {
                                 type="button"
                                 onClick={() => setSelectedDinner('second')}
                                 disabled={isUploading}
-                                className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-all duration-300 ${
-                                    selectedDinner === 'second'
-                                        ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg'
-                                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                                } ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-all duration-300 ${getDinnerButtonStyle('second')} ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
                             >
                                 Second Dinner (Before March 19, 2026)
                             </button>
@@ -448,13 +475,17 @@ export function SimpleImageUpload() {
                                 type="button"
                                 onClick={() => setSelectedDinner('third')}
                                 disabled={isUploading}
-                                className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-all duration-300 ${
-                                    selectedDinner === 'third'
-                                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg'
-                                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                                } ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-all duration-300 ${getDinnerButtonStyle('third')} ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
                             >
-                                Third Dinner (After March 19, 2026)
+                                Third Dinner (March 20 - April 1, 2026)
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setSelectedDinner('fourth')}
+                                disabled={isUploading}
+                                className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-all duration-300 ${getDinnerButtonStyle('fourth')} ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            >
+                                Fourth Dinner (April 2, 2026 and after)
                             </button>
                         </div>
 
@@ -490,12 +521,15 @@ export function SimpleImageUpload() {
                         </div>
 
                         <p className="text-sm text-gray-500 mt-3">
-                            {selectedDinner === 'third'
-                                ? '📸 Images uploaded now will appear in the Third Dinner gallery (March 19, 2026 and after)'
-                                : '📸 Images uploaded now will appear in the Second Dinner gallery (before March 19, 2026)'}
+                            {selectedDinner === 'fourth'
+                                ? '📸 Images uploaded now will appear in the Fourth Dinner gallery (April 2, 2026 and after)'
+                                : selectedDinner === 'third'
+                                    ? '📸 Images uploaded now will appear in the Third Dinner gallery (March 20 - April 1, 2026)'
+                                    : '📸 Images uploaded now will appear in the Second Dinner gallery (before March 19, 2026)'}
                         </p>
                     </div>
 
+                    {/* Rest of the component remains the same... */}
                     {/* Drop Zone */}
                     <div
                         className={`border-3 border-dashed rounded-xl p-12 text-center transition-all duration-300 ${
@@ -654,7 +688,7 @@ export function SimpleImageUpload() {
                                                 {formatFileSize(image.size)}
                                             </p>
                                             <p className="text-gray-300 text-xs mt-1">
-                                                Target: {selectedDinner === 'third' ? 'Third Dinner' : 'Second Dinner'}
+                                                Target: {selectedDinner === 'fourth' ? 'Fourth Dinner' : selectedDinner === 'third' ? 'Third Dinner' : 'Second Dinner'}
                                             </p>
                                             {image.error && (
                                                 <p className="text-red-300 text-xs mt-1 truncate">
