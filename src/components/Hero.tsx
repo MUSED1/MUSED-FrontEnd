@@ -1,6 +1,4 @@
 import { useState, useEffect } from 'react'
-import { Button } from './Button'
-import { Link } from "react-router-dom";
 
 export function Hero() {
     const [currentSlide, setCurrentSlide] = useState(0)
@@ -55,83 +53,58 @@ export function Hero() {
     }
 
     return (
-        <section className="relative h-[80vh] bg-[#fff0c8] w-full overflow-hidden font-amandine">
-            <div className="container mx-auto h-full px-4 flex flex-col md:flex-row items-center">
-                {/* Text Content */}
-                <div className="w-full md:w-1/2 z-10 pt-16 md:pt-0">
-                    <h2 className="text-4xl md:text-6xl font-bold text-plum mb-4 transform transition-all duration-1000 ease-out hover:translate-x-4 hover:text-burgundy">
-                        <span className="text-burgundy transform transition-all duration-700 hover:text-gold hover:scale-110">WSB DINNER</span>
-                    </h2>
-                    <p className="text-plum/80 text-lg md:text-xl mb-8 max-w-md transform transition-all duration-700 delay-200 hover:translate-x-2 hover:text-plum leading-relaxed">
-                        Be Mused and meet your muse around a table. Mused is more than sharing style, it's sharing an experience.
-                    </p>
+        <section className="relative h-screen bg-[#fff0c8] w-full overflow-hidden font-amandine">
+            {/* Full-width Image Background */}
+            <div className="absolute inset-0 w-full h-full">
+                {images.map((image, index) => (
+                    <div
+                        key={index}
+                        className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out ${
+                            index === currentSlide ? 'opacity-100' : 'opacity-0'
+                        }`}
+                    >
+                        <img
+                            src={image}
+                            alt={`Fashion model wearing Mused collection - Look ${index + 1}`}
+                            className="w-full h-full object-cover object-center"
+                        />
+                        <div className="absolute inset-0 bg-black/30"></div>
+                    </div>
+                ))}
+            </div>
 
-                    {/* Minimalistic Countdown Timer - OCULTO */}
-                    {/* <div className="mb-8 transform transition-all duration-700 delay-300">
-                        <h1 className="text-2xl md:text-3xl font-bold text-plum mb-4 transform transition-all duration-1000 ease-out hover:translate-x-2 tracking-tight">
-                            {_timeLeft.days}d : {_timeLeft.hours}h : {_timeLeft.minutes}m : {_timeLeft.seconds}s
-                        </h1>
+            {/* Text Content - Left-aligned Over Image */}
+            <div className="relative container mx-auto h-full px-4 flex flex-col items-start justify-center z-10">
+                <div className="max-w-3xl">
+                    <h1 className="text-8xl md:text-9xl lg:text-[10rem] font-amandine text-cream mb-6 tracking-tight drop-shadow-2xl text-left">
+                        MUSED
+                    </h1>
+
+                    <div className="space-y-4">
+                        <p className="text-cream text-xl md:text-2xl lg:text-3xl font-light max-w-3xl drop-shadow-lg text-left">
+                            Redefining Wearing Something Borrowed through dinners
+                        </p>
+                    </div>
+
+                    {/* Optional: Add a button if needed later */}
+                    {/* <div className="mt-8">
+                        <Button variant="primary" className="transform transition-all duration-300 hover:scale-110 hover:shadow-2xl font-amandine">
+                            Learn More
+                        </Button>
                     </div> */}
-
-                    <div className="flex space-x-4 transform transition-all duration-700 delay-300">
-                        {/* Botón "Upload your piece" OCULTO */}
-                        {/* <Link to="/upload">
-                            <Button variant="primary" className="transform transition-all duration-300 hover:scale-110 hover:shadow-2xl font-amandine">
-                                Upload your piece
-                            </Button>
-                        </Link> */}
-
-                        {/* Botón "See Second Dinner Pictures" (MANTENIDO) */}
-                        <Link to="/second-dinner">
-                            <Button variant="secondary" className="transform transition-all duration-300 hover:scale-110 hover:shadow-2xl font-amandine">
-                                See Second Dinner Pictures
-                            </Button>
-                        </Link>
-                    </div>
-                </div>
-
-                {/* Image Carousel Section */}
-                <div className="w-full md:w-1/2 h-full relative mt-8 md:mt-0">
-                    <div className="absolute right-0 top-1/2 transform -translate-y-1/2 h-4/5 w-full md:w-11/12">
-                        {/* Carousel Container */}
-                        <div className="relative h-full w-full overflow-hidden rounded-lg">
-                            {/* Images */}
-                            {images.map((image, index) => (
-                                <div
-                                    key={index}
-                                    className={`absolute inset-0 h-full w-full transform transition-all duration-1000 ease-in-out ${
-                                        index === currentSlide
-                                            ? 'opacity-100 scale-100'
-                                            : 'opacity-0 scale-105'
-                                    }`}
-                                >
-                                    <img
-                                        src={image}
-                                        alt={`Fashion model wearing Mused collection - Look ${index + 1}`}
-                                        className="h-full w-full object-cover object-center transform transition-all duration-1000 ease-in-out hover:scale-110 hover:rotate-1"
-                                    />
-                                    <div className="absolute inset-0 bg-burgundy opacity-10 transform transition-all duration-700 hover:opacity-5"></div>
-                                </div>
-                            ))}
-                        </div>
-
-                        {/* Floating elements */}
-                        <div className="absolute -top-4 -left-4 w-8 h-8 bg-gold rounded-full opacity-40 animate-float z-10"></div>
-                        <div className="absolute -bottom-6 -right-6 w-12 h-12 bg-plum/30 rounded-full opacity-50 animate-float-delayed z-10"></div>
-                    </div>
                 </div>
             </div>
 
             {/* Animated Dots Indicator */}
-            <div className="absolute bottom-8 left-0 right-0 flex justify-center space-x-2">
+            <div className="absolute bottom-8 left-0 right-0 flex justify-center space-x-2 z-10">
                 {images.map((_, index) => (
                     <button
                         key={index}
                         onClick={() => goToSlide(index)}
                         className={`h-2 rounded-full transform transition-all duration-500 ${
                             currentSlide === index
-                                ? 'w-8 bg-burgundy scale-125'
-                                : 'w-2 bg-plum/40 hover:bg-plum/60'
+                                ? 'w-8 bg-gold scale-125'
+                                : 'w-2 bg-cream/60 hover:bg-cream'
                         }`}
                     />
                 ))}
