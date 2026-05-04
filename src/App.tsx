@@ -40,6 +40,7 @@ import { OAuthCallback } from './components/OAuthCallback';
 import { SubmissionSuccess } from "./components/SubsmissionSuccess";
 import {AdminPickups} from "./components/AdminPickups.tsx";
 import { FourthDinner } from './components/FourthDinner';
+import { ForgotPassword, ResetPassword } from './components/ForgotPassword'
 
 
 function HomePage() {
@@ -112,7 +113,8 @@ export function App() {
                     <Route path="/submission-success" element={<SubmissionSuccess />} />
                     <Route path="/admin/pickups" element={<AdminPickups />} />
                     <Route path="/fourth-dinner" element={<FourthDinner />} />
-
+                    <Route path="/forgot-password" element={<ForgotPassword />} />
+                    <Route path="/reset-password" element={<ResetPassword />} />
 
                 </Routes>
             </Router>
