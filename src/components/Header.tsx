@@ -20,9 +20,14 @@ export function Header() {
                     {/* Logo */}
                     <div className="flex-1 md:flex-none text-center md:text-left">
                         <Link to="/">
-                            <h1 className="text-2xl md:text-3xl font-bold tracking-wider text-cream transition-all duration-300 ease-in-out hover:text-gold hover:scale-105 cursor-pointer font-kaldera">
-                                MUSED
-                            </h1>
+                            <div className="inline-flex flex-col items-center md:items-center">
+                                <h1 className="text-2xl md:text-3xl font-bold tracking-wider text-cream transition-all duration-300 ease-in-out hover:text-gold hover:scale-105 cursor-pointer font-kaldera">
+                                    MUSED
+                                </h1>
+                                <span className="text-xs tracking-widest text-cream font-kaldera opacity-80 -mt-1">
+                                    852
+                                </span>
+                            </div>
                         </Link>
                     </div>
 
@@ -42,7 +47,7 @@ export function Header() {
                                     to="/diner"
                                     className="text-cream hover:text-gold font-medium transition-all duration-300 ease-in-out transform hover:scale-105 hover:font-semibold font-kaldera"
                                 >
-                                    Dinner
+                                    The edit
                                 </Link>
                             </li>
                             <li>
