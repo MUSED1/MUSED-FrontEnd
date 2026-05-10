@@ -4,7 +4,7 @@ import { Header } from './Header';
 import { Footer } from './Footer';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
-import { Heart, ChevronLeft, ChevronRight, X, User, Mail, Phone, Calendar, MapPin, CreditCard, Loader2, Shield } from 'lucide-react';
+import { Heart, ChevronLeft, ChevronRight, X, User, Mail, Phone, Calendar, MapPin, CreditCard, Loader2, Shield, Eye } from 'lucide-react';
 import axios from 'axios';
 
 interface ClothingItem {
@@ -509,6 +509,17 @@ export function CollectionsNY() {
                                                     e.currentTarget.src = 'https://via.placeholder.com/400x400?text=Image+Not+Found';
                                                 }}
                                             />
+
+                                            {/* Preview Button */}
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setSelectedImage(getImageUrl(item, 0));
+                                                }}
+                                                className="absolute top-3 left-3 p-3 rounded-full bg-white/90 text-plum hover:bg-white transition-all transform hover:scale-110"
+                                            >
+                                                <Eye size={20} />
+                                            </button>
 
                                             {/* Pick Button */}
                                             <button
