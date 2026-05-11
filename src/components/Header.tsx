@@ -1,12 +1,28 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { User, Menu, X } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 export function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
+    const [isScrolled, setIsScrolled] = useState(false)
+
+    useEffect(() => {
+        const handleScroll = () => {
+            setIsScrolled(window.scrollY > 40)
+        }
+
+        window.addEventListener('scroll', handleScroll, { passive: true })
+        return () => window.removeEventListener('scroll', handleScroll)
+    }, [])
 
     return (
-        <header className="bg-[#5b1b3a] w-full sticky top-0 z-50 shadow-sm transition-all duration-300 ease-in-out hover:shadow-md">
+        <header
+            className={`w-full fixed top-0 z-50 transition-all duration-500 ease-in-out ${
+                isScrolled
+                    ? 'bg-[#5b1b3a] shadow-md opacity-100'
+                    : 'bg-transparent shadow-none opacity-0 pointer-events-none'
+            }`}
+        >
             <div className="container mx-auto px-4 py-4">
                 <div className="flex items-center justify-between">
                     {/* Mobile menu button */}
@@ -34,38 +50,19 @@ export function Header() {
                     {/* Desktop Navigation */}
                     <nav className="hidden md:block">
                         <ul className="flex space-x-8">
-                            <li>
-                                <Link
-                                    to="/"
-                                    className="text-cream hover:text-gold font-medium transition-all duration-300 ease-in-out transform hover:scale-105 hover:font-semibold font-kaldera"
-                                >
-                                    Home
-                                </Link>
-                            </li>
-                            <li>
-                                <Link
-                                    to="/diner"
-                                    className="text-cream hover:text-gold font-medium transition-all duration-300 ease-in-out transform hover:scale-105 hover:font-semibold font-kaldera"
-                                >
-                                    The edit
-                                </Link>
-                            </li>
-                            <li>
-                                <Link
-                                    to="/gallery"
-                                    className="text-cream hover:text-gold font-medium transition-all duration-300 ease-in-out transform hover:scale-105 hover:font-semibold font-kaldera"
-                                >
-                                    Gallery
-                                </Link>
-                            </li>
-                            <li>
-                                <Link
-                                    to="/about"
-                                    className="text-cream hover:text-gold font-medium transition-all duration-300 ease-in-out transform hover:scale-105 hover:font-semibold font-kaldera"
-                                >
-                                    About
-                                </Link>
-                            </li>
+                            {['/', '/diner', '/gallery', '/about'].map((path, i) => {
+                                const labels = ['Home', 'The edit', 'Gallery', 'About']
+                                return (
+                                    <li key={path}>
+                                        <Link
+                                            to={path}
+                                            className="text-cream hover:text-gold font-medium transition-all duration-300 ease-in-out transform hover:scale-105 hover:font-semibold font-kaldera"
+                                        >
+                                            {labels[i]}
+                                        </Link>
+                                    </li>
+                                )
+                            })}
                         </ul>
                     </nav>
 
@@ -84,42 +81,19 @@ export function Header() {
                 {isMenuOpen && (
                     <div className="md:hidden pt-4 pb-2 border-t mt-4 border-gold animate-slideDown">
                         <ul className="space-y-3">
-                            <li>
-                                <Link
-                                    to="/"
-                                    className="block text-cream hover:text-gold font-medium transition-all duration-300 ease-in-out transform hover:translate-x-2 hover:font-semibold font-kaldera"
-                                    onClick={() => setIsMenuOpen(false)}
-                                >
-                                    Home
-                                </Link>
-                            </li>
-                            <li>
-                                <Link
-                                    to="/diner"
-                                    className="block text-cream hover:text-gold font-medium transition-all duration-300 ease-in-out transform hover:translate-x-2 hover:font-semibold font-kaldera"
-                                    onClick={() => setIsMenuOpen(false)}
-                                >
-                                    Dinner
-                                </Link>
-                            </li>
-                            <li>
-                                <Link
-                                    to="/gallery"
-                                    className="block text-cream hover:text-gold font-medium transition-all duration-300 ease-in-out transform hover:translate-x-2 hover:font-semibold font-kaldera"
-                                    onClick={() => setIsMenuOpen(false)}
-                                >
-                                    Gallery
-                                </Link>
-                            </li>
-                            <li>
-                                <Link
-                                    to="/about"
-                                    className="block text-cream hover:text-gold font-medium transition-all duration-300 ease-in-out transform hover:translate-x-2 hover:font-semibold font-kaldera"
-                                    onClick={() => setIsMenuOpen(false)}
-                                >
-                                    About
-                                </Link>
-                            </li>
+                            {[['/', 'Home'], ['/diner', 'The edit'], ['/gallery', 'Gallery'], ['/about', 'About']].map(
+                                ([path, label]) => (
+                                    <li key={path}>
+                                        <Link
+                                            to={path}
+                                            className="block text-cream hover:text-gold font-medium transition-all duration-300 ease-in-out transform hover:translate-x-2 hover:font-semibold font-kaldera"
+                                            onClick={() => setIsMenuOpen(false)}
+                                        >
+                                            {label}
+                                        </Link>
+                                    </li>
+                                )
+                            )}
                         </ul>
                     </div>
                 )}
