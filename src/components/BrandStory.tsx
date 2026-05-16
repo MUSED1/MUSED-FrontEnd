@@ -72,9 +72,10 @@ export function BrandStory() {
                                         fontSize: '36px',
                                         lineHeight: 1.3,
                                         fontStyle: 'italic',
+                                        textAlign:'center',
                                     }}
                                 >
-                                    Let Your Clothes Inspire — Let Yourself Be MUSED...
+                                    Let Your Clothes Inspire Let Yourself Be MUSED...
                                 </p>
                             </div>
 
