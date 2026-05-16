@@ -167,17 +167,32 @@ export function Diner() {
 
                             {/* Event details side */}
                             <div
-                                className="md:w-1/2 p-8 flex items-center justify-center"
-                                style={{ backgroundColor: '#3D1028' }}
+                                className="md:w-1/2 flex items-center justify-center relative overflow-hidden"
+                                style={{ minHeight: '420px' }}
                             >
-                                <div className="text-center">
+                                {/* Background image */}
+                                <img
+                                    src="https://res.cloudinary.com/dapfjngt2/image/upload/v1778915465/quick_Eternity_1__page-0001_uhkkzg.jpg"
+                                    alt="Quick Eternity venue"
+                                    className="absolute inset-0 w-full h-full object-cover"
+                                    style={{ objectPosition: 'center' }}
+                                />
+
+                                {/* Dark overlay so text stays legible */}
+                                <div
+                                    className="absolute inset-0"
+                                    style={{ backgroundColor: 'rgba(30, 6, 18, 0.62)' }}
+                                />
+
+                                {/* Text content — sits on top */}
+                                <div className="relative z-10 text-center px-8 py-10">
                                     {/* Label */}
                                     <span
                                         className="font-abril text-[15px] uppercase block mb-6"
                                         style={{ color: 'rgba(255,240,200,0.6)', letterSpacing: '0.2em' }}
                                     >
-                                        Wear Something Borrowed
-                                    </span>
+            Wear Something Borrowed
+        </span>
 
                                     {/* Date: Kaldera */}
                                     <p
@@ -199,10 +214,10 @@ export function Diner() {
                                         style={{ height: '1px', backgroundColor: 'rgba(255,240,200,0.3)' }}
                                     />
 
-                                    {/* Location: Abril Display, uppercase, tracking 270 (location style) */}
+                                    {/* Location */}
                                     <p
                                         className="font-abril uppercase text-[13px]"
-                                        style={{ color: 'rgba(255,240,200,0.75)', letterSpacing: '0.27em', lineHeight: 1.8 }}
+                                        style={{ color: 'rgba(255,240,200,0.85)', letterSpacing: '0.27em', lineHeight: 1.8 }}
                                     >
                                         8:00 PM<br />
                                         Quick Eternity<br />
@@ -210,11 +225,11 @@ export function Diner() {
                                         New York City
                                     </p>
 
-                                    {/* Hand note: Abril Display italic, cream */}
+                                    {/* Hand note */}
                                     <p
                                         className="font-abril mt-6"
                                         style={{
-                                            color: 'rgba(255,240,200,0.5)',
+                                            color: 'rgba(255,240,200,0.6)',
                                             fontSize: '22px',
                                             fontStyle: 'italic',
                                             lineHeight: 1.3,
