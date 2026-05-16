@@ -46,24 +46,24 @@ function useRandomReveal(count: number, intervalMs = 120, startDelay = 0) {
     return { visibleIndices, done }
 }
 
-// Timing (all slowed down):
+// Timing:
 // MUSED:   5 chars  × 160ms apart, fade 1.1s  — starts at 400ms  → done ≈ 1200ms
 // 852:     3 chars  × 200ms apart, fade 1.4s  — starts at 1400ms → done ≈ 2000ms
-// tagline: 12 words × 140ms apart, fade 1.2s  — starts at 2300ms
+// tagline: simple fade-in after logo is done  — starts at 2600ms, fades over 1.4s
 
 const MUSED_INTERVAL   = 160
 const MUSED_DELAY      = 400
 const SUB_INTERVAL     = 200
 const SUB_DELAY        = 1400
-const TAGLINE_INTERVAL = 140
-const TAGLINE_DELAY    = 2300
+// Tagline starts after MUSED + 852 have fully appeared (≈2000ms last char + 1.4s fade = 2600ms feels right)
+const TAGLINE_DELAY    = 2600
 
 const TAGLINE = 'Your trusted shared wardrobe. Because your favorite piece already exists.'
-const TAGLINE_WORDS = TAGLINE.split(' ')
 
 export function Hero() {
     const [currentSlide, setCurrentSlide] = useState(0)
     const [scrollY, setScrollY] = useState(0)
+    const [taglineVisible, setTaglineVisible] = useState(false)
     const sectionRef = useRef<HTMLElement>(null)
 
     const mobileImage  = "https://res.cloudinary.com/dapfjngt2/image/upload/v1778469118/phone_image_kklqsh.png"
@@ -75,9 +75,11 @@ export function Hero() {
     // Random-reveal for 852 (3 chars)
     const { visibleIndices: subVisible } = useRandomReveal(3, SUB_INTERVAL, SUB_DELAY)
 
-    // Random-reveal for tagline words
-    const { visibleIndices: taglineVisible } =
-        useRandomReveal(TAGLINE_WORDS.length, TAGLINE_INTERVAL, TAGLINE_DELAY)
+    // Simple delayed fade-in for tagline
+    useEffect(() => {
+        const id = setTimeout(() => setTaglineVisible(true), TAGLINE_DELAY)
+        return () => clearTimeout(id)
+    }, [])
 
     // Scroll parallax
     useEffect(() => {
@@ -115,9 +117,13 @@ export function Hero() {
                 .token-sub.visible {
                     animation: fadeInToken 1.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
                 }
-                /* Tagline words: 1.2s fade */
-                .token-tag.visible {
-                    animation: fadeInToken 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+                /* Tagline: simple fade, no blur/slide */
+                .tagline-text {
+                    opacity: 0;
+                    transition: opacity 1.4s ease;
+                }
+                .tagline-text.visible {
+                    opacity: 1;
                 }
             `}</style>
 
@@ -196,9 +202,9 @@ export function Hero() {
                         </span>
                     </div>
 
-                    {/* Tagline — random word reveal */}
+                    {/* Tagline — simple fade-in after logo */}
                     <p
-                        className="font-abril max-w-2xl drop-shadow-lg"
+                        className={`tagline-text font-abril max-w-2xl drop-shadow-lg${taglineVisible ? ' visible' : ''}`}
                         style={{
                             color: '#FFF0C8',
                             fontSize: 'clamp(1.1rem, 2.5vw, 1.5rem)',
@@ -207,16 +213,7 @@ export function Hero() {
                             lineHeight: 1.6,
                         }}
                     >
-                        {TAGLINE_WORDS.map((word, i) => (
-                            <span key={i}>
-                                <span
-                                    className={`token token-tag${taglineVisible.has(i) ? ' visible' : ''}`}
-                                >
-                                    {word}
-                                </span>
-                                {i < TAGLINE_WORDS.length - 1 ? ' ' : ''}
-                            </span>
-                        ))}
+                        {TAGLINE}
                     </p>
                 </div>
             </div>
