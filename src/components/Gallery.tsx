@@ -19,6 +19,38 @@ interface ImageData {
 
 const API_BASE_URL = 'https://mused-backend.onrender.com';
 
+// Typewriter hook
+function useTypewriter(text: string, speed = 60, startDelay = 0) {
+    const [displayed, setDisplayed] = useState('')
+    const [done, setDone] = useState(false)
+
+    useEffect(() => {
+        setDisplayed('')
+        setDone(false)
+        let timeout: ReturnType<typeof setTimeout>
+        let interval: ReturnType<typeof setInterval>
+
+        timeout = setTimeout(() => {
+            let i = 0
+            interval = setInterval(() => {
+                i++
+                setDisplayed(text.slice(0, i))
+                if (i >= text.length) {
+                    clearInterval(interval)
+                    setDone(true)
+                }
+            }, speed)
+        }, startDelay)
+
+        return () => {
+            clearTimeout(timeout)
+            clearInterval(interval)
+        }
+    }, [text, speed, startDelay])
+
+    return { displayed, done }
+}
+
 export function Gallery() {
     const [isVisible, setIsVisible] = useState(false);
     const [firstDinnerImages, setFirstDinnerImages] = useState<string[]>([]);
@@ -30,13 +62,15 @@ export function Gallery() {
     const [randomizedImages, setRandomizedImages] = useState<Array<{ url: string; type: 'first' | 'second'; id: string }>>([]);
     const carouselRef = useRef<HTMLDivElement>(null);
 
-    // Generate first dinner image paths (fd1 to fd56)
+    // Typewriter: "Our" then "Gallery" in italic
+    const { displayed: ourText, done: ourDone }         = useTypewriter('Our', 80, 200)
+    const { displayed: galleryText }                     = useTypewriter('Gallery', 80, ourDone ? 600 : 9999)
+
     useEffect(() => {
         const paths = Array.from({ length: 56 }, (_, i) => `/dinnerimages/fd${i + 1}.jpeg`);
         setFirstDinnerImages(paths);
     }, []);
 
-    // Fetch second dinner images from API
     useEffect(() => {
         fetchSecondDinnerImages();
     }, []);
@@ -45,7 +79,6 @@ export function Gallery() {
         setIsVisible(true);
     }, []);
 
-    // Randomize images when both sets are loaded
     useEffect(() => {
         if (firstDinnerImages.length > 0 || secondDinnerImages.length > 0) {
             const allImages = getAllImages();
@@ -59,20 +92,14 @@ export function Gallery() {
         }
     }, [firstDinnerImages, secondDinnerImages]);
 
-    // Auto-rotate carousel every 5 seconds
     useEffect(() => {
         const interval = setInterval(() => {
-            const getImagesForCurrentView = () => {
-                const isMobile = window.innerWidth < 640;
-                const imagesToShow = isMobile ? 1 : 4;
-                if (randomizedImages.length > imagesToShow) {
-                    setCurrentIndex((prev) => (prev + 1) % (randomizedImages.length - imagesToShow + 1));
-                }
-            };
-
-            getImagesForCurrentView();
+            const isMobile = window.innerWidth < 640;
+            const imagesToShow = isMobile ? 1 : 4;
+            if (randomizedImages.length > imagesToShow) {
+                setCurrentIndex((prev) => (prev + 1) % (randomizedImages.length - imagesToShow + 1));
+            }
         }, 5000);
-
         return () => clearInterval(interval);
     }, [randomizedImages]);
 
@@ -81,17 +108,10 @@ export function Gallery() {
             setLoading(true);
             const response = await fetch(`${API_BASE_URL}/api/images`, {
                 method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
             });
-
-            if (!response.ok) {
-                throw new Error(`Error ${response.status}: ${response.statusText}`);
-            }
-
+            if (!response.ok) throw new Error(`Error ${response.status}: ${response.statusText}`);
             const result = await response.json();
-
             if (result.success) {
                 setSecondDinnerImages(result.data || []);
             } else {
@@ -107,23 +127,15 @@ export function Gallery() {
 
     const getAllImages = (): Array<{ url: string; type: 'first' | 'second'; id: string }> => {
         const firstImages = firstDinnerImages.map((url, index) => ({
-            url,
-            type: 'first' as const,
-            id: `first-${index}`
+            url, type: 'first' as const, id: `first-${index}`
         }));
-
         const secondImages = secondDinnerImages.map((img) => ({
-            url: img.cloudinaryUrl,
-            type: 'second' as const,
-            id: img._id
+            url: img.cloudinaryUrl, type: 'second' as const, id: img._id
         }));
-
         return [...firstImages, ...secondImages];
     };
 
-    // Get responsive number of images to show
     const getImagesToShow = () => {
-        // Check if it's mobile (you can also use a resize listener for dynamic updates)
         const isMobile = window.innerWidth < 640;
         return isMobile ? 1 : 4;
     };
@@ -156,8 +168,6 @@ export function Gallery() {
             path: "/fourth-dinner",
             description: "The one where we celebrated our biggest milestone yet",
             stats: { photos: 0, attendees: 0 },
-            color: "",
-            icon: "",
             location: "NY"
         },
         {
@@ -168,58 +178,101 @@ export function Gallery() {
             path: "/third-dinner",
             description: "The one in the former victoria prison",
             stats: { photos: 0, attendees: 0 },
-            color: "",
-            icon: "",
             location: "HK"
         },
         {
             id: 2,
             title: "Second Dinner",
+            date: "2025",
             image: "https://res.cloudinary.com/dapfjngt2/image/upload/v1774682835/WhatsApp_Image_2026-03-28_at_12.37.31_AM_1_tyuldc.jpg",
             path: "/second-dinner",
             description: "The one where we opened MUSED to everyone",
             stats: { photos: secondDinnerImages.length, attendees: 30 },
-            color: "",
-            icon: "",
             location: "HK"
         },
         {
             id: 1,
             title: "First Dinner",
+            date: "2024",
             image: "/dinnerimages/fd1.jpeg",
             path: "/first-dinner",
-            description: "The first table, The one where it all started ",
-            color: "",
-            icon: "",
+            description: "The first table. The one where it all started.",
+            stats: { photos: 56, attendees: 0 },
             location: "HK"
         }
     ];
+
     return (
-        <div className="min-h-screen bg-cream">
+        <div className="font-sans" style={{ backgroundColor: '#fff9e6' }}>
             <Header />
 
             {/* Hero Section */}
-            <section className="relative overflow-hidden bg-[#5b1b3a] py-12">
-                {/* Decorative elements */}
-                <div className="absolute top-0 left-0 w-full h-full opacity-10">
-                    <div className="absolute top-10 left-10 w-40 h-40 rounded-full bg-gold blur-3xl"></div>
-                    <div className="absolute bottom-10 right-10 w-60 h-60 rounded-full bg-cream blur-3xl"></div>
-                </div>
+            <section
+                className="relative overflow-hidden py-16"
+                style={{ backgroundColor: '#3D1028' }}
+            >
+                {/* Soft glow decorations */}
+                <div className="absolute top-10 left-10 w-40 h-40 rounded-full blur-3xl opacity-20" style={{ backgroundColor: '#FFF0C8' }} />
+                <div className="absolute bottom-10 right-10 w-60 h-60 rounded-full blur-3xl opacity-10" style={{ backgroundColor: '#FFF0C8' }} />
 
                 <div className="container mx-auto px-4 relative z-10">
                     <div className={`text-center transform transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-                        <h1 className="text-5xl md:text-7xl font-bold text-cream mb-4 font-kaldera">
-                            Our <span className="text-gold">Gallery</span>
+                        {/* H1: Kaldera, 72px, one word italic */}
+                        <h1
+                            className="font-kaldera tracking-tight drop-shadow-sm mb-4"
+                            style={{ fontSize: 'clamp(48px, 8vw, 72px)', color: '#FFF0C8', lineHeight: 1 }}
+                        >
+                            {ourText}
+                            {!ourDone && (
+                                <span
+                                    className="inline-block w-[3px] h-[0.8em] ml-1 align-middle animate-pulse"
+                                    style={{ backgroundColor: '#FFF0C8', verticalAlign: 'middle' }}
+                                />
+                            )}{' '}
+                            <span style={{ fontStyle: 'italic', color: '#FFF0C8' }}>
+                                {galleryText}
+                                {ourDone && galleryText.length < 7 && (
+                                    <span
+                                        className="inline-block w-[3px] h-[0.8em] ml-1 align-middle animate-pulse"
+                                        style={{ backgroundColor: '#FFF0C8', verticalAlign: 'middle' }}
+                                    />
+                                )}
+                            </span>
                         </h1>
-                        <p className="text-xl text-cream/90 max-w-2xl mx-auto font-light">
-                            MUSED moments captured on film. Browse & download your favorites
+
+                        {/* Tagline: Abril Display italic, cream/75 */}
+                        <p
+                            className="font-abril max-w-2xl mx-auto"
+                            style={{
+                                color: 'rgba(255,240,200,0.75)',
+                                fontSize: '22px',
+                                fontStyle: 'italic',
+                                lineHeight: 1.4,
+                            }}
+                        >
+                            MUSED moments captured on film. Browse & download your favorites.
                         </p>
                     </div>
                 </div>
             </section>
 
-            {/* Collections Grid - Smaller container */}
-            <section className="container mx-auto px-4 py-12">
+            {/* Collections Grid */}
+            <section className="container mx-auto px-4 py-16">
+                {/* Section label */}
+                <div className="text-center mb-10">
+                    <span
+                        className="font-abril text-[15px] uppercase border rounded-full px-3 py-1"
+                        style={{
+                            color: '#5B1B3A',
+                            letterSpacing: '0.2em',
+                            borderColor: 'rgba(91,27,58,0.2)',
+                            backgroundColor: '#FFF0C8',
+                        }}
+                    >
+                        Past Events
+                    </span>
+                </div>
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
                     {collections.map((collection, index) => (
                         <div
@@ -232,7 +285,6 @@ export function Gallery() {
                                 to={collection.path}
                                 className="block group relative rounded-lg overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 aspect-[3/4]"
                             >
-                                {/* Background Image - now fills the entire card */}
                                 <div className="absolute inset-0">
                                     <img
                                         src={collection.image}
@@ -244,19 +296,36 @@ export function Gallery() {
                                     />
                                 </div>
 
-                                {/* Content - overlay on bottom */}
-                                <div className="absolute inset-0 flex flex-col justify-end p-4 text-white bg-gradient-to-t from-black/70 via-black/20 to-transparent">
-                                    <div className="relative z-10 transform transition-transform duration-500 group-hover:translate-y-[-5px]">
-                                        <h2 className="text-xl md:text-2xl font-bold font-kaldera mb-1">
+                                {/* Gradient overlay */}
+                                <div
+                                    className="absolute inset-0 flex flex-col justify-end p-4"
+                                    style={{ background: 'linear-gradient(to top, rgba(61,16,40,0.85), rgba(61,16,40,0.15) 50%, transparent)' }}
+                                >
+                                    <div className="relative z-10 transform transition-transform duration-500 group-hover:-translate-y-1">
+                                        {/* Card title: Kaldera */}
+                                        <h2
+                                            className="font-kaldera mb-1"
+                                            style={{ fontSize: '22px', color: '#FFF0C8', lineHeight: 1.1 }}
+                                        >
                                             {collection.title}
                                         </h2>
-                                        <p className="text-xs md:text-sm text-cream/90 line-clamp-2 mb-2">
+                                        {/* Description: Baskerville */}
+                                        <p
+                                            className="font-sans text-sm line-clamp-2 mb-2"
+                                            style={{ color: 'rgba(255,240,200,0.8)' }}
+                                        >
                                             {collection.description}
                                         </p>
+                                        {/* Location: Abril Display, uppercase, tracking 270 */}
                                         {collection.location && (
-                                            <div className="flex items-center gap-1 text-cream/80 text-xs">
-                                                <MapPin size={12} className="text-purple-400" />
-                                                <span>{collection.location}</span>
+                                            <div className="flex items-center gap-1">
+                                                <MapPin size={11} style={{ color: 'rgba(255,240,200,0.6)' }} />
+                                                <span
+                                                    className="font-abril uppercase text-[11px]"
+                                                    style={{ color: 'rgba(255,240,200,0.6)', letterSpacing: '0.27em' }}
+                                                >
+                                                    {collection.location}
+                                                </span>
                                             </div>
                                         )}
                                     </div>
@@ -268,29 +337,58 @@ export function Gallery() {
             </section>
 
             {/* Sneak Peeks Section */}
-            <section className="bg-cream py-16">
+            <section className="py-16" style={{ backgroundColor: '#FFF0C8' }}>
                 <div className="container mx-auto px-4">
-                    <div className="text-center text-plum mb-10">
-                        <h2 className="text-4xl md:text-5xl font-bold font-kaldera mb-3">
-                            Sneak Peeks of Our <span className="text-gold">Muses</span>
+                    <div className="text-center mb-10">
+                        {/* Section label */}
+                        <div className="mb-4">
+                            <span
+                                className="font-abril text-[15px] uppercase border rounded-full px-3 py-1"
+                                style={{
+                                    color: '#5B1B3A',
+                                    letterSpacing: '0.2em',
+                                    borderColor: 'rgba(91,27,58,0.2)',
+                                    backgroundColor: '#fff9e6',
+                                }}
+                            >
+                                Behind the scenes
+                            </span>
+                        </div>
+                        {/* H2: Kaldera, one word italic */}
+                        <h2
+                            className="font-kaldera mb-3"
+                            style={{ fontSize: 'clamp(32px, 5vw, 48px)', color: '#5B1B3A', lineHeight: 1.1 }}
+                        >
+                            Sneak Peeks of Our <span style={{ fontStyle: 'italic' }}>Muses</span>
                         </h2>
-                        <p className="text-lg text-plum/70 max-w-2xl mx-auto">
+                        {/* Body: Baskerville */}
+                        <p className="font-sans text-lg max-w-2xl mx-auto" style={{ color: 'rgba(91,27,58,0.7)' }}>
                             Behind the scenes moments captured at MUSED gatherings
                         </p>
                     </div>
 
                     {loading ? (
                         <div className="text-center py-12">
-                            <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gold mb-4"></div>
-                            <p className="text-plum text-lg">Loading memories...</p>
+                            <div
+                                className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 mb-4"
+                                style={{ borderColor: '#5B1B3A' }}
+                            />
+                            {/* Loading label: Abril Display, uppercase */}
+                            <p
+                                className="font-abril uppercase text-[15px]"
+                                style={{ color: '#5B1B3A', letterSpacing: '0.2em' }}
+                            >
+                                Loading memories...
+                            </p>
                         </div>
                     ) : error ? (
                         <div className="text-center py-12">
-                            <p className="text-rose-300 text-lg">Unable to load memories. Please try again later.</p>
+                            <p className="font-sans text-lg" style={{ color: '#6B0202' }}>
+                                Unable to load memories. Please try again later.
+                            </p>
                         </div>
                     ) : randomizedImages.length > 0 ? (
                         <div className="relative max-w-6xl mx-auto" ref={carouselRef}>
-                            {/* Responsive Carousel */}
                             <div className="relative">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                                     {visibleImages.map((image, index) => (
@@ -307,8 +405,15 @@ export function Gallery() {
                                                     (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?q=80&w=2070&auto=format&fit=crop';
                                                 }}
                                             />
-                                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center p-4">
-                                                <span className="text-cream font-semibold text-lg">
+                                            <div
+                                                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center p-4"
+                                                style={{ background: 'linear-gradient(to top, rgba(61,16,40,0.7), transparent)' }}
+                                            >
+                                                {/* Hover label: Abril Display, uppercase */}
+                                                <span
+                                                    className="font-abril uppercase text-[13px]"
+                                                    style={{ color: '#FFF0C8', letterSpacing: '0.2em' }}
+                                                >
                                                     {image.type === 'first' ? 'First Dinner' : 'Second Dinner'}
                                                 </span>
                                             </div>
@@ -316,18 +421,20 @@ export function Gallery() {
                                     ))}
                                 </div>
 
-                                {/* Navigation Buttons - Hide on mobile if only one image is shown */}
+                                {/* Nav buttons */}
                                 {randomizedImages.length > imagesToShow && (
                                     <>
                                         <button
                                             onClick={prevSlide}
-                                            className="absolute -left-4 top-1/2 transform -translate-y-1/2 bg-gold text-plum p-2 rounded-full hover:bg-white transition-all duration-300 shadow-lg hover:shadow-xl z-10"
+                                            className="absolute -left-4 top-1/2 transform -translate-y-1/2 p-2 rounded-full shadow-lg transition-all duration-300 hover:scale-110 z-10"
+                                            style={{ backgroundColor: '#5B1B3A', color: '#FFF0C8' }}
                                         >
                                             <ChevronLeft size={20} />
                                         </button>
                                         <button
                                             onClick={nextSlide}
-                                            className="absolute -right-4 top-1/2 transform -translate-y-1/2 bg-gold text-plum p-2 rounded-full hover:bg-white transition-all duration-300 shadow-lg hover:shadow-xl z-10"
+                                            className="absolute -right-4 top-1/2 transform -translate-y-1/2 p-2 rounded-full shadow-lg transition-all duration-300 hover:scale-110 z-10"
+                                            style={{ backgroundColor: '#5B1B3A', color: '#FFF0C8' }}
                                         >
                                             <ChevronRight size={20} />
                                         </button>
@@ -337,7 +444,9 @@ export function Gallery() {
                         </div>
                     ) : (
                         <div className="text-center py-12">
-                            <p className="text-plum text-lg">No memories available yet.</p>
+                            <p className="font-sans text-lg" style={{ color: 'rgba(91,27,58,0.7)' }}>
+                                No memories available yet.
+                            </p>
                         </div>
                     )}
                 </div>
@@ -349,11 +458,11 @@ export function Gallery() {
                     <div className="relative max-w-6xl max-h-full">
                         <button
                             onClick={() => setSelectedImage(null)}
-                            className="absolute -top-12 right-0 text-white hover:text-gold transition-colors duration-300 text-2xl font-bold"
+                            className="absolute -top-12 right-0 transition-colors duration-300 font-abril uppercase text-[13px]"
+                            style={{ color: '#FFF0C8', letterSpacing: '0.2em' }}
                         >
                             ✕ Close
                         </button>
-
                         <img
                             src={selectedImage}
                             alt="Enlarged view"

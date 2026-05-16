@@ -401,7 +401,18 @@ export function Profile() {
 
                     {/* Profile Header */}
                     <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-8">
-                        <div className="h-32 bg-gradient-to-r from-plum to-rose"></div>
+                        <div className="h-32 overflow-hidden relative">
+                            <img
+                                src="https://res.cloudinary.com/dapfjngt2/image/upload/v1778910768/Profile_banner_new_home_image_pages-to-jpg-0005_j8qowy.jpg"
+                                alt="Profile banner"
+                                className="block md:hidden w-full h-full object-cover object-center"
+                            />
+                            <img
+                                src="https://res.cloudinary.com/dapfjngt2/image/upload/v1778910768/Profile_banner_new_home_image_pages-to-jpg-0006_sewxrk.jpg"
+                                alt="Profile banner"
+                                className="hidden md:block w-full h-full object-cover object-center"
+                            />
+                        </div>
                         <div className="px-8 pb-8 relative">
                             <div className="flex flex-col md:flex-row md:items-end gap-6 -mt-16">
                                 {/* Avatar Section with Upload */}
@@ -636,13 +647,13 @@ export function Profile() {
                                     <div className="flex flex-wrap gap-4">
                                         <button
                                             onClick={() => requirePhoneNumber(() => navigate('/upload'))}
-                                            className={`flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-plum to-rose text-cream rounded-lg hover:shadow-lg transition-all ${
+                                            className={`flex items-center gap-2 px-6 py-3 bg-plum text-cream rounded-lg hover:bg-plum/90 hover:shadow-lg transition-all ${
                                                 !hasPhoneNumber() ? 'opacity-50 cursor-not-allowed' : ''
                                             }`}
                                             title={!hasPhoneNumber() ? 'Phone number required' : ''}
                                         >
                                             <Package size={18} />
-                                            Be Part Of The Collection APPLY HERE
+                                            START UPLOADING HERE
                                         </button>
                                         <button
                                             onClick={() => requirePhoneNumber(() => {
@@ -655,7 +666,7 @@ export function Profile() {
                                             title={!hasPhoneNumber() ? 'Phone number required' : ''}
                                         >
                                             <Heart size={18} />
-                                            View My Uploads
+                                            VIEW MY UPLOADS
                                         </button>
                                         <button
                                             onClick={() => requirePhoneNumber(() => {
@@ -668,7 +679,7 @@ export function Profile() {
                                             title={!hasPhoneNumber() ? 'Phone number required' : ''}
                                         >
                                             <Star size={18} />
-                                            View My Picks
+                                            VIEW MY PICKS
                                         </button>
                                         <button
                                             onClick={() => requirePhoneNumber(() => {
@@ -681,7 +692,7 @@ export function Profile() {
                                             title={!hasPhoneNumber() ? 'Phone number required' : ''}
                                         >
                                             <CheckCircle size={18} />
-                                            View My Reservations
+                                            VIEW MY RESERVATION
                                         </button>
                                         {/* <button
     onClick={() => requirePhoneNumber(() => navigate('/collections-m'))}
@@ -709,7 +720,7 @@ export function Profile() {
                                     <h2 className="text-2xl font-kaldera text-plum">My Uploaded Items</h2>
                                     <button
                                         onClick={() => navigate('/upload')}
-                                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-plum to-rose text-cream rounded-lg text-sm hover:shadow-lg transition-all"
+                                        className="flex items-center gap-2 px-4 py-2 bg-plum text-cream rounded-lg text-sm hover:bg-plum/90 hover:shadow-lg transition-all"
                                     >
                                         <Package size={16} />
                                         Upload New
@@ -726,7 +737,7 @@ export function Profile() {
                                         <p className="text-plum/60 mb-4">You haven't uploaded any items yet.</p>
                                         <button
                                             onClick={() => navigate('/upload')}
-                                            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-plum to-rose text-cream rounded-lg hover:shadow-lg transition-all"
+                                            className="inline-flex items-center gap-2 px-6 py-3 bg-plum text-cream rounded-lg hover:bg-plum/90 hover:shadow-lg transition-all"
                                         >
                                             Upload Your First Item
                                         </button>
@@ -808,7 +819,7 @@ export function Profile() {
                                         </p>
                                         <button
                                             onClick={() => navigate('/collections-m')}
-                                            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-plum to-rose text-cream rounded-lg hover:shadow-lg transition-all"
+                                            className="inline-flex items-center gap-2 px-6 py-3 bg-plum text-cream rounded-lg hover:bg-plum/90 hover:shadow-lg transition-all"
                                         >
                                             Browse Collection
                                         </button>
@@ -888,7 +899,7 @@ export function Profile() {
                                         </p>
                                         <button
                                             onClick={() => navigate('/collections-m')}
-                                            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-plum to-rose text-cream rounded-lg hover:shadow-lg transition-all"
+                                            className="inline-flex items-center gap-2 px-6 py-3 bg-plum text-cream rounded-lg hover:bg-plum/90 hover:shadow-lg transition-all"
                                         >
                                             Browse Collection
                                         </button>
