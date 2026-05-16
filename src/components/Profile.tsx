@@ -401,7 +401,7 @@ export function Profile() {
 
                     {/* Profile Header */}
                     <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-8">
-                        <div className="h-32 overflow-hidden relative">
+                        <div className="h-32 md:h-48 overflow-hidden relative">
                             <img
                                 src="https://res.cloudinary.com/dapfjngt2/image/upload/v1778910768/Profile_banner_new_home_image_pages-to-jpg-0005_j8qowy.jpg"
                                 alt="Profile banner"
@@ -694,15 +694,12 @@ export function Profile() {
                                             <CheckCircle size={18} />
                                             VIEW MY RESERVATION
                                         </button>
-                                        {/* <button
-    onClick={() => requirePhoneNumber(() => navigate('/collections-m'))}
-    className={`flex items-center gap-2 px-6 py-3 border-2 border-plum/20 text-plum rounded-lg hover:bg-plum/5 transition-all ${
-        !hasPhoneNumber() ? 'opacity-50 cursor-not-allowed' : ''
-    }`}
-    title={!hasPhoneNumber() ? 'Phone number required' : ''}
->
-    Browse Collection
-</button> */}
+                                        <button
+                                            onClick={() => navigate('/collections-m')}
+                                            className="flex items-center gap-2 px-6 py-3 border-2 border-plum/20 text-plum rounded-lg hover:bg-plum/5 transition-all"
+                                        >
+                                            Browse Collection
+                                        </button>
                                     </div>
                                     {!hasPhoneNumber() && (
                                         <p className="text-sm text-amber-600 mt-4 flex items-center gap-2">
@@ -970,7 +967,8 @@ export function Profile() {
                                 <h2 className="text-2xl font-kaldera text-plum mb-6">Account Settings</h2>
 
                                 <div className="bg-cream/30 rounded-xl p-6">
-                                    <p className="text-plum">If you have an issue with your account or have forgotten your password, please DM us on Instagram. We’ll be in touch within 24 hours. .</p>
+                                    <p className="text-plum">If you have an issue with your account please get in touch we will assist your issue within 24h.
+                                    </p>
                                 </div>
                             </div>
                         )}

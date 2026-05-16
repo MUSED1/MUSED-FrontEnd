@@ -38,12 +38,27 @@ function useTypewriter(text: string, speed = 60, startDelay = 0) {
 
 export function Diner() {
     const { displayed: musedText, done: musedDone } = useTypewriter('MUSED', 80, 200)
-    const { displayed: eventText }                  = useTypewriter('EVENT', 80, 780)
+    const { displayed: eventText }                  = useTypewriter('GATHERS', 80, 780)
+
+    const [taglineVisible, setTaglineVisible] = useState(false)
+    useEffect(() => {
+        const id = setTimeout(() => setTaglineVisible(true), 2400)
+        return () => clearTimeout(id)
+    }, [])
 
     return (
         <div className="font-sans">
             <Header />
             <main className="min-h-screen w-full overflow-hidden" style={{ backgroundColor: '#fff9e6' }}>
+                <style>{`
+                    .tagline-text {
+                        opacity: 0;
+                        transition: opacity 1.4s ease;
+                    }
+                    .tagline-text.visible {
+                        opacity: 1;
+                    }
+                `}</style>
                 <div className="container mx-auto px-4 py-16">
 
                     {/* Hero Section */}
@@ -73,7 +88,7 @@ export function Diner() {
 
                         {/* Tagline: Abril Display italic, burgundy */}
                         <p
-                            className="font-abril max-w-2xl mx-auto"
+                            className={`tagline-text font-abril max-w-2xl mx-auto${taglineVisible ? ' visible' : ''}`}
                             style={{
                                 color: '#6B0202',
                                 fontSize: '36px',
@@ -85,7 +100,7 @@ export function Diner() {
                         </p>
                         {/* Body: Baskerville */}
                         <p
-                            className="font-sans text-lg mt-3 max-w-xl mx-auto"
+                            className={`tagline-text font-sans text-lg mt-3 max-w-xl mx-auto${taglineVisible ? ' visible' : ''}`}
                             style={{ color: 'rgba(91,27,58,0.75)' }}
                         >
                             Mused is more than sharing style, it's sharing an experience.
@@ -147,17 +162,16 @@ export function Diner() {
                                     {/* CTA: Abril Display, uppercase, tracking 200, 15px */}
                                     <Link
                                         to="/collections-ny"
-                                        className="rounded-full transition-all duration-300"
+                                        className="rounded-full transition-all duration-300 inline-block"
                                         style={{
                                             backgroundColor: '#5B1B3A',
                                             color: '#FFF0C8',
-                                            padding: '12px 28px',
                                             fontFamily: 'inherit',
                                         }}
                                     >
                                         <span
-                                            className="font-abril uppercase"
-                                            style={{ fontSize: '15px', letterSpacing: '0.2em' }}
+                                            className="font-abril uppercase block px-4 py-2 text-[12px] md:px-7 md:py-3 md:text-[15px]"
+                                            style={{ letterSpacing: '0.2em' }}
                                         >
                                             Pick Your Outfit
                                         </span>

@@ -66,6 +66,12 @@ export function Gallery() {
     const { displayed: ourText, done: ourDone }         = useTypewriter('Our', 80, 200)
     const { displayed: galleryText }                     = useTypewriter('Gallery', 80, ourDone ? 600 : 9999)
 
+    const [taglineVisible, setTaglineVisible] = useState(false)
+    useEffect(() => {
+        const id = setTimeout(() => setTaglineVisible(true), 2000)
+        return () => clearTimeout(id)
+    }, [])
+
     useEffect(() => {
         const paths = Array.from({ length: 56 }, (_, i) => `/dinnerimages/fd${i + 1}.jpeg`);
         setFirstDinnerImages(paths);
@@ -207,6 +213,15 @@ export function Gallery() {
             <Header />
 
             {/* Hero Section */}
+            <style>{`
+                .tagline-text {
+                    opacity: 0;
+                    transition: opacity 1.4s ease;
+                }
+                .tagline-text.visible {
+                    opacity: 1;
+                }
+            `}</style>
             <section
                 className="relative overflow-hidden py-16"
                 style={{ backgroundColor: '#3D1028' }}
@@ -242,7 +257,7 @@ export function Gallery() {
 
                         {/* Tagline: Abril Display italic, cream/75 */}
                         <p
-                            className="font-abril max-w-2xl mx-auto"
+                            className={`tagline-text font-abril max-w-2xl mx-auto${taglineVisible ? ' visible' : ''}`}
                             style={{
                                 color: 'rgba(255,240,200,0.75)',
                                 fontSize: '22px',

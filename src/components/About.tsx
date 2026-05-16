@@ -49,6 +49,12 @@ export function About() {
     const { displayed: aboutText, done: aboutDone } = useTypewriter('About', 80, 200)
     const { displayed: musedText }                   = useTypewriter('MUSED', 80, aboutDone ? 600 : 9999)
 
+    const [taglineVisible, setTaglineVisible] = useState(false)
+    useEffect(() => {
+        const id = setTimeout(() => setTaglineVisible(true), 2600)
+        return () => clearTimeout(id)
+    }, [])
+
     const toggleItem = (index: number) => {
         setOpenItems(prev =>
             prev.includes(index)
@@ -108,6 +114,15 @@ export function About() {
     return (
         <div className="font-sans" style={{ backgroundColor: '#fff9e6' }}>
             <Header />
+            <style>{`
+                .tagline-text {
+                    opacity: 0;
+                    transition: opacity 1.4s ease;
+                }
+                .tagline-text.visible {
+                    opacity: 1;
+                }
+            `}</style>
             <main className="min-h-screen">
                 <div className="container mx-auto px-4 py-16">
 
@@ -138,7 +153,7 @@ export function About() {
 
                         {/* Tagline: Abril Display italic, burgundy */}
                         <p
-                            className="font-abril max-w-3xl mx-auto leading-relaxed"
+                            className={`tagline-text font-abril max-w-3xl mx-auto leading-relaxed${taglineVisible ? ' visible' : ''}`}
                             style={{
                                 color: '#6B0202',
                                 fontSize: '28px',
@@ -269,7 +284,7 @@ export function About() {
                     <div className="max-w-6xl mx-auto mb-16">
                         <div className="relative rounded-3xl overflow-hidden shadow-2xl transform transition-all duration-500 hover:scale-[1.01]">
                             <img
-                                src="/t2.jpg"
+                                src="https://res.cloudinary.com/dapfjngt2/image/upload/v1778956155/WhatsApp_Image_2026-05-16_at_11.55.28_AM_chsrty.jpg"
                                 alt="Mused Community - Fashion Sharing Experience"
                                 className="w-full h-[800px] object-cover"
                             />
