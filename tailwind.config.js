@@ -1,3 +1,5 @@
+import colors from 'tailwindcss/colors'
+
 export default {
     content: ["./src/**/*.{js,jsx,ts,tsx}"],
     theme: {
@@ -10,7 +12,9 @@ export default {
                 austin: ['Austin Pen', 'cursive'],
             },
             colors: {
-                // Primary
+                ...colors, // 👈 This brings back rose, amber, and all the default colors!
+
+                // Your Custom Colors
                 plum: {
                     DEFAULT: '#5B1B3A',
                     dark: '#3D1028',
