@@ -298,14 +298,13 @@ export function About() {
                                     className="font-kaldera mb-2"
                                     style={{ fontSize: '32px', color: '#FFF0C8' }}
                                 >
-                                    Join Our Fashion Community
+
                                 </h3>
                                 {/* Caption body: Abril Display italic */}
                                 <p
                                     className="font-abril"
                                     style={{ fontSize: '20px', color: 'rgba(255,240,200,0.85)', fontStyle: 'italic' }}
                                 >
-                                    Where style meets sustainability and connection
                                 </p>
                             </div>
                         </div>
