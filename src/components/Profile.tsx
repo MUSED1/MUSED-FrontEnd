@@ -645,16 +645,24 @@ export function Profile() {
                                 <div className="border-t border-cream pt-6 mt-6">
                                     <h3 className="text-lg font-kaldera text-plum mb-4">Quick Actions</h3>
                                     <div className="flex flex-wrap gap-4">
+                                        {/* 1. Start Uploading — disabled for now */}
                                         <button
-                                            onClick={() => requirePhoneNumber(() => navigate('/upload'))}
-                                            className={`flex items-center gap-2 px-6 py-3 bg-plum text-cream rounded-lg hover:bg-plum/90 hover:shadow-lg transition-all ${
-                                                !hasPhoneNumber() ? 'opacity-50 cursor-not-allowed' : ''
-                                            }`}
-                                            title={!hasPhoneNumber() ? 'Phone number required' : ''}
+                                            disabled
+                                            className="flex items-center gap-2 px-6 py-3 bg-plum/30 text-cream/60 rounded-lg cursor-not-allowed transition-all"
+                                            title="Coming soon"
                                         >
                                             <Package size={18} />
                                             START UPLOADING HERE
                                         </button>
+                                        {/* 2. Browse Collection — disabled for now, muted plum; full plum when enabled */}
+                                        <button
+                                            disabled
+                                            className="flex items-center gap-2 px-6 py-3 bg-plum/30 text-cream/60 rounded-lg cursor-not-allowed transition-all"
+                                            title="Coming soon"
+                                        >
+                                            Browse Collection
+                                        </button>
+                                        {/* 3. View My Uploads */}
                                         <button
                                             onClick={() => requirePhoneNumber(() => {
                                                 setActiveTab('uploads');
@@ -668,6 +676,7 @@ export function Profile() {
                                             <Heart size={18} />
                                             VIEW MY UPLOADS
                                         </button>
+                                        {/* 4. View My Picks */}
                                         <button
                                             onClick={() => requirePhoneNumber(() => {
                                                 setActiveTab('picks');
@@ -681,6 +690,7 @@ export function Profile() {
                                             <Star size={18} />
                                             VIEW MY PICKS
                                         </button>
+                                        {/* 5. View My Reservation */}
                                         <button
                                             onClick={() => requirePhoneNumber(() => {
                                                 setActiveTab('reservations');
@@ -693,12 +703,6 @@ export function Profile() {
                                         >
                                             <CheckCircle size={18} />
                                             VIEW MY RESERVATION
-                                        </button>
-                                        <button
-                                            onClick={() => navigate('/collections-m')}
-                                            className="flex items-center gap-2 px-6 py-3 border-2 border-plum/20 text-plum rounded-lg hover:bg-plum/5 transition-all"
-                                        >
-                                            Browse Collection
                                         </button>
                                     </div>
                                     {!hasPhoneNumber() && (

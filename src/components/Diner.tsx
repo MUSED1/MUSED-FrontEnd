@@ -186,7 +186,7 @@ export function Diner() {
                             >
                                 {/* Background image */}
                                 <img
-                                    src="https://res.cloudinary.com/dapfjngt2/image/upload/v1778915465/quick_Eternity_1__page-0001_uhkkzg.jpg"
+                                    src="https://res.cloudinary.com/dapfjngt2/image/upload/v1778993726/quick_Eternity_2__page-0001_kgg4kr.jpg"
                                     alt="Quick Eternity venue"
                                     className="absolute inset-0 w-full h-full object-cover"
                                     style={{ objectPosition: 'center' }}
