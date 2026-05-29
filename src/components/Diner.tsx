@@ -213,7 +213,7 @@ export function Diner() {
                                         className="font-kaldera mb-2"
                                         style={{ fontSize: '48px', color: '#FFF0C8', lineHeight: 1 }}
                                     >
-                                        April 30
+                                        June 18th
                                     </p>
                                     <p
                                         className="font-kaldera mb-6"
@@ -234,9 +234,10 @@ export function Diner() {
                                         style={{ color: 'rgba(255,240,200,0.85)', letterSpacing: '0.27em', lineHeight: 1.8 }}
                                     >
                                         8:00 PM<br />
-                                        Quick Eternity<br />
-                                        22 Peck Slip<br />
-                                        New York City
+                                        MUSED in the far east<br />
+                                        Ping Pong
+                                        129 Second Street L/G Nam Cheong House, Sai Ying Pun<br />
+                                        Hong Kong
                                     </p>
 
                                     {/* Hand note */}
