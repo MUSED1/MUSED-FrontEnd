@@ -288,16 +288,16 @@ export function ClothingUploadForm() {
 
     // Updated pickup days - Friday, Saturday, Sunday only
     const pickupDays = [
-        { value: 'friday', label: 'Friday (April 25)' },
-        { value: 'saturday', label: 'Saturday (April 26)' },
-        { value: 'sunday', label: 'Sunday (April 27)' }
+        { value: 'Sunday', label: 'Sunday (June 14)' },
+        { value: 'Monday', label: 'Monday (June 15)' },
+        { value: 'Tuesday', label: 'Tuesday (April 16)' }
     ];
 
     // Updated time slots for each day
     const timeSlots: Record<string, string[]> = {
-        'friday': ['8:00 AM - 2:00 PM', '6:00 PM - 9:00 PM'],
-        'saturday': ['12:00 AM - 2:00 PM', '3:00 PM - 5:00 PM', '6:00 PM - 9:00 PM'],
-        'sunday': ['10:00 AM - 2:00 PM', '3:00 PM - 7:00 PM']
+        'Sunday': ['8:00 AM - 2:00 PM', '6:00 PM - 9:00 PM'],
+        'Monday': ['12:00 AM - 2:00 PM', '3:00 PM - 5:00 PM', '6:00 PM - 9:00 PM'],
+        'Tuesday': ['10:00 AM - 2:00 PM', '3:00 PM - 7:00 PM']
     };
 
     return (

@@ -137,7 +137,7 @@ export function Diner() {
                                 >
                                     Wear Something{' '}
                                     <span style={{ fontStyle: 'italic' }}>Borrowed</span>{' '}
-                                    Dinner
+
                                 </h2>
 
                                 {/* Body: Baskerville */}
@@ -145,7 +145,7 @@ export function Diner() {
                                     className="font-sans text-lg leading-relaxed mb-6"
                                     style={{ color: 'rgba(91,27,58,0.8)' }}
                                 >
-                                    Come to dinner wearing a borrowed piece from the collection. This is where muses
+                                    Come wearing a borrowed piece from the collection. This is where muses
                                     can meet the mused. Get to know who you are lending to and borrowing from. Share your
                                     style, share a moment.
                                 </p>
@@ -156,7 +156,7 @@ export function Diner() {
                                         className="font-kaldera"
                                         style={{ fontSize: '32px', color: '#5B1B3A' }}
                                     >
-                                        $46
+                                        HK$ 290
                                     </span>
 
                                     {/* CTA: Abril Display, uppercase, tracking 200, 15px */}
@@ -187,7 +187,7 @@ export function Diner() {
                                 {/* Background image */}
                                 <img
                                     src="https://res.cloudinary.com/dapfjngt2/image/upload/v1778993726/quick_Eternity_2__page-0001_kgg4kr.jpg"
-                                    alt="Quick Eternity venue"
+                                    alt="Ping Pong, 129 Second Street L/G Nam Cheong House, Sai Ying Pun, Hong Kong"
                                     className="absolute inset-0 w-full h-full object-cover"
                                     style={{ objectPosition: 'center' }}
                                 />
