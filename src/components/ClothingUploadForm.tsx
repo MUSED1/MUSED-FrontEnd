@@ -11,6 +11,7 @@ import { API_CONFIG, compressImage } from '../utils/api';
 interface ClothingItem {
     image: string;
     category: string;
+    sizeSystem: string;
     size: string;
     specialInstructions: string; // Added per-item special instructions
 }
@@ -75,8 +76,8 @@ export function ClothingUploadForm() {
     });
 
     const [clothingItems, setClothingItems] = useState<ClothingItem[]>([
-        { image: '', category: '', size: '', specialInstructions: '' },
-        { image: '', category: '', size: '', specialInstructions: '' }
+        { image: '', category: '', sizeSystem: '', size: '', specialInstructions: '' },
+        { image: '', category: '', sizeSystem: '', size: '', specialInstructions: '' }
     ]);
 
     useEffect(() => {
@@ -135,7 +136,14 @@ export function ClothingUploadForm() {
 
     const handleClothingItemChange = (index: number, field: keyof ClothingItem, value: string) => {
         setClothingItems(prev =>
-            prev.map((item, i) => i === index ? { ...item, [field]: value } : item)
+            prev.map((item, i) => {
+                if (i !== index) return item;
+                // Reset size when system or category changes
+                if (field === 'sizeSystem' || field === 'category') {
+                    return { ...item, [field]: value, size: '' };
+                }
+                return { ...item, [field]: value };
+            })
         );
     };
 
@@ -214,6 +222,7 @@ export function ClothingUploadForm() {
             // Send base64 images — the server will process them automatically
             const processedItems = validItems.map(item => ({
                 category: item.category,
+                sizeSystem: item.sizeSystem,  // ADD THIS
                 size: item.size,
                 specialInstructions: item.specialInstructions || '',
                 image: `data:image/jpeg;base64,${item.image}`
@@ -260,8 +269,8 @@ export function ClothingUploadForm() {
                     pickupInstructions: '',
                 });
                 setClothingItems([
-                    { image: '', category: '', size: '', specialInstructions: '' },
-                    { image: '', category: '', size: '', specialInstructions: '' }
+                    { image: '', category: '', sizeSystem: '', size: '', specialInstructions: '' },
+                    { image: '', category: '', sizeSystem: '', size: '', specialInstructions: '' }
                 ]);
 
                 // Navigate straight to the success / referral page
@@ -282,9 +291,53 @@ export function ClothingUploadForm() {
             setIsSubmitting(false);
         }
     };
-
     const categories = ['Dresses', 'Tops', 'Bottoms', 'Outerwear', 'Accessories', 'Bags', 'Jewelry'];
-    const sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXS', 'XXL', '32', '34', '36', '38', '40', '42', 'One Size'];
+
+    const sizeSystems = ['UK', 'US', 'EU', 'S/M/L'];
+
+    const sizesBySystemAndCategory: Record<string, Record<string, string[]>> = {
+        UK: {
+            Dresses:     ['4','6','8','10','12','14','16','One Size'],
+            Tops:        ['4','6','8','10','12','14','16','One Size'],
+            Bottoms:     ['4','6','8','10','12','14','16','One Size'],
+            Outerwear:   ['4','6','8','10','12','14','16','One Size'],
+            Accessories: ['One Size'],
+            Bags:        ['One Size'],
+            Jewelry:     ['One Size'],
+        },
+        US: {
+            Dresses:     ['0','2','4','6','8','10','12','14','One Size'],
+            Tops:        ['0','2','4','6','8','10','12','14','One Size'],
+            Bottoms:     ['0','2','4','6','8','10','12','14','One Size'],
+            Outerwear:   ['0','2','4','6','8','10','12','14','One Size'],
+            Accessories: ['One Size'],
+            Bags:        ['One Size'],
+            Jewelry:     ['One Size'],
+        },
+        EU: {
+            Dresses:     ['32','34','36','38','40','42','44','46','One Size'],
+            Tops:        ['32','34','36','38','40','42','44','46','One Size'],
+            Bottoms:     ['32','34','36','38','40','42','44','46','One Size'],
+            Outerwear:   ['32','34','36','38','40','42','44','46','One Size'],
+            Accessories: ['One Size'],
+            Bags:        ['One Size'],
+            Jewelry:     ['One Size'],
+        },
+        'S/M/L': {
+            Dresses:     ['XXS','XS','S','M','L','XL','XXL','One Size'],
+            Tops:        ['XXS','XS','S','M','L','XL','XXL','One Size'],
+            Bottoms:     ['XXS','XS','S','M','L','XL','XXL','One Size'],
+            Outerwear:   ['XXS','XS','S','M','L','XL','XXL','One Size'],
+            Accessories: ['One Size'],
+            Bags:        ['One Size'],
+            Jewelry:     ['One Size'],
+        },
+    };
+
+    const getSizes = (sizeSystem: string, category: string): string[] => {
+        if (!sizeSystem || !category) return [];
+        return sizesBySystemAndCategory[sizeSystem]?.[category] ?? ['One Size'];
+    };
 
     // Updated pickup days - Friday, Saturday, Sunday only
     const pickupDays = [
@@ -295,7 +348,7 @@ export function ClothingUploadForm() {
 
     // Updated time slots for each day
     const timeSlots: Record<string, string[]> = {
-        'Sunday': ['8:00 AM - 2:00 PM', '6:00 PM - 9:00 PM'],
+        'Sunday': ['8:00 AM - 2:00 PM', '3:00 PM - 5:00 PM', '6:00 PM - 9:00 PM'],
         'Monday': ['12:00 AM - 2:00 PM', '3:00 PM - 5:00 PM', '6:00 PM - 9:00 PM'],
         'Tuesday': ['10:00 AM - 2:00 PM', '3:00 PM - 7:00 PM']
     };
@@ -621,12 +674,44 @@ export function ClothingUploadForm() {
                                                             required
                                                             disabled={isSubmitting}
                                                         >
-                                                            <option value="">Select size</option>
-                                                            {sizes.map(size => (
-                                                                <option key={size} value={size}>{size}</option>
-                                                            ))}
-                                                        </select>
-                                                    </div>
+                                                            {/* Size System */}
+                                                            <div>
+                                                                <label className="block text-lg font-semibold text-plum mb-3">Sizing System *</label>
+                                                                <select
+                                                                    value={item.sizeSystem}
+                                                                    onChange={(e) => handleClothingItemChange(index, 'sizeSystem', e.target.value)}
+                                                                    className="w-full px-4 py-3 border-2 border-cream rounded-xl focus:border-rose focus:ring-2 focus:ring-rose/20 transition-all duration-300 bg-white text-plum"
+                                                                    required
+                                                                    disabled={isSubmitting}
+                                                                >
+                                                                    <option value="">Select sizing system</option>
+                                                                    {sizeSystems.map(s => (
+                                                                        <option key={s} value={s}>{s}</option>
+                                                                    ))}
+                                                                </select>
+                                                            </div>
+
+                                                            {/* Size */}
+                                                            <div>
+                                                                <label className="block text-lg font-semibold text-plum mb-3">Size *</label>
+                                                                <select
+                                                                    value={item.size}
+                                                                    onChange={(e) => handleClothingItemChange(index, 'size', e.target.value)}
+                                                                    className="w-full px-4 py-3 border-2 border-cream rounded-xl focus:border-rose focus:ring-2 focus:ring-rose/20 transition-all duration-300 bg-white text-plum disabled:opacity-50"
+                                                                    required
+                                                                    disabled={isSubmitting || !item.sizeSystem || !item.category}
+                                                                >
+                                                                    <option value="">
+                                                                        {!item.sizeSystem || !item.category ? 'Select category & system first' : 'Select size'}
+                                                                    </option>
+                                                                    {getSizes(item.sizeSystem, item.category).map(size => (
+                                                                        <option key={size} value={size}>{size}</option>
+                                                                    ))}
+                                                                </select>
+                                                                {(!item.sizeSystem || !item.category) && (
+                                                                    <p className="text-sm text-plum/60 mt-1">Select a category and sizing system first</p>
+                                                                )}
+                                                            </div>
 
                                                     <div>
                                                         <label className="block text-lg font-semibold text-plum mb-3">Special Instructions (Optional)</label>
