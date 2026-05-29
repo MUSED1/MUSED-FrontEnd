@@ -13,10 +13,9 @@ interface ClothingItem {
     category: string;
     sizeSystem: string;
     size: string;
-    specialInstructions: string; // Added per-item special instructions
+    specialInstructions: string;
 }
 
-// Loading messages shown while processing images
 const LOADING_MESSAGES = [
     'Uploading your images to the cloud...',
     'Processing your images...',
@@ -49,7 +48,6 @@ export function ClothingUploadForm() {
         }
     }, [isAuthenticated, loading, navigate]);
 
-    // Cycle through loading messages while submitting
     useEffect(() => {
         if (!isSubmitting) {
             setLoadingStep(0);
@@ -126,7 +124,6 @@ export function ClothingUploadForm() {
 
     const handlePickupInfoChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
-        // Reset pickup time when day changes
         if (name === 'pickupDay') {
             setPickupInfo(prev => ({ ...prev, [name]: value, pickupTime: '' }));
         } else {
@@ -138,7 +135,6 @@ export function ClothingUploadForm() {
         setClothingItems(prev =>
             prev.map((item, i) => {
                 if (i !== index) return item;
-                // Reset size when system or category changes
                 if (field === 'sizeSystem' || field === 'category') {
                     return { ...item, [field]: value, size: '' };
                 }
@@ -154,14 +150,11 @@ export function ClothingUploadForm() {
                 alert('File too large. Maximum size is 5MB.');
                 return;
             }
-
             setUploadProgress(0);
-
             const reader = new FileReader();
             reader.onload = async (e) => {
                 const base64Image = e.target?.result as string;
                 const base64Data = base64Image.split(',')[1] || base64Image;
-
                 try {
                     setUploadProgress(50);
                     const compressed = await compressImage(base64Data);
@@ -189,29 +182,20 @@ export function ClothingUploadForm() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
 
         if (!userInfo.phoneNumber || !userInfo.address) {
-            setSubmitMessage({
-                type: 'error',
-                message: 'Please complete phone number and address'
-            });
+            setSubmitMessage({ type: 'error', message: 'Please complete phone number and address' });
             setIsSubmitting(false);
             return;
         }
 
         const validItems = clothingItems.filter(item => item.image && item.category && item.size);
         if (validItems.length === 0) {
-            setSubmitMessage({
-                type: 'error',
-                message: 'Please add at least one complete clothing item'
-            });
+            setSubmitMessage({ type: 'error', message: 'Please add at least one complete clothing item' });
             setIsSubmitting(false);
             return;
         }
 
         if (validItems.length < 2) {
-            setSubmitMessage({
-                type: 'error',
-                message: 'Please complete both clothing items'
-            });
+            setSubmitMessage({ type: 'error', message: 'Please complete both clothing items' });
             setIsSubmitting(false);
             return;
         }
@@ -219,10 +203,9 @@ export function ClothingUploadForm() {
         try {
             const token = localStorage.getItem('token');
 
-            // Send base64 images — the server will process them automatically
             const processedItems = validItems.map(item => ({
                 category: item.category,
-                sizeSystem: item.sizeSystem,  // ADD THIS
+                sizeSystem: item.sizeSystem,
                 size: item.size,
                 specialInstructions: item.specialInstructions || '',
                 image: `data:image/jpeg;base64,${item.image}`
@@ -256,26 +239,14 @@ export function ClothingUploadForm() {
             const result = await response.json();
 
             if (response.ok && result.success) {
-                // Reset form state
-                setUserInfo(prev => ({
-                    ...prev,
-                    phoneNumber: '',
-                    address: '',
-                    needsPickupHere: ''
-                }));
-                setPickupInfo({
-                    pickupDay: '',
-                    pickupTime: '',
-                    pickupInstructions: '',
-                });
+                setUserInfo(prev => ({ ...prev, phoneNumber: '', address: '', needsPickupHere: '' }));
+                setPickupInfo({ pickupDay: '', pickupTime: '', pickupInstructions: '' });
                 setClothingItems([
                     { image: '', category: '', sizeSystem: '', size: '', specialInstructions: '' },
                     { image: '', category: '', sizeSystem: '', size: '', specialInstructions: '' }
                 ]);
-
-                // Navigate straight to the success / referral page
                 navigate('/submission-success');
-            }else {
+            } else {
                 setSubmitMessage({
                     type: 'error',
                     message: result.message || 'Error uploading clothing items. Please try again.'
@@ -284,15 +255,12 @@ export function ClothingUploadForm() {
             }
         } catch (error) {
             console.error('Error:', error);
-            setSubmitMessage({
-                type: 'error',
-                message: 'Connection error. Please check your internet and try again.'
-            });
+            setSubmitMessage({ type: 'error', message: 'Connection error. Please check your internet and try again.' });
             setIsSubmitting(false);
         }
     };
-    const categories = ['Dresses', 'Tops', 'Bottoms', 'Outerwear', 'Accessories', 'Bags', 'Jewelry'];
 
+    const categories = ['Dresses', 'Tops', 'Bottoms', 'Outerwear', 'Accessories', 'Bags', 'Jewelry'];
     const sizeSystems = ['UK', 'US', 'EU', 'S/M/L'];
 
     const sizesBySystemAndCategory: Record<string, Record<string, string[]>> = {
@@ -339,14 +307,12 @@ export function ClothingUploadForm() {
         return sizesBySystemAndCategory[sizeSystem]?.[category] ?? ['One Size'];
     };
 
-    // Updated pickup days - Friday, Saturday, Sunday only
     const pickupDays = [
         { value: 'Sunday', label: 'Sunday (June 14)' },
         { value: 'Monday', label: 'Monday (June 15)' },
         { value: 'Tuesday', label: 'Tuesday (April 16)' }
     ];
 
-    // Updated time slots for each day
     const timeSlots: Record<string, string[]> = {
         'Sunday': ['8:00 AM - 2:00 PM', '3:00 PM - 5:00 PM', '6:00 PM - 9:00 PM'],
         'Monday': ['12:00 AM - 2:00 PM', '3:00 PM - 5:00 PM', '6:00 PM - 9:00 PM'],
@@ -368,26 +334,20 @@ export function ClothingUploadForm() {
                         </p>
                     </div>
 
-                    {/* ── Processing Loading Overlay ────────────────────────── */}
+                    {/* Loading Overlay */}
                     {isSubmitting && (
                         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center">
                             <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md mx-4 text-center">
-                                {/* Animated icon */}
                                 <div className="relative w-20 h-20 mx-auto mb-6">
                                     <div className="w-20 h-20 border-4 border-rose/30 border-t-rose rounded-full animate-spin"></div>
                                 </div>
-
                                 <h3 className="text-2xl font-bold text-plum mb-2">Processing Your Items</h3>
                                 <p className="text-plum/60 text-sm mb-4">This may take up to 30 seconds per item</p>
-
-                                {/* Animated step message */}
                                 <div className="bg-cream/60 rounded-xl px-4 py-3 mb-5 min-h-[48px] flex items-center justify-center">
                                     <p className="text-plum font-medium text-sm transition-all duration-500">
                                         {LOADING_MESSAGES[loadingStep]}
                                     </p>
                                 </div>
-
-                                {/* Step dots */}
                                 <div className="flex justify-center gap-2 mb-5">
                                     {LOADING_MESSAGES.map((_, i) => (
                                         <div
@@ -398,7 +358,6 @@ export function ClothingUploadForm() {
                                         />
                                     ))}
                                 </div>
-
                                 <p className="text-sm text-plum/50 flex items-center justify-center gap-2">
                                     <AlertTriangle size={14} />
                                     Don't close this window
@@ -407,7 +366,7 @@ export function ClothingUploadForm() {
                         </div>
                     )}
 
-                    {/* ── Status message ───────────────────────────────────────── */}
+                    {/* Status message */}
                     {submitMessage && (
                         <div className={`mb-6 p-6 rounded-2xl ${
                             submitMessage.type === 'success'
@@ -425,8 +384,7 @@ export function ClothingUploadForm() {
                         </div>
                     )}
 
-
-                    {/* ── Form ─────────────────────────────────────────────────── */}
+                    {/* Form */}
                     <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
                         <form onSubmit={handleSubmit} className="space-y-8">
 
@@ -488,11 +446,10 @@ export function ClothingUploadForm() {
                                             disabled={isSubmitting}
                                         />
                                     </div>
-
                                 </div>
                             </div>
 
-                            {/* Pickup Section - MOVED FIRST */}
+                            {/* Pickup Section */}
                             <div className="border-t border-cream pt-8">
                                 <h3 className="text-2xl font-bold text-plum mb-6">Pickup Details</h3>
                                 <div className="space-y-4 p-4 bg-cream/30 rounded-xl">
@@ -548,7 +505,7 @@ export function ClothingUploadForm() {
                                 </div>
                             </div>
 
-                            {/* Do you need to be present for pickup? - MOVED SECOND */}
+                            {/* Presence for pickup */}
                             <div className="border-t border-cream pt-8">
                                 <label className="block text-lg font-semibold text-plum mb-3">Do you need to be present for pickup? *</label>
                                 <div className="flex gap-4">
@@ -580,7 +537,7 @@ export function ClothingUploadForm() {
                                 <p className="text-sm text-plum/60 mt-1">Let us know if someone needs to be present when we pick up</p>
                             </div>
 
-                            {/* Clothing Items Section with per-item special instructions */}
+                            {/* Clothing Items Section */}
                             <div className="border-t border-cream pt-8">
                                 <div className="flex justify-between items-center mb-6">
                                     <h3 className="text-2xl font-bold text-plum">Your Clothing Items</h3>
@@ -647,8 +604,9 @@ export function ClothingUploadForm() {
                                                     )}
                                                 </div>
 
-                                                {/* Category, Size, and Special Instructions */}
+                                                {/* Category, Sizing System, Size, Special Instructions */}
                                                 <div className="space-y-4">
+                                                    {/* Category */}
                                                     <div>
                                                         <label className="block text-lg font-semibold text-plum mb-3">Category *</label>
                                                         <select
@@ -665,54 +623,46 @@ export function ClothingUploadForm() {
                                                         </select>
                                                     </div>
 
+                                                    {/* Sizing System */}
+                                                    <div>
+                                                        <label className="block text-lg font-semibold text-plum mb-3">Sizing System *</label>
+                                                        <select
+                                                            value={item.sizeSystem}
+                                                            onChange={(e) => handleClothingItemChange(index, 'sizeSystem', e.target.value)}
+                                                            className="w-full px-4 py-3 border-2 border-cream rounded-xl focus:border-rose focus:ring-2 focus:ring-rose/20 transition-all duration-300 bg-white text-plum"
+                                                            required
+                                                            disabled={isSubmitting}
+                                                        >
+                                                            <option value="">Select sizing system</option>
+                                                            {sizeSystems.map(s => (
+                                                                <option key={s} value={s}>{s}</option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+
+                                                    {/* Size */}
                                                     <div>
                                                         <label className="block text-lg font-semibold text-plum mb-3">Size *</label>
                                                         <select
                                                             value={item.size}
                                                             onChange={(e) => handleClothingItemChange(index, 'size', e.target.value)}
-                                                            className="w-full px-4 py-3 border-2 border-cream rounded-xl focus:border-rose focus:ring-2 focus:ring-rose/20 transition-all duration-300 bg-white text-plum"
+                                                            className="w-full px-4 py-3 border-2 border-cream rounded-xl focus:border-rose focus:ring-2 focus:ring-rose/20 transition-all duration-300 bg-white text-plum disabled:opacity-50"
                                                             required
-                                                            disabled={isSubmitting}
+                                                            disabled={isSubmitting || !item.sizeSystem || !item.category}
                                                         >
-                                                            {/* Size System */}
-                                                            <div>
-                                                                <label className="block text-lg font-semibold text-plum mb-3">Sizing System *</label>
-                                                                <select
-                                                                    value={item.sizeSystem}
-                                                                    onChange={(e) => handleClothingItemChange(index, 'sizeSystem', e.target.value)}
-                                                                    className="w-full px-4 py-3 border-2 border-cream rounded-xl focus:border-rose focus:ring-2 focus:ring-rose/20 transition-all duration-300 bg-white text-plum"
-                                                                    required
-                                                                    disabled={isSubmitting}
-                                                                >
-                                                                    <option value="">Select sizing system</option>
-                                                                    {sizeSystems.map(s => (
-                                                                        <option key={s} value={s}>{s}</option>
-                                                                    ))}
-                                                                </select>
-                                                            </div>
+                                                            <option value="">
+                                                                {!item.sizeSystem || !item.category ? 'Select category & system first' : 'Select size'}
+                                                            </option>
+                                                            {getSizes(item.sizeSystem, item.category).map(size => (
+                                                                <option key={size} value={size}>{size}</option>
+                                                            ))}
+                                                        </select>
+                                                        {(!item.sizeSystem || !item.category) && (
+                                                            <p className="text-sm text-plum/60 mt-1">Select a category and sizing system first</p>
+                                                        )}
+                                                    </div>
 
-                                                            {/* Size */}
-                                                            <div>
-                                                                <label className="block text-lg font-semibold text-plum mb-3">Size *</label>
-                                                                <select
-                                                                    value={item.size}
-                                                                    onChange={(e) => handleClothingItemChange(index, 'size', e.target.value)}
-                                                                    className="w-full px-4 py-3 border-2 border-cream rounded-xl focus:border-rose focus:ring-2 focus:ring-rose/20 transition-all duration-300 bg-white text-plum disabled:opacity-50"
-                                                                    required
-                                                                    disabled={isSubmitting || !item.sizeSystem || !item.category}
-                                                                >
-                                                                    <option value="">
-                                                                        {!item.sizeSystem || !item.category ? 'Select category & system first' : 'Select size'}
-                                                                    </option>
-                                                                    {getSizes(item.sizeSystem, item.category).map(size => (
-                                                                        <option key={size} value={size}>{size}</option>
-                                                                    ))}
-                                                                </select>
-                                                                {(!item.sizeSystem || !item.category) && (
-                                                                    <p className="text-sm text-plum/60 mt-1">Select a category and sizing system first</p>
-                                                                )}
-                                                            </div>
-
+                                                    {/* Special Instructions */}
                                                     <div>
                                                         <label className="block text-lg font-semibold text-plum mb-3">Special Instructions (Optional)</label>
                                                         <textarea
@@ -746,7 +696,7 @@ export function ClothingUploadForm() {
                                     ) : (
                                         <>
                                             <Plus size={20} />
-                                            <span>Submit your pieces </span>
+                                            <span>Submit your pieces</span>
                                         </>
                                     )}
                                 </button>
@@ -754,7 +704,7 @@ export function ClothingUploadForm() {
                         </form>
                     </div>
 
-                    {/* "What happens next" Section - UPDATED */}
+                    {/* What happens next */}
                     <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 text-center">
                         <h3 className="text-3xl font-bold text-plum mb-6 font-kaldera">What happens next?</h3>
                         <div className="grid md:grid-cols-3 gap-6 text-plum">
