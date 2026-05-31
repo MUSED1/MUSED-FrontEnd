@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react'
 import { Header } from './Header'
 import { Footer } from './Footer'
-import { Link } from "react-router-dom";
 
 // Typewriter hook
 function useTypewriter(text: string, speed = 60, startDelay = 0) {
