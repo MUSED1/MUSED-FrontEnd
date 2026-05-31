@@ -645,11 +645,13 @@ export function Profile() {
                                 <div className="border-t border-cream pt-6 mt-6">
                                     <h3 className="text-lg font-kaldera text-plum mb-4">Quick Actions</h3>
                                     <div className="flex flex-wrap gap-4">
-                                        {/* 1. Start Uploading — disabled for now */}
+                                        {/* 1. Start Uploading */}
                                         <button
-                                            disabled
-                                            className="flex items-center gap-2 px-6 py-3 bg-plum/30 text-cream/60 rounded-lg cursor-not-allowed transition-all"
-                                            title="Coming soon"
+                                            onClick={() => requirePhoneNumber(() => navigate('/upload'))}
+                                            className={`flex items-center gap-2 px-6 py-3 bg-plum text-cream rounded-lg hover:bg-plum/90 hover:shadow-lg transition-all ${
+                                                !hasPhoneNumber() ? 'opacity-50 cursor-not-allowed' : ''
+                                            }`}
+                                            title={!hasPhoneNumber() ? 'Phone number required' : 'Upload a clothing item'}
                                         >
                                             <Package size={18} />
                                             START UPLOADING HERE
