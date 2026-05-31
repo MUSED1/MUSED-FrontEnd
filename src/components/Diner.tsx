@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react'
 import { Header } from './Header'
 import { Footer } from './Footer'
-import { Link } from "react-router-dom";
 
 // Typewriter hook
 function useTypewriter(text: string, speed = 60, startDelay = 0) {
@@ -160,13 +159,14 @@ export function Diner() {
                                     </span>
 
                                     {/* CTA: Abril Display, uppercase, tracking 200, 15px */}
-                                    <Link
-                                        to="/collections-ny"
-                                        className="rounded-full transition-all duration-300 inline-block"
+                                    <span
+                                        className="rounded-full inline-block cursor-not-allowed"
                                         style={{
                                             backgroundColor: '#5B1B3A',
                                             color: '#FFF0C8',
                                             fontFamily: 'inherit',
+                                            opacity: 0.4,
+                                            pointerEvents: 'none',
                                         }}
                                     >
                                         <span
@@ -175,7 +175,7 @@ export function Diner() {
                                         >
                                             Pick Your Outfit
                                         </span>
-                                    </Link>
+                                    </span>
                                 </div>
                             </div>
 
