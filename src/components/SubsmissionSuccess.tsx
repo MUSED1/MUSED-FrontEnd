@@ -128,8 +128,8 @@ export function SubmissionSuccess() {
                             </div>
 
                             <p className="text-plum/70 font-inter text-base max-w-sm mx-auto leading-relaxed">
-                                Your pieces are now under review.
-                                Upon successful verification of your profile, we will be in touch with the next steps.
+                                Thank you for submitting your pieces. We will pick it up at your desired time.
+                                You will be able to choose your borrowed look very soon...
                             </p>
 
                             {/* Show referral success message if applicable */}
