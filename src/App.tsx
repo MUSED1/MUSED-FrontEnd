@@ -41,6 +41,7 @@ import { SubmissionSuccess } from "./components/SubsmissionSuccess";
 import {AdminPickups} from "./components/AdminPickups.tsx";
 import { FourthDinner } from './components/FourthDinner';
 import { ForgotPassword, ResetPassword } from './components/ForgotPassword'
+import { CollectionsHK } from './components/CollectionsHK';
 
 
 function HomePage() {
@@ -115,7 +116,7 @@ export function App() {
                     <Route path="/fourth-dinner" element={<FourthDinner />} />
                     <Route path="/forgot-password" element={<ForgotPassword />} />
                     <Route path="/reset-password" element={<ResetPassword />} />
-
+                    <Route path="/collections-hk" element={<CollectionsHK />} />
                 </Routes>
             </Router>
         </AuthProvider>
