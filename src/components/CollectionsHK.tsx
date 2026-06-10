@@ -316,7 +316,7 @@ export function CollectionsHK() {
             const response = await axios.post(`${API_URL}/create-checkout-session`, {
                 itemId: outfit._id,
                 itemName: `${outfit.fullName.split(' ')[0]}'s ${outfit.category}`,
-                amount: 46,
+                amount: 290,
                 customerEmail: formData.email,
                 sessionId: sessionId,
                 reservationData
