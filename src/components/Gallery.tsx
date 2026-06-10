@@ -51,15 +51,24 @@ function useTypewriter(text: string, speed = 60, startDelay = 0) {
     return { displayed, done }
 }
 
+// Dinner date boundaries (must match the individual dinner pages)
+const SECOND_DINNER_END_DATE   = new Date('2026-03-20T00:00:00Z');
+const THIRD_DINNER_START_DATE  = new Date('2026-03-20T00:00:00Z');
+const THIRD_DINNER_END_DATE    = new Date('2026-04-02T00:00:00Z');
+const FOURTH_DINNER_START_DATE = new Date('2026-04-02T00:00:00Z');
+const FOURTH_DINNER_END_DATE   = new Date('2026-05-31T23:59:59Z');
+
 export function Gallery() {
     const [isVisible, setIsVisible] = useState(false);
     const [firstDinnerImages, setFirstDinnerImages] = useState<string[]>([]);
     const [secondDinnerImages, setSecondDinnerImages] = useState<ImageData[]>([]);
+    const [thirdDinnerImages, setThirdDinnerImages] = useState<ImageData[]>([]);
+    const [fourthDinnerImages, setFourthDinnerImages] = useState<ImageData[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
-    const [randomizedImages, setRandomizedImages] = useState<Array<{ url: string; type: 'first' | 'second'; id: string }>>([]);
+    const [randomizedImages, setRandomizedImages] = useState<Array<{ url: string; type: 'first' | 'second' | 'third' | 'fourth'; id: string }>>([]);
     const carouselRef = useRef<HTMLDivElement>(null);
 
     // Typewriter: "Our" then "Gallery" in italic
@@ -78,7 +87,7 @@ export function Gallery() {
     }, []);
 
     useEffect(() => {
-        fetchSecondDinnerImages();
+        fetchDinnerImages();
     }, []);
 
     useEffect(() => {
@@ -86,8 +95,8 @@ export function Gallery() {
     }, []);
 
     useEffect(() => {
-        if (firstDinnerImages.length > 0 || secondDinnerImages.length > 0) {
-            const allImages = getAllImages();
+        const allImages = getAllImages();
+        if (allImages.length > 0) {
             const shuffled = [...allImages];
             for (let i = shuffled.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -96,7 +105,7 @@ export function Gallery() {
             setRandomizedImages(shuffled);
             setCurrentIndex(0);
         }
-    }, [firstDinnerImages, secondDinnerImages]);
+    }, [firstDinnerImages, secondDinnerImages, thirdDinnerImages, fourthDinnerImages]);
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -109,36 +118,67 @@ export function Gallery() {
         return () => clearInterval(interval);
     }, [randomizedImages]);
 
-    const fetchSecondDinnerImages = async () => {
+    const fetchDinnerImages = async () => {
         try {
             setLoading(true);
-            const response = await fetch(`${API_BASE_URL}/api/images`, {
-                method: 'GET',
-                headers: { 'Content-Type': 'application/json' },
-            });
-            if (!response.ok) throw new Error(`Error ${response.status}: ${response.statusText}`);
-            const result = await response.json();
-            if (result.success) {
-                setSecondDinnerImages(result.data || []);
-            } else {
-                throw new Error(result.message || 'Failed to fetch images');
+            setError(null);
+
+            // Fetch all pages
+            let allImages: ImageData[] = [];
+            let page = 1;
+            const limit = 100;
+            let hasMore = true;
+
+            while (hasMore) {
+                const response = await fetch(
+                    `${API_BASE_URL}/api/images?page=${page}&limit=${limit}`,
+                    { method: 'GET', headers: { 'Content-Type': 'application/json' } }
+                );
+                if (!response.ok) throw new Error(`Error ${response.status}: ${response.statusText}`);
+                const result = await response.json();
+                if (!result.success) throw new Error(result.message || 'Failed to fetch images');
+                const pageData: ImageData[] = result.data || [];
+                allImages = [...allImages, ...pageData];
+                const totalPages = result.pagination?.totalPages ?? 1;
+                if (page >= totalPages || pageData.length < limit) {
+                    hasMore = false;
+                } else {
+                    page++;
+                }
             }
+
+            // Split by date range into the correct dinner buckets
+            setSecondDinnerImages(allImages.filter(img => new Date(img.createdAt) < SECOND_DINNER_END_DATE));
+            setThirdDinnerImages(allImages.filter(img => {
+                const d = new Date(img.createdAt);
+                return d >= THIRD_DINNER_START_DATE && d < THIRD_DINNER_END_DATE;
+            }));
+            setFourthDinnerImages(allImages.filter(img => {
+                const d = new Date(img.createdAt);
+                return d >= FOURTH_DINNER_START_DATE && d < FOURTH_DINNER_END_DATE;
+            }));
         } catch (err) {
-            console.error('Error fetching images:', err);
+            console.error('Error fetching dinner images:', err);
             setError(err instanceof Error ? err.message : 'Failed to load images');
         } finally {
             setLoading(false);
         }
     };
 
-    const getAllImages = (): Array<{ url: string; type: 'first' | 'second'; id: string }> => {
+    const getAllImages = (): Array<{ url: string; type: 'first' | 'second' | 'third' | 'fourth'; id: string }> => {
         const firstImages = firstDinnerImages.map((url, index) => ({
             url, type: 'first' as const, id: `first-${index}`
         }));
         const secondImages = secondDinnerImages.map((img) => ({
             url: img.cloudinaryUrl, type: 'second' as const, id: img._id
         }));
-        return [...firstImages, ...secondImages];
+        const thirdImages = thirdDinnerImages.map((img) => ({
+            url: img.cloudinaryUrl, type: 'third' as const, id: img._id
+        }));
+        const fourthImages = fourthDinnerImages.map((img) => ({
+            url: img.cloudinaryUrl, type: 'fourth' as const, id: img._id
+        }));
+        return [...firstImages, ...secondImages, ...thirdImages, ...fourthImages];
     };
 
     const getImagesToShow = () => {
@@ -429,7 +469,10 @@ export function Gallery() {
                                                     className="font-abril uppercase text-[13px]"
                                                     style={{ color: '#FFF0C8', letterSpacing: '0.2em' }}
                                                 >
-                                                    {image.type === 'first' ? 'First Dinner' : 'Second Dinner'}
+                                                    {image.type === 'first' ? 'First Dinner'
+                                                        : image.type === 'second' ? 'Second Dinner'
+                                                            : image.type === 'third' ? 'Third Dinner'
+                                                                : 'Fourth Dinner'}
                                                 </span>
                                             </div>
                                         </div>
