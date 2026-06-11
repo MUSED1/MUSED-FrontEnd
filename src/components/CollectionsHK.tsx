@@ -4,22 +4,26 @@ import { Header } from './Header';
 import { Footer } from './Footer';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
-import { Heart, ChevronLeft, ChevronRight, X, User, Mail, Phone, Calendar, MapPin, CreditCard, Loader2, Shield, Eye } from 'lucide-react';
+import { Heart, ChevronLeft, ChevronRight, X, User, Mail, Phone, Calendar, MapPin, CreditCard, Loader2, Shield, Eye, ShoppingBag, Tag } from 'lucide-react';
 import axios from 'axios';
 
 interface ClothingItem {
     _id: string;
-    images: string[];  // Direct Cloudinary URLs from the DB
+    images: string[];
     size: string;
     category: string;
     status: 'available' | 'reserved' | 'sold';
     createdAt: string;
     fullName: string;
+    // ✅ NEW fields
+    listingType?: 'rent' | 'buy';
+    productName?: string;
+    price?: number;
 }
 
 interface GroupedClothingItem extends ClothingItem {
-    count: number;    // how many identical items exist
-    allIds: string[]; // all _ids in the group (first is the representative)
+    count: number;
+    allIds: string[];
 }
 
 interface UserPicks {
@@ -40,6 +44,41 @@ interface ReservationFormData {
     agreeToTerms: boolean;
 }
 
+// ✅ NEW: Simplified form data for buy items
+interface PurchaseFormData {
+    name: string;
+    email: string;
+    phone: string;
+    agreeToTerms: boolean;
+}
+
+// ============================================
+// ✅ RIIDE buy-only catalogue
+// These items are NOT in the DB fetched from /clothing/admin/all;
+// they are a separate hardcoded list that each maps to their own DB _id.
+// You must insert these items into MongoDB (listingType: 'buy') and put
+// the real _ids here. Prices are in HKD.
+// ============================================
+const RIIDE_ITEMS: Array<{
+    productName: string;
+    price: number;
+    category: string;
+    size: string;
+    image: string;
+    dbId: string;        // ← replace with real MongoDB _id after seeding
+}> = [
+    { productName: 'RIIDE - White Mini Bamboo Skirt',       price: 980,  category: 'Skirts', size: 'One Size', image: '', dbId: 'REPLACE_ME_1'  },
+    { productName: 'RIIDE - White Mandarin Bamboo Collar',  price: 1290, category: 'Tops',   size: 'One Size', image: '', dbId: 'REPLACE_ME_2'  },
+    { productName: 'RIIDE - Black Maxi Bamboo Skirt',       price: 990,  category: 'Skirts', size: 'One Size', image: '', dbId: 'REPLACE_ME_3'  },
+    { productName: 'RIIDE - Black Mini Bamboo Skirt',       price: 890,  category: 'Skirts', size: 'One Size', image: '', dbId: 'REPLACE_ME_4'  },
+    { productName: 'RIIDE - Black Mandarin Bamboo Collar',  price: 990,  category: 'Tops',   size: 'One Size', image: '', dbId: 'REPLACE_ME_5'  },
+    { productName: 'RIIDE - Red Mini Bamboo Skirt',         price: 890,  category: 'Skirts', size: 'One Size', image: '', dbId: 'REPLACE_ME_6'  },
+    { productName: 'RIIDE - Red Mandarin Bamboo Collar',    price: 990,  category: 'Tops',   size: 'One Size', image: '', dbId: 'REPLACE_ME_7'  },
+    { productName: 'RIIDE - Bamboo Maxi Skirt',             price: 990,  category: 'Skirts', size: 'One Size', image: '', dbId: 'REPLACE_ME_8'  },
+    { productName: 'RIIDE - Mandarin Collar Top White',     price: 1290, category: 'Tops',   size: 'One Size', image: '', dbId: 'REPLACE_ME_9'  },
+    { productName: 'RIIDE - Red Mandarin Collar Top',       price: 990,  category: 'Tops',   size: 'One Size', image: '', dbId: 'REPLACE_ME_10' },
+];
+
 export function CollectionsHK() {
     const { isAuthenticated, loading: authLoading, user } = useAuth();
     const navigate = useNavigate();
@@ -54,6 +93,10 @@ export function CollectionsHK() {
     const [processingPayment, setProcessingPayment] = useState(false);
     const [paymentError, setPaymentError] = useState<string | null>(null);
 
+    // ✅ NEW: Buy item modal state
+    const [selectedBuyItem, setSelectedBuyItem] = useState<typeof RIIDE_ITEMS[0] | null>(null);
+    const [processingBuy, setProcessingBuy] = useState(false);
+
     // Pagination
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 12;
@@ -62,7 +105,9 @@ export function CollectionsHK() {
     const [selectedCategory, setSelectedCategory] = useState<string>('all');
     const [selectedSize, setSelectedSize] = useState<string>('all');
 
-    // API URL
+    // ✅ NEW: Active tab — 'rent' | 'buy'
+    const [activeTab, setActiveTab] = useState<'rent' | 'buy'>('rent');
+
     const API_URL = import.meta.env.VITE_API_URL?.replace('/auth', '') || 'https://mused-backend.onrender.com/api';
 
     const categories = [
@@ -138,7 +183,6 @@ export function CollectionsHK() {
 
             const token = localStorage.getItem('token');
 
-            // Fetch items uploaded between June 3 and June 11, 2026
             const allFetched: ClothingItem[] = [];
             let page = 1;
             let hasMore = true;
@@ -148,8 +192,8 @@ export function CollectionsHK() {
                     headers: { Authorization: `Bearer ${token}` },
                     params: {
                         status: 'available',
-                        from: '2026-06-03',  // June 3, 2026
-                        to: '2026-06-11',    // June 11, 2026
+                        from: '2026-06-03',
+                        to: '2026-06-11',
                         page,
                         limit: 50
                     }
@@ -164,7 +208,8 @@ export function CollectionsHK() {
                 }
             }
 
-            setAllItems(allFetched);
+            // ✅ Only keep rent items in the main list (buy items live in their own tab)
+            setAllItems(allFetched.filter(item => item.listingType !== 'buy'));
         } catch (err) {
             console.error('Fetch error:', err);
             setError(err instanceof Error ? err.message : 'Error fetching items');
@@ -194,15 +239,12 @@ export function CollectionsHK() {
     };
 
     const filterItems = () => {
-        // Date (June 3–11, 2026) and status (available) are filtered server-side.
-        // Only apply category and size filters here.
         const filtered = allItems.filter(item => {
             const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
             const matchesSize = selectedSize === 'all' || item.size === selectedSize;
             return matchesCategory && matchesSize;
         });
 
-        // Only group items whose fullName is "MUSED" — everything else shows as individual cards
         const musedItems = filtered.filter(item => item.fullName.trim().toUpperCase() === 'MUSED');
         const otherItems = filtered.filter(item => item.fullName.trim().toUpperCase() !== 'MUSED');
 
@@ -223,7 +265,6 @@ export function CollectionsHK() {
             ...otherItems.map(item => ({ ...item, count: 1, allIds: [item._id] })),
         ];
         setGroupedFilteredItems(grouped);
-
         setCurrentPage(1);
     };
 
@@ -236,7 +277,6 @@ export function CollectionsHK() {
                 await axios.delete(`${API_URL}/users/picks/${itemId}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
-
                 const newPicks = { ...userPicks };
                 delete newPicks[itemId];
                 setUserPicks(newPicks);
@@ -244,11 +284,7 @@ export function CollectionsHK() {
                 await axios.post(`${API_URL}/users/picks/${itemId}`, {}, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
-
-                setUserPicks(prev => ({
-                    ...prev,
-                    [itemId]: true
-                }));
+                setUserPicks(prev => ({ ...prev, [itemId]: true }));
             }
         } catch (err) {
             console.error('Error toggling pick:', err);
@@ -256,7 +292,7 @@ export function CollectionsHK() {
         }
     };
 
-    // Handle reservation with payment flow
+    // Handle rent reservation with payment flow
     const handleReservation = async (formData: ReservationFormData, outfit: ClothingItem) => {
         try {
             setPaymentError(null);
@@ -269,15 +305,13 @@ export function CollectionsHK() {
         }
     };
 
-    // Process payment via Stripe
+    // Process rent payment via Stripe
     const processPayment = async (formData: ReservationFormData, outfit: ClothingItem) => {
         setProcessingPayment(true);
 
         try {
-            // Create a unique session ID
             const sessionId = `reservation_${outfit._id}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-            // Store COMPLETE reservation data
             const reservationSession = {
                 sessionId,
                 formData: {
@@ -306,13 +340,11 @@ export function CollectionsHK() {
 
             try {
                 localStorage.setItem('pendingReservation', JSON.stringify(reservationSession));
-                console.log('✅ Reservation data saved to localStorage:', reservationSession);
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
             } catch (e) {
                 console.warn('LocalStorage unavailable, proceeding without storage');
             }
 
-            // Parse delivery/return day values
             const parseDay = (raw: string) => {
                 if (!raw) return { day: '', time: '' };
                 const parts = raw.split('-');
@@ -324,7 +356,6 @@ export function CollectionsHK() {
             const delivery = parseDay(formData.deliveryDay);
             const ret = parseDay(formData.returnDay);
 
-            // Build the reservation payload
             const reservationData = {
                 fullName: formData.name,
                 email: formData.email,
@@ -338,7 +369,6 @@ export function CollectionsHK() {
                 returnTime: ret.time || formData.returnTime || '',
             };
 
-            // Call your backend to create a Stripe Checkout session
             const response = await axios.post(`${API_URL}/create-checkout-session`, {
                 itemId: outfit._id,
                 itemName: `${outfit.fullName.split(' ')[0]}'s ${outfit.category}`,
@@ -361,6 +391,31 @@ export function CollectionsHK() {
         }
     };
 
+    // ✅ NEW: Process buy payment via Stripe
+    const processBuyPayment = async (purchaseData: PurchaseFormData, item: typeof RIIDE_ITEMS[0]) => {
+        setProcessingBuy(true);
+        try {
+            const response = await axios.post(`${API_URL}/create-buy-session`, {
+                itemId: item.dbId,
+                productName: item.productName,
+                priceHKD: item.price,
+                customerEmail: purchaseData.email,
+                customerName: purchaseData.name,
+                size: item.size
+            });
+
+            if (response.data.success && response.data.url) {
+                window.location.href = response.data.url;
+            } else {
+                throw new Error('Failed to create purchase session');
+            }
+        } catch (err) {
+            console.error('Buy payment error:', err);
+            setProcessingBuy(false);
+            throw new Error(err instanceof Error ? err.message : 'Failed to process payment');
+        }
+    };
+
     const getImageUrl = (item: ClothingItem, index: number = 0): string => {
         if (item.images && item.images.length > index && item.images[index]) {
             return item.images[index];
@@ -370,7 +425,7 @@ export function CollectionsHK() {
 
     const getFirstName = (fullName: string) => fullName?.split(' ')[0] || fullName;
 
-    // Pagination — driven by grouped items so duplicates don't inflate the count
+    // Pagination — rent tab only
     const totalPages = Math.ceil(groupedFilteredItems.length / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
@@ -408,14 +463,14 @@ export function CollectionsHK() {
             <main className="min-h-screen bg-gradient-to-br from-cream to-amber-50 py-12">
                 <div className="container mx-auto px-4 max-w-7xl">
                     {/* Payment Processing Overlay */}
-                    {processingPayment && (
+                    {(processingPayment || processingBuy) && (
                         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fadeIn">
                             <div className="bg-white rounded-2xl p-8 max-w-md mx-4 transform animate-scaleIn">
                                 <div className="text-center">
                                     <CreditCard className="w-16 h-16 text-plum mx-auto mb-4 animate-pulse" />
                                     <h3 className="text-2xl font-bold text-plum mb-4">Processing Payment</h3>
                                     <p className="text-gray-600 mb-4">
-                                        You are being redirected to secure payment. Please complete the payment to reserve your item.
+                                        You are being redirected to secure payment. Please complete the payment to confirm your order.
                                     </p>
                                     <div className="flex items-center justify-center space-x-2 text-sm text-gray-500 mb-4">
                                         <Shield size={16} />
@@ -448,212 +503,285 @@ export function CollectionsHK() {
                     )}
 
                     {/* Header */}
-                    <div className="text-center mb-12">
+                    <div className="text-center mb-10">
                         <h1 className="text-4xl md:text-5xl font-kaldera text-plum mb-4">
                             HK Collection
                         </h1>
                         <p className="text-lg text-plum/80 max-w-2xl mx-auto">
-                            Discover our HK-inspired collection. Choose your item and receive it at your door.
+                            Discover our HK-inspired collection. Rent an outfit or shop RIIDE pieces to keep.
                         </p>
                     </div>
 
-                    {/* Filters */}
-                    <div className="bg-white rounded-xl shadow-md p-6 mb-8">
-                        <div className="grid md:grid-cols-2 gap-6">
-                            <div className="filter-container">
-                                <label className="filter-label">
-                                    Category
-                                </label>
-                                <select
-                                    value={selectedCategory}
-                                    onChange={(e) => setSelectedCategory(e.target.value)}
-                                    className="filter-select"
-                                >
-                                    {categories.map(cat => (
-                                        <option key={cat} value={cat}>
-                                            {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div className="filter-container">
-                                <label className="filter-label">
-                                    Size
-                                </label>
-                                <select
-                                    value={selectedSize}
-                                    onChange={(e) => setSelectedSize(e.target.value)}
-                                    className="filter-select"
-                                >
-                                    {sizes.map(size => (
-                                        <option key={size} value={size}>
-                                            {size === 'all' ? 'All Sizes' : size}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
+                    {/* ✅ Tab switcher */}
+                    <div className="flex justify-center mb-8">
+                        <div className="bg-white rounded-2xl shadow-md p-1.5 flex gap-1.5">
+                            <button
+                                onClick={() => setActiveTab('rent')}
+                                className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-300 ${
+                                    activeTab === 'rent'
+                                        ? 'bg-gradient-to-r from-plum to-rose text-cream shadow-lg'
+                                        : 'text-plum hover:bg-cream'
+                                }`}
+                            >
+                                <Calendar size={16} />
+                                Rent
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('buy')}
+                                className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-300 ${
+                                    activeTab === 'buy'
+                                        ? 'bg-gradient-to-r from-plum to-rose text-cream shadow-lg'
+                                        : 'text-plum hover:bg-cream'
+                                }`}
+                            >
+                                <ShoppingBag size={16} />
+                                Shop RIIDE
+                            </button>
                         </div>
                     </div>
 
-                    {/* Error Message */}
-                    {error && (
-                        <div className="mb-6 p-4 bg-red-100 text-red-800 rounded-xl border border-red-300 flex justify-between items-center">
-                            <span>{error}</span>
-                            <button
-                                onClick={() => setError('')}
-                                className="ml-4 underline hover:no-underline"
-                            >
-                                Dismiss
-                            </button>
-                        </div>
-                    )}
-
-                    {/* Items Grid */}
-                    {groupedFilteredItems.length === 0 ? (
-                        <div className="text-center py-16 bg-white rounded-2xl shadow-lg">
-                            <Heart size={64} className="text-plum/20 mx-auto mb-4" />
-                            <p className="text-plum text-lg mb-2">No items found</p>
-                            <p className="text-plum/60">Try adjusting your filters or check back later for new items.</p>
-                        </div>
-                    ) : (
+                    {/* ─────────────────────────────── RENT TAB ─────────────────────────────── */}
+                    {activeTab === 'rent' && (
                         <>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                                {currentItems.map((item) => (
-                                    <div
-                                        key={item._id}
-                                        className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all group cursor-pointer"
-                                        onClick={() => setSelectedOutfit(item)}
-                                    >
-                                        <div className="relative aspect-square overflow-hidden">
-                                            <img
-                                                src={getImageUrl(item, 0)}
-                                                alt={`${getFirstName(item.fullName)}'s ${item.category}`}
-                                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                                                onError={(e) => {
-                                                    e.currentTarget.src = 'https://via.placeholder.com/400x400?text=Image+Not+Found';
-                                                }}
-                                            />
+                            {/* Filters */}
+                            <div className="bg-white rounded-xl shadow-md p-6 mb-8">
+                                <div className="grid md:grid-cols-2 gap-6">
+                                    <div className="filter-container">
+                                        <label className="filter-label">Category</label>
+                                        <select
+                                            value={selectedCategory}
+                                            onChange={(e) => setSelectedCategory(e.target.value)}
+                                            className="filter-select"
+                                        >
+                                            {categories.map(cat => (
+                                                <option key={cat} value={cat}>
+                                                    {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="filter-container">
+                                        <label className="filter-label">Size</label>
+                                        <select
+                                            value={selectedSize}
+                                            onChange={(e) => setSelectedSize(e.target.value)}
+                                            className="filter-select"
+                                        >
+                                            {sizes.map(size => (
+                                                <option key={size} value={size}>
+                                                    {size === 'all' ? 'All Sizes' : size}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
 
-                                            {/* Preview Button */}
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setSelectedImage(getImageUrl(item, 0));
-                                                }}
-                                                className="absolute top-3 left-3 p-3 rounded-full bg-white/90 text-plum hover:bg-white transition-all transform hover:scale-110"
+                            {/* Error Message */}
+                            {error && (
+                                <div className="mb-6 p-4 bg-red-100 text-red-800 rounded-xl border border-red-300 flex justify-between items-center">
+                                    <span>{error}</span>
+                                    <button onClick={() => setError('')} className="text-red-600 hover:text-red-800">
+                                        <X size={16} />
+                                    </button>
+                                </div>
+                            )}
+
+                            {groupedFilteredItems.length === 0 ? (
+                                <div className="text-center py-16 text-plum/60">
+                                    <p className="text-xl">No rental items found.</p>
+                                </div>
+                            ) : (
+                                <>
+                                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                                        {currentItems.map((item) => (
+                                            <div
+                                                key={item._id}
+                                                className="bg-white rounded-2xl shadow-md overflow-hidden cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                                                onClick={() => setSelectedOutfit(item)}
                                             >
-                                                <Eye size={20} />
-                                            </button>
+                                                <div className="relative">
+                                                    <img
+                                                        src={getImageUrl(item, 0)}
+                                                        alt={item.fullName}
+                                                        className="w-full h-64 object-cover"
+                                                        onError={(e) => {
+                                                            e.currentTarget.src = 'https://via.placeholder.com/400x400?text=Image+Not+Found';
+                                                        }}
+                                                    />
 
-                                            {/* Pick Button */}
+                                                    {/* Preview Button */}
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setSelectedImage(getImageUrl(item, 0));
+                                                        }}
+                                                        className="absolute top-3 left-3 p-3 rounded-full bg-white/90 text-plum hover:bg-white transition-all transform hover:scale-110"
+                                                    >
+                                                        <Eye size={20} />
+                                                    </button>
+
+                                                    {/* Pick Button */}
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            togglePick(item._id);
+                                                        }}
+                                                        className={`absolute top-3 right-3 p-3 rounded-full transition-all transform hover:scale-110 ${
+                                                            userPicks[item._id]
+                                                                ? 'bg-rose text-white shadow-lg'
+                                                                : 'bg-white/90 text-plum hover:bg-white'
+                                                        }`}
+                                                    >
+                                                        <Heart size={20} className={userPicks[item._id] ? 'fill-white' : ''} />
+                                                    </button>
+
+                                                    {item.images.length > 1 && (
+                                                        <div className="absolute bottom-3 left-3 bg-black/50 text-white text-xs px-2 py-1 rounded-full">
+                                                            1/{item.images.length}
+                                                        </div>
+                                                    )}
+
+                                                    {item.count > 1 && (
+                                                        <div className="absolute bottom-3 right-3 bg-plum text-white text-xs font-semibold px-2 py-1 rounded-full">
+                                                            ×{item.count} available
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                <div className="p-4">
+                                                    <div className="flex justify-between items-start mb-2">
+                                                        <h3 className="font-semibold text-plum">
+                                                            {getFirstName(item.fullName)}'s {item.category}
+                                                        </h3>
+                                                        <span className="text-sm text-plum/60">Size {item.size}</span>
+                                                    </div>
+
+                                                    {userPicks[item._id] && (
+                                                        <div className="mt-2">
+                                                            <span className="text-xs text-rose flex items-center gap-1">
+                                                                <Heart size={12} className="fill-rose" />
+                                                                Picked
+                                                            </span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    {/* Pagination */}
+                                    {totalPages > 1 && (
+                                        <div className="flex justify-center items-center gap-4 mt-12">
                                             <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    togglePick(item._id);
-                                                }}
-                                                className={`absolute top-3 right-3 p-3 rounded-full transition-all transform hover:scale-110 ${
-                                                    userPicks[item._id]
-                                                        ? 'bg-rose text-white shadow-lg'
-                                                        : 'bg-white/90 text-plum hover:bg-white'
+                                                onClick={() => goToPage(currentPage - 1)}
+                                                disabled={currentPage === 1}
+                                                className={`p-2 rounded-lg transition-colors ${
+                                                    currentPage === 1 ? 'text-plum/20 cursor-not-allowed' : 'text-plum hover:bg-cream'
                                                 }`}
                                             >
-                                                <Heart size={20} className={userPicks[item._id] ? 'fill-white' : ''} />
+                                                <ChevronLeft size={24} />
                                             </button>
 
-                                            {/* Image indicator if multiple images */}
-                                            {item.images.length > 1 && (
-                                                <div className="absolute bottom-3 left-3 bg-black/50 text-white text-xs px-2 py-1 rounded-full">
-                                                    1/{item.images.length}
+                                            <div className="flex items-center gap-2">
+                                                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                                                    let pageNum;
+                                                    if (totalPages <= 5) {
+                                                        pageNum = i + 1;
+                                                    } else if (currentPage <= 3) {
+                                                        pageNum = i + 1;
+                                                    } else if (currentPage >= totalPages - 2) {
+                                                        pageNum = totalPages - 4 + i;
+                                                    } else {
+                                                        pageNum = currentPage - 2 + i;
+                                                    }
+                                                    return (
+                                                        <button
+                                                            key={i}
+                                                            onClick={() => goToPage(pageNum)}
+                                                            className={`w-10 h-10 rounded-lg transition-colors ${
+                                                                currentPage === pageNum ? 'bg-rose text-white' : 'hover:bg-cream text-plum'
+                                                            }`}
+                                                        >
+                                                            {pageNum}
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+
+                                            <button
+                                                onClick={() => goToPage(currentPage + 1)}
+                                                disabled={currentPage === totalPages}
+                                                className={`p-2 rounded-lg transition-colors ${
+                                                    currentPage === totalPages ? 'text-plum/20 cursor-not-allowed' : 'text-plum hover:bg-cream'
+                                                }`}
+                                            >
+                                                <ChevronRight size={24} />
+                                            </button>
+                                        </div>
+                                    )}
+                                </>
+                            )}
+                        </>
+                    )}
+
+                    {/* ─────────────────────────────── BUY TAB (RIIDE) ─────────────────────────────── */}
+                    {activeTab === 'buy' && (
+                        <div>
+                            <div className="text-center mb-8">
+                                <p className="text-plum/70 max-w-xl mx-auto">
+                                    These RIIDE pieces are available to purchase outright — yours to keep forever.
+                                    No return date, no rental fee.
+                                </p>
+                            </div>
+
+                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                                {RIIDE_ITEMS.map((item, idx) => (
+                                    <div
+                                        key={idx}
+                                        className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                                    >
+                                        <div className="relative">
+                                            {item.image ? (
+                                                <img
+                                                    src={item.image}
+                                                    alt={item.productName}
+                                                    className="w-full h-64 object-cover"
+                                                    onError={(e) => {
+                                                        e.currentTarget.src = 'https://via.placeholder.com/400x400?text=RIIDE';
+                                                    }}
+                                                />
+                                            ) : (
+                                                <div className="w-full h-64 bg-gradient-to-br from-cream to-amber-100 flex items-center justify-center">
+                                                    <ShoppingBag size={48} className="text-plum/30" />
                                                 </div>
                                             )}
 
-                                            {/* Stock count badge */}
-                                            {item.count > 1 && (
-                                                <div className="absolute bottom-3 right-3 bg-plum text-white text-xs font-semibold px-2 py-1 rounded-full">
-                                                    ×{item.count} available
-                                                </div>
-                                            )}
+                                            {/* Price badge */}
+                                            <div className="absolute top-3 right-3 bg-plum text-cream text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1">
+                                                <Tag size={12} />
+                                                HKD {item.price.toLocaleString()}
+                                            </div>
                                         </div>
 
                                         <div className="p-4">
-                                            <div className="flex justify-between items-start mb-2">
-                                                <h3 className="font-semibold text-plum">
-                                                    {getFirstName(item.fullName)}'s {item.category}
-                                                </h3>
-                                                <span className="text-sm text-plum/60">Size {item.size}</span>
-                                            </div>
+                                            <h3 className="font-semibold text-plum text-sm leading-tight mb-1">
+                                                {item.productName}
+                                            </h3>
+                                            <p className="text-xs text-plum/60 mb-3">{item.category} · {item.size}</p>
 
-                                            {userPicks[item._id] && (
-                                                <div className="mt-2">
-                                                    <span className="text-xs text-rose flex items-center gap-1">
-                                                        <Heart size={12} className="fill-rose" />
-                                                        Picked
-                                                    </span>
-                                                </div>
-                                            )}
+                                            <button
+                                                onClick={() => setSelectedBuyItem(item)}
+                                                className="w-full bg-gradient-to-r from-plum to-rose text-cream py-2.5 rounded-xl text-sm font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center gap-2"
+                                            >
+                                                <ShoppingBag size={16} />
+                                                Buy Now
+                                            </button>
                                         </div>
                                     </div>
                                 ))}
                             </div>
-
-                            {/* Pagination */}
-                            {totalPages > 1 && (
-                                <div className="flex justify-center items-center gap-4 mt-12">
-                                    <button
-                                        onClick={() => goToPage(currentPage - 1)}
-                                        disabled={currentPage === 1}
-                                        className={`p-2 rounded-lg transition-colors ${
-                                            currentPage === 1
-                                                ? 'text-plum/20 cursor-not-allowed'
-                                                : 'text-plum hover:bg-cream'
-                                        }`}
-                                    >
-                                        <ChevronLeft size={24} />
-                                    </button>
-
-                                    <div className="flex items-center gap-2">
-                                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                                            let pageNum;
-                                            if (totalPages <= 5) {
-                                                pageNum = i + 1;
-                                            } else if (currentPage <= 3) {
-                                                pageNum = i + 1;
-                                            } else if (currentPage >= totalPages - 2) {
-                                                pageNum = totalPages - 4 + i;
-                                            } else {
-                                                pageNum = currentPage - 2 + i;
-                                            }
-
-                                            return (
-                                                <button
-                                                    key={i}
-                                                    onClick={() => goToPage(pageNum)}
-                                                    className={`w-10 h-10 rounded-lg transition-colors ${
-                                                        currentPage === pageNum
-                                                            ? 'bg-rose text-white'
-                                                            : 'hover:bg-cream text-plum'
-                                                    }`}
-                                                >
-                                                    {pageNum}
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-
-                                    <button
-                                        onClick={() => goToPage(currentPage + 1)}
-                                        disabled={currentPage === totalPages}
-                                        className={`p-2 rounded-lg transition-colors ${
-                                            currentPage === totalPages
-                                                ? 'text-plum/20 cursor-not-allowed'
-                                                : 'text-plum hover:bg-cream'
-                                        }`}
-                                    >
-                                        <ChevronRight size={24} />
-                                    </button>
-                                </div>
-                            )}
-                        </>
+                        </div>
                     )}
                 </div>
             </main>
@@ -687,7 +815,7 @@ export function CollectionsHK() {
                 </div>
             )}
 
-            {/* Reservation Modal */}
+            {/* RENT — Reservation Modal */}
             {selectedOutfit && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 animate-fadeIn">
                     <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto transform animate-scaleIn">
@@ -728,6 +856,47 @@ export function CollectionsHK() {
                 </div>
             )}
 
+            {/* ✅ BUY — Purchase Modal */}
+            {selectedBuyItem && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 animate-fadeIn">
+                    <div className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto transform animate-scaleIn">
+                        <div className="relative">
+                            {selectedBuyItem.image ? (
+                                <img
+                                    src={selectedBuyItem.image}
+                                    alt={selectedBuyItem.productName}
+                                    className="w-full h-52 object-cover"
+                                />
+                            ) : (
+                                <div className="w-full h-52 bg-gradient-to-br from-cream to-amber-100 flex items-center justify-center">
+                                    <ShoppingBag size={64} className="text-plum/30" />
+                                </div>
+                            )}
+                            <button
+                                onClick={() => setSelectedBuyItem(null)}
+                                className="absolute top-4 right-4 bg-white rounded-full p-2 hover:bg-gray-100 transition-all duration-300 transform hover:scale-110 hover:rotate-90 shadow-lg"
+                            >
+                                <X size={24} className="text-plum" />
+                            </button>
+                        </div>
+
+                        <div className="p-8">
+                            <h2 className="text-2xl font-bold text-plum mb-1">{selectedBuyItem.productName}</h2>
+                            <p className="text-gray-500 text-sm mb-1">{selectedBuyItem.category} · Size {selectedBuyItem.size}</p>
+                            <p className="text-2xl font-bold text-rose mb-6">HKD {selectedBuyItem.price.toLocaleString()}</p>
+
+                            <PurchaseForm
+                                item={selectedBuyItem}
+                                user={user}
+                                onClose={() => setSelectedBuyItem(null)}
+                                onSubmit={processBuyPayment}
+                                processing={processingBuy}
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <style>{`
                 @keyframes fadeIn {
                     from { opacity: 0; }
@@ -746,15 +915,9 @@ export function CollectionsHK() {
     );
 }
 
-// ─── Reservation Form Component ───────────────────────────────────────────────
+// ─── Rent Reservation Form ───────────────────────────────────────────────────
 function ReservationForm({
-                             outfit,
-                             user,
-                             onClose,
-                             onSubmit,
-                             processing,
-                             deliveryDays,
-                             returnDays
+                             outfit, user, onClose, onSubmit, processing, deliveryDays, returnDays
                          }: {
     outfit: ClothingItem;
     user: any;
@@ -786,7 +949,6 @@ function ReservationForm({
             alert('Please agree to the terms and conditions');
             return;
         }
-
         setSubmitting(true);
         try {
             await onSubmit(formData, outfit);
@@ -885,9 +1047,7 @@ function ReservationForm({
                     >
                         <option value="">Select delivery day & time</option>
                         {deliveryDays.map((day, index) => (
-                            <option key={index} value={day.value}>
-                                {day.label}
-                            </option>
+                            <option key={index} value={day.value}>{day.label}</option>
                         ))}
                     </select>
                 </div>
@@ -908,9 +1068,7 @@ function ReservationForm({
                 >
                     <option value="">Select pick-up day & time</option>
                     {returnDays.map((day, index) => (
-                        <option key={index} value={day.value}>
-                            {day.label}
-                        </option>
+                        <option key={index} value={day.value}>{day.label}</option>
                     ))}
                 </select>
             </div>
@@ -1026,6 +1184,171 @@ function ReservationForm({
                         <>
                             <CreditCard className="w-5 h-5 mr-2" />
                             Proceed to Payment
+                        </>
+                    )}
+                </button>
+            </div>
+        </form>
+    );
+}
+
+// ─── ✅ NEW: Buy Purchase Form (no delivery/return date) ──────────────────────
+function PurchaseForm({
+                          item, user, onClose, onSubmit, processing
+                      }: {
+    item: typeof RIIDE_ITEMS[0];
+    user: any;
+    onClose: () => void;
+    onSubmit: (data: PurchaseFormData, item: typeof RIIDE_ITEMS[0]) => void;
+    processing: boolean;
+}) {
+    const [formData, setFormData] = useState<PurchaseFormData>({
+        name: user?.name || '',
+        email: user?.email || '',
+        phone: user?.phone || '',
+        agreeToTerms: false
+    });
+    const [submitting, setSubmitting] = useState(false);
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value, type } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
+        }));
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!formData.agreeToTerms) {
+            alert('Please agree to the terms and conditions');
+            return;
+        }
+        setSubmitting(true);
+        try {
+            await onSubmit(formData, item);
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+            alert(`Purchase failed: ${errorMessage}`);
+            setSubmitting(false);
+        }
+    };
+
+    return (
+        <form onSubmit={handleSubmit} className="space-y-5">
+            <h3 className="text-xl font-bold text-plum">Complete Your Purchase</h3>
+
+            <div className="bg-gradient-to-br from-amber-100 to-amber-50 p-4 rounded-xl border-2 border-amber-300">
+                <div className="flex items-center space-x-3">
+                    <ShoppingBag className="text-plum flex-shrink-0" size={22} />
+                    <div>
+                        <p className="text-plum font-semibold text-sm">One-time purchase — yours to keep!</p>
+                        <p className="text-plum text-xs">No return required. You'll be redirected to secure payment.</p>
+                    </div>
+                </div>
+            </div>
+
+            {/* Name */}
+            <div>
+                <label className="block text-sm font-semibold text-plum mb-2 flex items-center">
+                    <User size={14} className="mr-2 text-rose" />
+                    Full Name *
+                </label>
+                <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose focus:border-rose text-plum"
+                    placeholder="Enter your full name"
+                />
+            </div>
+
+            {/* Email */}
+            <div>
+                <label className="block text-sm font-semibold text-plum mb-2 flex items-center">
+                    <Mail size={14} className="mr-2 text-rose" />
+                    Email *
+                </label>
+                <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose focus:border-rose text-plum"
+                    placeholder="Enter your email"
+                />
+            </div>
+
+            {/* Phone */}
+            <div>
+                <label className="block text-sm font-semibold text-plum mb-2 flex items-center">
+                    <Phone size={14} className="mr-2 text-rose" />
+                    Phone Number *
+                </label>
+                <input
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose focus:border-rose text-plum"
+                    placeholder="Enter your phone number"
+                />
+            </div>
+
+            {/* Terms */}
+            <div className="bg-gradient-to-br from-cream to-amber-50 p-4 rounded-xl border-2 border-amber-200">
+                <div className="flex items-start space-x-3">
+                    <input
+                        type="checkbox"
+                        name="agreeToTerms"
+                        checked={formData.agreeToTerms}
+                        onChange={handleChange}
+                        required
+                        className="mt-1 w-5 h-5 text-rose focus:ring-rose border-gray-300 rounded"
+                    />
+                    <label className="text-sm text-plum font-medium">
+                        I agree to the{' '}
+                        <a
+                            href="/terms"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-rose hover:text-burgundy underline underline-offset-2 font-semibold"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            Terms & Conditions
+                        </a>
+                        . This purchase is final — no returns or exchanges.
+                    </label>
+                </div>
+            </div>
+
+            <div className="flex space-x-4">
+                <button
+                    type="button"
+                    onClick={onClose}
+                    disabled={submitting || processing}
+                    className="flex-1 bg-cream text-plum py-3.5 rounded-xl font-semibold hover:bg-amber-200 transition-all disabled:opacity-50"
+                >
+                    Cancel
+                </button>
+                <button
+                    type="submit"
+                    disabled={!formData.agreeToTerms || submitting || processing}
+                    className="flex-1 bg-gradient-to-r from-plum to-rose text-cream py-3.5 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center gap-2"
+                >
+                    {submitting || processing ? (
+                        <>
+                            <Loader2 className="w-5 h-5 animate-spin" />
+                            Redirecting...
+                        </>
+                    ) : (
+                        <>
+                            <CreditCard className="w-5 h-5" />
+                            Pay HKD {item.price.toLocaleString()}
                         </>
                     )}
                 </button>
