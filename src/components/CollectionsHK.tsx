@@ -760,8 +760,7 @@ export function CollectionsHK() {
                         <div>
                             <div className="text-center mb-8">
                                 <p className="text-plum/70 max-w-xl mx-auto">
-                                    These RIIDE pieces are available to purchase outright — yours to keep forever.
-                                    No return date, no rental fee.
+                                    This item is collaboration with RIIDE. Buy it & get your FREE ticket to MUSED. You can specify size (XS - S - M - L - XL) & We will hand deliver it to you. Or come to the store & Pick it your self xx
                                 </p>
                             </div>
 
