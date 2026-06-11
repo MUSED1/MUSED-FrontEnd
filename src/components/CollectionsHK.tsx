@@ -202,19 +202,27 @@ export function CollectionsHK() {
             return matchesCategory && matchesSize;
         });
 
-        // Group items by fullName — show one card per unique name, track count
-        const groupMap = new Map<string, GroupedClothingItem>();
-        filtered.forEach(item => {
-            const key = item.fullName.trim().toLowerCase();
-            if (groupMap.has(key)) {
-                const existing = groupMap.get(key)!;
+        // Only group items whose fullName is "MUSED" — everything else shows as individual cards
+        const musedItems = filtered.filter(item => item.fullName.trim().toUpperCase() === 'MUSED');
+        const otherItems = filtered.filter(item => item.fullName.trim().toUpperCase() !== 'MUSED');
+
+        const musedGroupMap = new Map<string, GroupedClothingItem>();
+        musedItems.forEach(item => {
+            const key = `${item.category}-${item.size}`.toLowerCase();
+            if (musedGroupMap.has(key)) {
+                const existing = musedGroupMap.get(key)!;
                 existing.count += 1;
                 existing.allIds.push(item._id);
             } else {
-                groupMap.set(key, { ...item, count: 1, allIds: [item._id] });
+                musedGroupMap.set(key, { ...item, count: 1, allIds: [item._id] });
             }
         });
-        setGroupedFilteredItems(Array.from(groupMap.values()));
+
+        const grouped: GroupedClothingItem[] = [
+            ...Array.from(musedGroupMap.values()),
+            ...otherItems.map(item => ({ ...item, count: 1, allIds: [item._id] })),
+        ];
+        setGroupedFilteredItems(grouped);
 
         setCurrentPage(1);
     };
