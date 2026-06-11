@@ -263,11 +263,11 @@ export function Confirmation() {
                                         <div className="space-y-3 text-plum/80">
                                             <div className="flex justify-between">
                                                 <span className="font-semibold">Event:</span>
-                                                <span>Wear Something Borrowed </span>
+                                                <span>Mused in the far east </span>
                                             </div>
                                             <div className="flex justify-between">
                                                 <span className="font-semibold">Date:</span>
-                                                <span>April 30, 2026</span>
+                                                <span>June 18th, 2026</span>
                                             </div>
                                             <div className="flex justify-between">
                                                 <span className="font-semibold">Time:</span>
@@ -275,11 +275,11 @@ export function Confirmation() {
                                             </div>
                                             <div className="flex justify-between">
                                                 <span className="font-semibold">Location:</span>
-                                                <span>Quick Eternity, 22 peck slip ,New York</span>
+                                                <span>129 Second Street L/G Nam Cheong House, Sai Ying Pun, Hong Kone</span>
                                             </div>
                                             <div className="flex justify-between text-lg font-bold text-gold mt-4 pt-4 border-t border-amber-200">
                                                 <span>Amount Paid:</span>
-                                                <span>{paymentDetails?.amount || 290} USD</span>
+                                                <span>{paymentDetails?.amount || 290} HKD</span>
                                             </div>
                                             {paymentDetails?.promoCode && (
                                                 <div className="flex justify-between text-sm text-green-600">

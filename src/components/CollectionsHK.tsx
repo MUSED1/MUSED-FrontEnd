@@ -17,6 +17,11 @@ interface ClothingItem {
     fullName: string;
 }
 
+interface GroupedClothingItem extends ClothingItem {
+    count: number;    // how many identical items exist
+    allIds: string[]; // all _ids in the group (first is the representative)
+}
+
 interface UserPicks {
     [itemId: string]: boolean;
 }
@@ -40,7 +45,7 @@ export function CollectionsHK() {
     const navigate = useNavigate();
 
     const [allItems, setAllItems] = useState<ClothingItem[]>([]);
-    const [filteredItems, setFilteredItems] = useState<ClothingItem[]>([]);
+    const [groupedFilteredItems, setGroupedFilteredItems] = useState<GroupedClothingItem[]>([]);
     const [userPicks, setUserPicks] = useState<UserPicks>({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -72,26 +77,26 @@ export function CollectionsHK() {
 
     // Delivery options — June 16 & 17
     const deliveryDays = [
-        { value: 'monday-jun16-8-11',  label: 'Monday Jun 16th: 8am–11am' },
-        { value: 'monday-jun16-12-14', label: 'Monday Jun 16th: 12pm–2pm' },
-        { value: 'monday-jun16-14-17', label: 'Monday Jun 16th: 2pm–5pm' },
-        { value: 'monday-jun16-17-19', label: 'Monday Jun 16th: 5pm–7pm' },
-        { value: 'tuesday-jun17-8-11',  label: 'Tuesday Jun 17th: 8am–11am' },
-        { value: 'tuesday-jun17-12-14', label: 'Tuesday Jun 17th: 12pm–2pm' },
-        { value: 'tuesday-jun17-14-17', label: 'Tuesday Jun 17th: 2pm–5pm' },
-        { value: 'tuesday-jun17-17-19', label: 'Tuesday Jun 17th: 5pm–7pm' },
+        { value: 'Tuesday-jun16-8-11',  label: 'Tuesday Jun 16th: 8am–11am' },
+        { value: 'Tuesday-jun16-12-14', label: 'Tuesday Jun 16th: 12pm–2pm' },
+        { value: 'Tuesday-jun16-14-17', label: 'Tuesday Jun 16th: 2pm–5pm' },
+        { value: 'Tuesday-jun16-17-19', label: 'Tuesday Jun 16th: 5pm–7pm' },
+        { value: 'Wednesday-jun17-8-11',  label: 'Wednesday Jun 17th: 8am–11am' },
+        { value: 'Wednesday-jun17-12-14', label: 'Wednesday Jun 17th: 12pm–2pm' },
+        { value: 'Wednesday-jun17-14-17', label: 'Wednesday Jun 17th: 2pm–5pm' },
+        { value: 'Wednesday-jun17-17-19', label: 'Wednesday Jun 17th: 5pm–7pm' },
     ];
 
     // Pick-up (return) options — June 19 & 20
     const returnDays = [
-        { value: 'thursday-jun19-8-11',  label: 'Thursday Jun 19th: 8am–11am' },
-        { value: 'thursday-jun19-12-14', label: 'Thursday Jun 19th: 12pm–2pm' },
-        { value: 'thursday-jun19-14-17', label: 'Thursday Jun 19th: 2pm–5pm' },
-        { value: 'thursday-jun19-17-19', label: 'Thursday Jun 19th: 5pm–7pm' },
-        { value: 'friday-jun20-8-11',  label: 'Friday Jun 20th: 8am–11am' },
-        { value: 'friday-jun20-12-14', label: 'Friday Jun 20th: 12pm–2pm' },
-        { value: 'friday-jun20-14-17', label: 'Friday Jun 20th: 2pm–5pm' },
-        { value: 'friday-jun20-17-19', label: 'Friday Jun 20th: 5pm–7pm' },
+        { value: 'friday-jun19-8-11',  label: 'Friday Jun 19th: 8am–11am' },
+        { value: 'friday-jun19-12-14', label: 'Friday Jun 19th: 12pm–2pm' },
+        { value: 'friday-jun19-14-17', label: 'Friday Jun 19th: 2pm–5pm' },
+        { value: 'friday-jun19-17-19', label: 'Friday Jun 19th: 5pm–7pm' },
+        { value: 'saturday-jun20-8-11',  label: 'Saturday Jun 20th: 8am–11am' },
+        { value: 'saturday-jun20-12-14', label: 'Saturday Jun 20th: 12pm–2pm' },
+        { value: 'saturday-jun20-14-17', label: 'Saturday Jun 20th: 2pm–5pm' },
+        { value: 'saturday-jun20-17-19', label: 'Saturday Jun 20th: 5pm–7pm' },
     ];
 
     useEffect(() => {
@@ -197,7 +202,20 @@ export function CollectionsHK() {
             return matchesCategory && matchesSize;
         });
 
-        setFilteredItems(filtered);
+        // Group items by fullName — show one card per unique name, track count
+        const groupMap = new Map<string, GroupedClothingItem>();
+        filtered.forEach(item => {
+            const key = item.fullName.trim().toLowerCase();
+            if (groupMap.has(key)) {
+                const existing = groupMap.get(key)!;
+                existing.count += 1;
+                existing.allIds.push(item._id);
+            } else {
+                groupMap.set(key, { ...item, count: 1, allIds: [item._id] });
+            }
+        });
+        setGroupedFilteredItems(Array.from(groupMap.values()));
+
         setCurrentPage(1);
     };
 
@@ -344,11 +362,11 @@ export function CollectionsHK() {
 
     const getFirstName = (fullName: string) => fullName?.split(' ')[0] || fullName;
 
-    // Pagination
-    const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
+    // Pagination — driven by grouped items so duplicates don't inflate the count
+    const totalPages = Math.ceil(groupedFilteredItems.length / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
-    const currentItems = filteredItems.slice(startIndex, endIndex);
+    const currentItems = groupedFilteredItems.slice(startIndex, endIndex);
 
     const goToPage = (page: number) => {
         setCurrentPage(Math.max(1, Math.min(page, totalPages)));
@@ -483,7 +501,7 @@ export function CollectionsHK() {
                     )}
 
                     {/* Items Grid */}
-                    {filteredItems.length === 0 ? (
+                    {groupedFilteredItems.length === 0 ? (
                         <div className="text-center py-16 bg-white rounded-2xl shadow-lg">
                             <Heart size={64} className="text-plum/20 mx-auto mb-4" />
                             <p className="text-plum text-lg mb-2">No items found</p>
@@ -538,6 +556,13 @@ export function CollectionsHK() {
                                             {item.images.length > 1 && (
                                                 <div className="absolute bottom-3 left-3 bg-black/50 text-white text-xs px-2 py-1 rounded-full">
                                                     1/{item.images.length}
+                                                </div>
+                                            )}
+
+                                            {/* Stock count badge */}
+                                            {item.count > 1 && (
+                                                <div className="absolute bottom-3 right-3 bg-plum text-white text-xs font-semibold px-2 py-1 rounded-full">
+                                                    ×{item.count} available
                                                 </div>
                                             )}
                                         </div>
