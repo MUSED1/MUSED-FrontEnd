@@ -93,9 +93,34 @@ export function CollectionsHK() {
     const [processingPayment, setProcessingPayment] = useState(false);
     const [paymentError, setPaymentError] = useState<string | null>(null);
 
-    // ✅ NEW: Buy item modal state
+    // ✅ Runtime RIIDE items — starts as the hardcoded list; dbIds get resolved from the DB on mount.
+    const [riideItems, setRiideItems] = useState(RIIDE_ITEMS);
+
+    // ✅ Buy item modal state
     const [selectedBuyItem, setSelectedBuyItem] = useState<typeof RIIDE_ITEMS[0] | null>(null);
     const [processingBuy, setProcessingBuy] = useState(false);
+
+    // Resolve real MongoDB _ids for RIIDE items from the DB so the buy session works.
+    // The backend now also supports a productName-based lookup fallback, so this is best-effort.
+    useEffect(() => {
+        if (!isAuthenticated) return;
+        const token = localStorage.getItem('token');
+        axios.get(`${API_URL}/clothing/admin/all`, {
+            headers: { Authorization: `Bearer ${token}` },
+            params: { listingType: 'buy', status: 'available', limit: 100 }
+        }).then(res => {
+            if (!res.data.success) return;
+            const dbItems: ClothingItem[] = res.data.data;
+            setRiideItems(prev => prev.map(riide => {
+                const match = dbItems.find(db =>
+                    db.productName?.trim().toLowerCase() === riide.productName.trim().toLowerCase()
+                );
+                return match
+                    ? { ...riide, dbId: match._id, image: riide.image || match.images?.[0] || '' }
+                    : riide;
+            }));
+        }).catch(() => { /* non-fatal — backend productName fallback handles it */ });
+    }, [isAuthenticated]);
 
     // Pagination
     const [currentPage, setCurrentPage] = useState(1);
@@ -208,8 +233,13 @@ export function CollectionsHK() {
                 }
             }
 
-            // ✅ Only keep rent items in the main list (buy items live in their own tab)
-            setAllItems(allFetched.filter(item => item.listingType !== 'buy'));
+            // ✅ Only keep rent items in the main list (buy items live in their own tab).
+            // Also exclude any item whose fullName starts with "RIIDE" regardless of listingType
+            // (guards against items that were submitted with listingType unset).
+            setAllItems(allFetched.filter(item =>
+                item.listingType !== 'buy' &&
+                !item.fullName?.trim().toUpperCase().startsWith('RIIDE')
+            ));
         } catch (err) {
             console.error('Fetch error:', err);
             setError(err instanceof Error ? err.message : 'Error fetching items');
@@ -736,7 +766,7 @@ export function CollectionsHK() {
                             </div>
 
                             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                                {RIIDE_ITEMS.map((item, idx) => (
+                                {riideItems.map((item, idx) => (
                                     <div
                                         key={idx}
                                         className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
