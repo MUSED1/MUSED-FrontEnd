@@ -821,7 +821,7 @@ export function Profile() {
                                             Browse the collection and save items you like
                                         </p>
                                         <button
-                                            onClick={() => navigate('/collections-m')}
+                                            onClick={() => navigate('/collections-hk')}
                                             className="inline-flex items-center gap-2 px-6 py-3 bg-plum text-cream rounded-lg hover:bg-plum/90 hover:shadow-lg transition-all"
                                         >
                                             Browse Collection
@@ -901,7 +901,7 @@ export function Profile() {
                                             Your paid and confirmed reservations will appear here
                                         </p>
                                         <button
-                                            onClick={() => navigate('/collections-m')}
+                                            onClick={() => navigate('/collections-hk')}
                                             className="inline-flex items-center gap-2 px-6 py-3 bg-plum text-cream rounded-lg hover:bg-plum/90 hover:shadow-lg transition-all"
                                         >
                                             Browse Collection

@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { Header } from './Header'
 import { Footer } from './Footer'
+import {useNavigate} from "react-router-dom";
 
 // Typewriter hook
 function useTypewriter(text: string, speed = 60, startDelay = 0) {
@@ -38,6 +39,7 @@ function useTypewriter(text: string, speed = 60, startDelay = 0) {
 export function Diner() {
     const { displayed: musedText, done: musedDone } = useTypewriter('MUSED', 80, 200)
     const { displayed: eventText }                  = useTypewriter('GATHERS', 80, 780)
+    const navigate = useNavigate()
 
     const [taglineVisible, setTaglineVisible] = useState(false)
     useEffect(() => {
@@ -159,23 +161,16 @@ export function Diner() {
                                     </span>
 
                                     {/* CTA: Abril Display, uppercase, tracking 200, 15px */}
-                                    <span
-                                        className="rounded-full inline-block cursor-not-allowed"
-                                        style={{
-                                            backgroundColor: '#5B1B3A',
-                                            color: '#FFF0C8',
-                                            fontFamily: 'inherit',
-                                            opacity: 0.4,
-                                            pointerEvents: 'none',
-                                        }}
+                                    <button
+                                        onClick={() => navigate('/collections-hk')}
+                                        className="rounded-full inline-block transition-opacity hover:opacity-80 cursor-pointer border-0"
+                                        style={{ backgroundColor: '#5B1B3A', color: '#FFF0C8', fontFamily: 'inherit' }}
                                     >
-                                        <span
-                                            className="font-abril uppercase block px-4 py-2 text-[12px] md:px-7 md:py-3 md:text-[15px]"
-                                            style={{ letterSpacing: '0.2em' }}
-                                        >
-                                            Pick Your Outfit
-                                        </span>
-                                    </span>
+    <span className="font-abril uppercase block px-4 py-2 text-[12px] md:px-7 md:py-3 md:text-[15px]"
+          style={{ letterSpacing: '0.2em' }}>
+        Pick Your Outfit
+    </span>
+                                    </button>
                                 </div>
                             </div>
 

@@ -49,6 +49,10 @@ interface PurchaseFormData {
     name: string;
     email: string;
     phone: string;
+    // 'delivery' = home delivery with slot; 'store' = pick up at RIIDE store
+    fulfillmentMethod: 'delivery' | 'store' | '';
+    deliveryDay: string;      // only when fulfillmentMethod === 'delivery'
+    deliveryAddress: string;  // only when fulfillmentMethod === 'delivery'
     agreeToTerms: boolean;
 }
 
@@ -431,7 +435,11 @@ export function CollectionsHK() {
                 priceHKD: item.price,
                 customerEmail: purchaseData.email,
                 customerName: purchaseData.name,
-                size: item.size
+                customerPhone: purchaseData.phone,
+                size: item.size,
+                fulfillmentMethod: purchaseData.fulfillmentMethod,
+                deliveryDay: purchaseData.fulfillmentMethod === 'delivery' ? purchaseData.deliveryDay : null,
+                deliveryAddress: purchaseData.fulfillmentMethod === 'delivery' ? purchaseData.deliveryAddress : '24-26 Aberdeen St, Hong Kong',
             });
 
             if (response.data.success && response.data.url) {
@@ -920,6 +928,7 @@ export function CollectionsHK() {
                                 onClose={() => setSelectedBuyItem(null)}
                                 onSubmit={processBuyPayment}
                                 processing={processingBuy}
+                                deliveryDays={deliveryDays}
                             />
                         </div>
                     </div>
@@ -1221,25 +1230,29 @@ function ReservationForm({
     );
 }
 
-// ─── ✅ NEW: Buy Purchase Form (no delivery/return date) ──────────────────────
+// ─── ✅ Buy Purchase Form — with delivery or store pick-up ────────────────────
 function PurchaseForm({
-                          item, user, onClose, onSubmit, processing
+                          item, user, onClose, onSubmit, processing, deliveryDays
                       }: {
     item: typeof RIIDE_ITEMS[0];
     user: any;
     onClose: () => void;
     onSubmit: (data: PurchaseFormData, item: typeof RIIDE_ITEMS[0]) => void;
     processing: boolean;
+    deliveryDays: { value: string; label: string }[];
 }) {
     const [formData, setFormData] = useState<PurchaseFormData>({
         name: user?.name || '',
         email: user?.email || '',
         phone: user?.phone || '',
+        fulfillmentMethod: '',
+        deliveryDay: '',
+        deliveryAddress: '',
         agreeToTerms: false
     });
     const [submitting, setSubmitting] = useState(false);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target;
         setFormData(prev => ({
             ...prev,
@@ -1251,6 +1264,18 @@ function PurchaseForm({
         e.preventDefault();
         if (!formData.agreeToTerms) {
             alert('Please agree to the terms and conditions');
+            return;
+        }
+        if (!formData.fulfillmentMethod) {
+            alert('Please choose delivery or store pick-up');
+            return;
+        }
+        if (formData.fulfillmentMethod === 'delivery' && !formData.deliveryDay) {
+            alert('Please select a delivery time slot');
+            return;
+        }
+        if (formData.fulfillmentMethod === 'delivery' && !formData.deliveryAddress.trim()) {
+            alert('Please enter your delivery address');
             return;
         }
         setSubmitting(true);
@@ -1267,6 +1292,7 @@ function PurchaseForm({
         <form onSubmit={handleSubmit} className="space-y-5">
             <h3 className="text-xl font-bold text-plum">Complete Your Purchase</h3>
 
+            {/* No-return banner */}
             <div className="bg-gradient-to-br from-amber-100 to-amber-50 p-4 rounded-xl border-2 border-amber-300">
                 <div className="flex items-center space-x-3">
                     <ShoppingBag className="text-plum flex-shrink-0" size={22} />
@@ -1328,6 +1354,113 @@ function PurchaseForm({
                 />
             </div>
 
+            {/* ── Fulfillment method ── */}
+            <div>
+                <label className="block text-sm font-semibold text-plum mb-3">
+                    How would you like to receive your item? *
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                    {/* Delivery option */}
+                    <label
+                        className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                            formData.fulfillmentMethod === 'delivery'
+                                ? 'border-rose bg-rose/5 shadow-md'
+                                : 'border-gray-200 hover:border-rose/40'
+                        }`}
+                    >
+                        <input
+                            type="radio"
+                            name="fulfillmentMethod"
+                            value="delivery"
+                            checked={formData.fulfillmentMethod === 'delivery'}
+                            onChange={handleChange}
+                            className="sr-only"
+                        />
+                        <Calendar size={24} className={formData.fulfillmentMethod === 'delivery' ? 'text-rose' : 'text-plum/50'} />
+                        <span className="text-sm font-semibold text-plum text-center">Home Delivery</span>
+                        <span className="text-xs text-plum/60 text-center">We bring it to you</span>
+                    </label>
+
+                    {/* Store pick-up option */}
+                    <label
+                        className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                            formData.fulfillmentMethod === 'store'
+                                ? 'border-rose bg-rose/5 shadow-md'
+                                : 'border-gray-200 hover:border-rose/40'
+                        }`}
+                    >
+                        <input
+                            type="radio"
+                            name="fulfillmentMethod"
+                            value="store"
+                            checked={formData.fulfillmentMethod === 'store'}
+                            onChange={handleChange}
+                            className="sr-only"
+                        />
+                        <MapPin size={24} className={formData.fulfillmentMethod === 'store' ? 'text-rose' : 'text-plum/50'} />
+                        <span className="text-sm font-semibold text-plum text-center">Pick Up in Store</span>
+                        <span className="text-xs text-plum/60 text-center">Collect at RIIDE</span>
+                    </label>
+                </div>
+            </div>
+
+            {/* Delivery slot — shown only when delivery is selected */}
+            {formData.fulfillmentMethod === 'delivery' && (
+                <>
+                    <div>
+                        <label className="block text-sm font-semibold text-plum mb-2 flex items-center">
+                            <Calendar size={14} className="mr-2 text-rose" />
+                            Delivery Time Slot *
+                        </label>
+                        <select
+                            name="deliveryDay"
+                            value={formData.deliveryDay}
+                            onChange={handleChange}
+                            required
+                            className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose focus:border-rose text-plum"
+                        >
+                            <option value="">Select a delivery slot</option>
+                            {deliveryDays.map((day, i) => (
+                                <option key={i} value={day.value}>{day.label}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-semibold text-plum mb-2 flex items-center">
+                            <MapPin size={14} className="mr-2 text-rose" />
+                            Delivery Address *
+                        </label>
+                        <textarea
+                            name="deliveryAddress"
+                            value={formData.deliveryAddress}
+                            onChange={handleChange}
+                            required
+                            rows={3}
+                            className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose focus:border-rose text-plum"
+                            placeholder="Enter your complete delivery address"
+                        />
+                    </div>
+                </>
+            )}
+
+            {/* Store info — shown only when store pick-up is selected */}
+            {formData.fulfillmentMethod === 'store' && (
+                <div className="bg-gradient-to-br from-plum/5 to-rose/5 p-4 rounded-xl border-2 border-plum/20">
+                    <div className="flex items-start gap-3">
+                        <MapPin size={20} className="text-rose flex-shrink-0 mt-0.5" />
+                        <div>
+                            <p className="text-plum font-semibold text-sm">RIIDE Store</p>
+                            <p className="text-plum text-sm mt-0.5">24-26 Aberdeen St, Hong Kong</p>
+                            <p className="text-plum/70 text-xs mt-1">Open daily: 9am – 6pm</p>
+                            <p className="text-plum/60 text-xs mt-2">
+                                Please bring your order confirmation when you come to collect.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Terms */}
             <div className="bg-gradient-to-br from-cream to-amber-50 p-4 rounded-xl border-2 border-amber-200">
                 <div className="flex items-start space-x-3">
@@ -1366,7 +1499,7 @@ function PurchaseForm({
                 </button>
                 <button
                     type="submit"
-                    disabled={!formData.agreeToTerms || submitting || processing}
+                    disabled={!formData.agreeToTerms || !formData.fulfillmentMethod || submitting || processing}
                     className="flex-1 bg-gradient-to-r from-plum to-rose text-cream py-3.5 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center gap-2"
                 >
                     {submitting || processing ? (
