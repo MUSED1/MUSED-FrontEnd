@@ -658,9 +658,8 @@ export function Profile() {
                                         </button>
                                         {/* 2. Browse Collection — disabled for now, muted plum; full plum when enabled */}
                                         <button
-                                            disabled
-                                            className="flex items-center gap-2 px-6 py-3 bg-plum/30 text-cream/60 rounded-lg cursor-not-allowed transition-all"
-                                            title="Coming soon"
+                                            onClick={() => navigate('/collections-hk')}
+                                            className="flex items-center gap-2 px-6 py-3 bg-plum text-cream rounded-lg cursor-pointer hover:bg-rose transition-all"
                                         >
                                             Browse Collection
                                         </button>
