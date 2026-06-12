@@ -77,7 +77,7 @@ const RIIDE_ITEMS: Array<{
     { productName: 'RIIDE - Black Mandarin Bamboo Collar',  price: 990,  category: 'Tops',   size: 'One Size', image: '', dbId: 'REPLACE_ME_5'  },
     { productName: 'RIIDE - Red Mini Bamboo Skirt',         price: 890,  category: 'Skirts', size: 'One Size', image: '', dbId: 'REPLACE_ME_6'  },
     { productName: 'RIIDE - Red Mandarin Bamboo Collar',    price: 990,  category: 'Tops',   size: 'One Size', image: '', dbId: 'REPLACE_ME_7'  },
-    { productName: 'RIIDE - White Mini Bamboo Skirt',    price: 980,  category: 'Skirts',   size: 'One Size', image: '', dbId: 'REPLACE_ME_7'  },
+    { productName: 'RIIDE - White Mini Bamboo Skirt',    price: 980,  category: 'Skirts',   size: 'One Size', image: '', dbId: '6a2b7a7f3dcec0c77519c32a'  },
 
 ];
 
