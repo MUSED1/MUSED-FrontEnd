@@ -71,16 +71,14 @@ const RIIDE_ITEMS: Array<{
     image: string;
     dbId: string;        // ← replace with real MongoDB _id after seeding
 }> = [
-    { productName: 'RIIDE - White Mini Bamboo Skirt',       price: 980,  category: 'Skirts', size: 'One Size', image: '', dbId: 'REPLACE_ME_1'  },
     { productName: 'RIIDE - White Mandarin Bamboo Collar',  price: 1290, category: 'Tops',   size: 'One Size', image: '', dbId: 'REPLACE_ME_2'  },
     { productName: 'RIIDE - Black Maxi Bamboo Skirt',       price: 990,  category: 'Skirts', size: 'One Size', image: '', dbId: 'REPLACE_ME_3'  },
     { productName: 'RIIDE - Black Mini Bamboo Skirt',       price: 890,  category: 'Skirts', size: 'One Size', image: '', dbId: 'REPLACE_ME_4'  },
     { productName: 'RIIDE - Black Mandarin Bamboo Collar',  price: 990,  category: 'Tops',   size: 'One Size', image: '', dbId: 'REPLACE_ME_5'  },
     { productName: 'RIIDE - Red Mini Bamboo Skirt',         price: 890,  category: 'Skirts', size: 'One Size', image: '', dbId: 'REPLACE_ME_6'  },
     { productName: 'RIIDE - Red Mandarin Bamboo Collar',    price: 990,  category: 'Tops',   size: 'One Size', image: '', dbId: 'REPLACE_ME_7'  },
-    { productName: 'RIIDE - Bamboo Maxi Skirt',             price: 990,  category: 'Skirts', size: 'One Size', image: '', dbId: 'REPLACE_ME_8'  },
-    { productName: 'RIIDE - Mandarin Collar Top White',     price: 1290, category: 'Tops',   size: 'One Size', image: '', dbId: 'REPLACE_ME_9'  },
-    { productName: 'RIIDE - Red Mandarin Collar Top',       price: 990,  category: 'Tops',   size: 'One Size', image: '', dbId: 'REPLACE_ME_10' },
+    { productName: 'RIIDE - White Mini Bamboo Skirt',    price: 980,  category: 'Skirts',   size: 'One Size', image: '', dbId: 'REPLACE_ME_7'  },
+
 ];
 
 export function CollectionsHK() {
@@ -776,7 +774,8 @@ export function CollectionsHK() {
                                 {riideItems.map((item, idx) => (
                                     <div
                                         key={idx}
-                                        className="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                                        className="bg-white rounded-2xl shadow-md overflow-hidden cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                                        onClick={() => setSelectedBuyItem(item)}
                                     >
                                         <div className="relative">
                                             {item.image ? (
@@ -794,26 +793,52 @@ export function CollectionsHK() {
                                                 </div>
                                             )}
 
-                                            {/* Price badge */}
-                                            <div className="absolute top-3 right-3 bg-plum text-cream text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1">
-                                                <Tag size={12} />
-                                                HKD {item.price.toLocaleString()}
-                                            </div>
+                                            {/* Preview (Eye) Button */}
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    if (item.image) setSelectedImage(item.image);
+                                                }}
+                                                className="absolute top-3 left-3 p-3 rounded-full bg-white/90 text-plum hover:bg-white transition-all transform hover:scale-110"
+                                            >
+                                                <Eye size={20} />
+                                            </button>
+
+                                            {/* Heart (Pick) Button */}
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    togglePick(item.dbId);
+                                                }}
+                                                className={`absolute top-3 right-3 p-3 rounded-full transition-all transform hover:scale-110 ${
+                                                    userPicks[item.dbId]
+                                                        ? 'bg-rose text-white shadow-lg'
+                                                        : 'bg-white/90 text-plum hover:bg-white'
+                                                }`}
+                                            >
+                                                <Heart size={20} className={userPicks[item.dbId] ? 'fill-white' : ''} />
+                                            </button>
                                         </div>
 
                                         <div className="p-4">
                                             <h3 className="font-semibold text-plum text-sm leading-tight mb-1">
                                                 {item.productName}
                                             </h3>
-                                            <p className="text-xs text-plum/60 mb-3">{item.category} · {item.size}</p>
-
-                                            <button
-                                                onClick={() => setSelectedBuyItem(item)}
-                                                className="w-full bg-gradient-to-r from-plum to-rose text-cream py-2.5 rounded-xl text-sm font-semibold hover:shadow-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center gap-2"
-                                            >
-                                                <ShoppingBag size={16} />
-                                                Buy Now
-                                            </button>
+                                            <div className="flex items-center justify-between mt-1">
+                                                <div className="flex items-center gap-1 text-plum font-bold text-sm">
+                                                    <Tag size={12} className="text-rose" />
+                                                    HKD {item.price.toLocaleString()}
+                                                </div>
+                                                <span className="text-xs text-plum/60">{item.category} · {item.size}</span>
+                                            </div>
+                                            {userPicks[item.dbId] && (
+                                                <div className="mt-2">
+                                                    <span className="text-xs text-rose flex items-center gap-1">
+                                                        <Heart size={12} className="fill-rose" />
+                                                        Picked
+                                                    </span>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 ))}
