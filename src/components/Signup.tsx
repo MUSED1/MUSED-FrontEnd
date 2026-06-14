@@ -27,30 +27,20 @@ export const Signup: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
-    // ✅ Get referral code from URL (it should always be in the URL on this page
-    // because Login.tsx now correctly passes it via getSignupUrl())
     const getReferralCode = (): string | null => {
         const params = new URLSearchParams(location.search);
         return params.get('ref');
     };
 
-    // ✅ FIX: After signup, redirect to the intended page (upload) instead of /profile.
-    // If the user came from /upload?ref=<id>, take them back there so they can
-    // complete the submission — which is what actually triggers completeReferral().
-    // Fall back to /upload (no ref needed in URL since referredBy is now saved on the user).
     const getPostSignupDestination = (): string => {
         const from = (location.state as any)?.from;
         if (from) return from;
-        // If no state, default to upload so they can complete their first submission
         return '/upload';
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
         const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
+        setFormData(prev => ({ ...prev, [name]: value }));
     };
 
     const handleGoogleLogin = () => {
@@ -58,6 +48,14 @@ export const Signup: React.FC = () => {
         const BASE_URL = API_URL.replace('/auth', '');
         const ref = getReferralCode();
         const url = ref ? `${BASE_URL}/auth/google?ref=${ref}` : `${BASE_URL}/auth/google`;
+        window.location.href = url;
+    };
+
+    const handleAppleLogin = () => {
+        const API_URL = import.meta.env.VITE_API_URL || 'https://mused-backend.onrender.com/api';
+        const BASE_URL = API_URL.replace('/auth', '');
+        const ref = getReferralCode();
+        const url = ref ? `${BASE_URL}/auth/apple?ref=${ref}` : `${BASE_URL}/auth/apple`;
         window.location.href = url;
     };
 
@@ -87,7 +85,6 @@ export const Signup: React.FC = () => {
 
         setLoading(true);
 
-        // Pass referral code to signup so referredBy is stored immediately on the new user
         const ref = getReferralCode();
         const result = await signup({
             name: formData.name,
@@ -98,8 +95,6 @@ export const Signup: React.FC = () => {
         });
 
         if (result.success) {
-            // ✅ FIX: Go to upload page (or original destination) so the user
-            // can submit their first item and trigger completeReferral()
             navigate(getPostSignupDestination(), { replace: true });
         } else {
             setLocalError(result.error || 'Signup failed');
@@ -111,7 +106,6 @@ export const Signup: React.FC = () => {
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-cream via-cream to-rose/30 py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-md w-full">
-                {/* Decorative element */}
                 <div className="absolute top-0 left-0 w-full h-64 bg-burgundy/5 -z-10" />
 
                 <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-8 md:p-10 border border-gold/20">
@@ -135,7 +129,6 @@ export const Signup: React.FC = () => {
                         )}
 
                         <div className="space-y-4">
-                            {/* Name Field */}
                             <div className="group">
                                 <label className="block text-sm font-medium text-plum/80 mb-1.5 font-inter">
                                     Full Name
@@ -148,10 +141,10 @@ export const Signup: React.FC = () => {
                                     placeholder="Enter your full name"
                                     value={formData.name}
                                     onChange={handleChange}
+                                    disabled={loading}
                                 />
                             </div>
 
-                            {/* Email Field */}
                             <div>
                                 <label className="block text-sm font-medium text-plum/80 mb-1.5 font-inter">
                                     Email Address
@@ -164,10 +157,10 @@ export const Signup: React.FC = () => {
                                     placeholder="you@example.com"
                                     value={formData.email}
                                     onChange={handleChange}
+                                    disabled={loading}
                                 />
                             </div>
 
-                            {/* Phone Field */}
                             <div>
                                 <label className="block text-sm font-medium text-plum/80 mb-1.5 font-inter">
                                     Phone Number
@@ -180,10 +173,10 @@ export const Signup: React.FC = () => {
                                     placeholder="+1 (555) 000-0000"
                                     value={formData.phone}
                                     onChange={handleChange}
+                                    disabled={loading}
                                 />
                             </div>
 
-                            {/* Password Field */}
                             <div>
                                 <label className="block text-sm font-medium text-plum/80 mb-1.5 font-inter">
                                     Password
@@ -196,13 +189,13 @@ export const Signup: React.FC = () => {
                                     placeholder="Create a password"
                                     value={formData.password}
                                     onChange={handleChange}
+                                    disabled={loading}
                                 />
                                 <p className="mt-2 text-xs text-plum/60 font-inter">
                                     Minimum 6 characters
                                 </p>
                             </div>
 
-                            {/* Confirm Password Field */}
                             <div>
                                 <label className="block text-sm font-medium text-plum/80 mb-1.5 font-inter">
                                     Confirm Password
@@ -215,11 +208,11 @@ export const Signup: React.FC = () => {
                                     placeholder="Confirm your password"
                                     value={formData.confirmPassword}
                                     onChange={handleChange}
+                                    disabled={loading}
                                 />
                             </div>
                         </div>
 
-                        {/* Terms Checkbox */}
                         <div className="flex items-start gap-3 mt-6">
                             <div className="flex items-center h-5">
                                 <input
@@ -246,7 +239,6 @@ export const Signup: React.FC = () => {
                             </label>
                         </div>
 
-                        {/* Submit Button */}
                         <button
                             type="submit"
                             disabled={loading || !termsAccepted}
@@ -266,7 +258,6 @@ export const Signup: React.FC = () => {
                         </button>
                     </form>
 
-                    {/* Social Login Section */}
                     <div className="mt-8">
                         <div className="relative">
                             <div className="absolute inset-0 flex items-center">
@@ -279,8 +270,7 @@ export const Signup: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="mt-6 grid grid-cols-1 gap-3">
-                            {/* Google Sign Up Button */}
+                        <div className="mt-6 grid grid-cols-2 gap-3">
                             <button
                                 type="button"
                                 onClick={handleGoogleLogin}
@@ -295,10 +285,21 @@ export const Signup: React.FC = () => {
                                 </svg>
                                 <span className="text-sm text-plum font-inter">Google</span>
                             </button>
+
+                            <button
+                                type="button"
+                                onClick={handleAppleLogin}
+                                disabled={loading}
+                                className="flex items-center justify-center gap-3 px-4 py-3 bg-black border border-black rounded-xl hover:bg-gray-900 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                <svg className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" />
+                                </svg>
+                                <span className="text-sm text-white font-inter">Apple</span>
+                            </button>
                         </div>
                     </div>
 
-                    {/* Login Link */}
                     <div className="text-center pt-6">
                         <p className="text-plum/60 text-sm font-inter">
                             Already have an account?{' '}
@@ -312,7 +313,6 @@ export const Signup: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Decorative element */}
                 <div className="absolute bottom-0 right-0 w-64 h-64 bg-gold/5 rounded-full blur-3xl -z-10" />
             </div>
         </div>

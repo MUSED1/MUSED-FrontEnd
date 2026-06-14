@@ -10,7 +10,7 @@ interface User {
     phone?: string;
     role: 'user' | 'admin';
     avatar?: string;
-    provider?: 'local' | 'google' | 'facebook';
+    provider?: 'local' | 'google' | 'facebook' | 'apple';
     referralCode?: string;
     referralCount?: number;
     referredBy?: string | { _id: string; name: string; email: string };
