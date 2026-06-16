@@ -990,17 +990,23 @@ function ReservationForm({
     deliveryDays: { value: string; label: string }[];
     returnDays: { value: string; label: string }[];
 }) {
+    // MUSED Accessories are picked up at the dinner — no logistics fields needed
+    const isMusedAccessory =
+        outfit.fullName.trim().toUpperCase() === 'MUSED' &&
+        outfit.category === 'Accessories';
+
     const [formData, setFormData] = useState<ReservationFormData>({
         name: user?.name || '',
         email: user?.email || '',
         phone: user?.phone || '',
-        address: '',
-        instructions: '',
-        deliveryDay: '',
-        deliveryTime: '',
-        returnDay: '',
-        returnTime: '',
-        deliveryMethod: '',
+        // Pre-fill fixed values for MUSED Accessories so the backend never sees empty required fields
+        address: isMusedAccessory ? 'Pickup at MUSED Dinner' : '',
+        instructions: isMusedAccessory ? 'Pickup at the dinner event' : '',
+        deliveryDay: isMusedAccessory ? 'dinner-pickup' : '',
+        deliveryTime: isMusedAccessory ? 'at-dinner' : '',
+        returnDay: isMusedAccessory ? 'dinner-pickup' : '',
+        returnTime: isMusedAccessory ? 'at-dinner' : '',
+        deliveryMethod: isMusedAccessory ? 'in-person' : '',
         agreeToTerms: false
     });
 
@@ -1096,106 +1102,135 @@ function ReservationForm({
                         placeholder="Enter your phone number"
                     />
                 </div>
+
+                {/* Delivery Day — hidden for MUSED Accessories (picked up at dinner) */}
+                {!isMusedAccessory && (
+                    <div className="transform transition-all duration-300 hover:scale-105">
+                        <label className="block text-sm font-semibold text-plum mb-2 flex items-center">
+                            <Calendar size={16} className="mr-2 text-rose" />
+                            Delivery Day & Time *
+                        </label>
+                        <select
+                            name="deliveryDay"
+                            value={formData.deliveryDay}
+                            onChange={handleChange}
+                            required
+                            className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose focus:border-rose text-plum transition-all duration-300"
+                        >
+                            <option value="">Select delivery day & time</option>
+                            {deliveryDays.map((day, index) => (
+                                <option key={index} value={day.value}>{day.label}</option>
+                            ))}
+                        </select>
+                    </div>
+                )}
+            </div>
+
+            {/* Pick-up Day — hidden for MUSED Accessories */}
+            {!isMusedAccessory && (
                 <div className="transform transition-all duration-300 hover:scale-105">
                     <label className="block text-sm font-semibold text-plum mb-2 flex items-center">
                         <Calendar size={16} className="mr-2 text-rose" />
-                        Delivery Day & Time *
+                        Pick-up Day & Time *
                     </label>
                     <select
-                        name="deliveryDay"
-                        value={formData.deliveryDay}
+                        name="returnDay"
+                        value={formData.returnDay}
                         onChange={handleChange}
                         required
                         className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose focus:border-rose text-plum transition-all duration-300"
                     >
-                        <option value="">Select delivery day & time</option>
-                        {deliveryDays.map((day, index) => (
+                        <option value="">Select pick-up day & time</option>
+                        {returnDays.map((day, index) => (
                             <option key={index} value={day.value}>{day.label}</option>
                         ))}
                     </select>
                 </div>
-            </div>
+            )}
 
-            {/* Pick-up Day */}
-            <div className="transform transition-all duration-300 hover:scale-105">
-                <label className="block text-sm font-semibold text-plum mb-2 flex items-center">
-                    <Calendar size={16} className="mr-2 text-rose" />
-                    Pick-up Day & Time *
-                </label>
-                <select
-                    name="returnDay"
-                    value={formData.returnDay}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose focus:border-rose text-plum transition-all duration-300"
-                >
-                    <option value="">Select pick-up day & time</option>
-                    {returnDays.map((day, index) => (
-                        <option key={index} value={day.value}>{day.label}</option>
-                    ))}
-                </select>
-            </div>
-
-            {/* Delivery Method */}
-            <div className="transform transition-all duration-300 hover:scale-105">
-                <label className="block text-sm font-semibold text-plum mb-2">
-                    Delivery Method *
-                </label>
-                <div className="space-y-3">
-                    <label className="flex items-center space-x-3">
-                        <input
-                            type="radio"
-                            name="deliveryMethod"
-                            value="without"
-                            checked={formData.deliveryMethod === 'without'}
-                            onChange={handleChange}
-                            className="text-rose focus:ring-rose"
-                            required
-                        />
-                        <span className="text-plum">I don't need to be there</span>
+            {/* Delivery Method — hidden for MUSED Accessories */}
+            {!isMusedAccessory && (
+                <div className="transform transition-all duration-300 hover:scale-105">
+                    <label className="block text-sm font-semibold text-plum mb-2">
+                        Delivery Method *
                     </label>
-                    <label className="flex items-center space-x-3">
-                        <input
-                            type="radio"
-                            name="deliveryMethod"
-                            value="in-person"
-                            checked={formData.deliveryMethod === 'in-person'}
-                            onChange={handleChange}
-                            className="text-rose focus:ring-rose"
-                            required
-                        />
-                        <span className="text-plum">I need to be there</span>
-                    </label>
+                    <div className="space-y-3">
+                        <label className="flex items-center space-x-3">
+                            <input
+                                type="radio"
+                                name="deliveryMethod"
+                                value="without"
+                                checked={formData.deliveryMethod === 'without'}
+                                onChange={handleChange}
+                                className="text-rose focus:ring-rose"
+                                required
+                            />
+                            <span className="text-plum">I don't need to be there</span>
+                        </label>
+                        <label className="flex items-center space-x-3">
+                            <input
+                                type="radio"
+                                name="deliveryMethod"
+                                value="in-person"
+                                checked={formData.deliveryMethod === 'in-person'}
+                                onChange={handleChange}
+                                className="text-rose focus:ring-rose"
+                                required
+                            />
+                            <span className="text-plum">I need to be there</span>
+                        </label>
+                    </div>
                 </div>
-            </div>
+            )}
 
-            <div className="transform transition-all duration-300 hover:scale-105">
-                <label className="block text-sm font-semibold text-plum mb-2 flex items-center">
-                    <MapPin size={16} className="mr-2 text-rose" />
-                    Delivery Address *
-                </label>
-                <textarea
-                    name="address"
-                    value={formData.address}
-                    onChange={handleChange}
-                    required
-                    rows={3}
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose focus:border-rose text-plum transition-all duration-300"
-                    placeholder="Enter your complete delivery address"
-                />
-            </div>
+            {/* Delivery Address — hidden for MUSED Accessories */}
+            {!isMusedAccessory && (
+                <div className="transform transition-all duration-300 hover:scale-105">
+                    <label className="block text-sm font-semibold text-plum mb-2 flex items-center">
+                        <MapPin size={16} className="mr-2 text-rose" />
+                        Delivery Address *
+                    </label>
+                    <textarea
+                        name="address"
+                        value={formData.address}
+                        onChange={handleChange}
+                        required
+                        rows={3}
+                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose focus:border-rose text-plum transition-all duration-300"
+                        placeholder="Enter your complete delivery address"
+                    />
+                </div>
+            )}
 
-            <div className="transform transition-all duration-300 hover:scale-105">
-                <label className="block text-sm font-semibold text-plum mb-2">Special Instructions</label>
-                <textarea
-                    name="instructions"
-                    value={formData.instructions}
-                    onChange={handleChange}
-                    rows={2}
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose focus:border-rose text-plum transition-all duration-300"
-                    placeholder="Any special requests, styling preferences, or instructions..."
-                />
-            </div>
+            {/* Special Instructions — hidden for MUSED Accessories */}
+            {!isMusedAccessory && (
+                <div className="transform transition-all duration-300 hover:scale-105">
+                    <label className="block text-sm font-semibold text-plum mb-2">Special Instructions</label>
+                    <textarea
+                        name="instructions"
+                        value={formData.instructions}
+                        onChange={handleChange}
+                        rows={2}
+                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose focus:border-rose text-plum transition-all duration-300"
+                        placeholder="Any special requests, styling preferences, or instructions..."
+                    />
+                </div>
+            )}
+
+            {/* Dinner pickup info banner — shown only for MUSED Accessories */}
+            {isMusedAccessory && (
+                <div className="bg-gradient-to-br from-plum/5 to-rose/5 p-4 rounded-xl border-2 border-plum/20">
+                    <div className="flex items-start gap-3">
+                        <MapPin size={20} className="text-rose flex-shrink-0 mt-0.5" />
+                        <div>
+                            <p className="text-plum font-semibold text-sm">Pickup at the Dinner</p>
+                            <p className="text-plum/80 text-sm mt-0.5">
+                                This accessory will be available for you to collect at the MUSED dinner event. No delivery needed!
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Terms and Conditions */}
             <div className="bg-gradient-to-br from-cream to-amber-50 p-6 rounded-xl border-2 border-amber-200 transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
