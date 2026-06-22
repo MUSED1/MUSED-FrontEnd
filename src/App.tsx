@@ -42,7 +42,7 @@ import {AdminPickups} from "./components/AdminPickups.tsx";
 import { FourthDinner } from './components/FourthDinner';
 import { ForgotPassword, ResetPassword } from './components/ForgotPassword'
 import { CollectionsHK } from './components/CollectionsHK';
-
+import { FifthDinner } from './components/FifthDinner';
 
 function HomePage() {
     return (
@@ -117,6 +117,7 @@ export function App() {
                     <Route path="/forgot-password" element={<ForgotPassword />} />
                     <Route path="/reset-password" element={<ResetPassword />} />
                     <Route path="/collections-hk" element={<CollectionsHK />} />
+                    <Route path="/fifth-dinner" element={<FifthDinner />} />
                 </Routes>
             </Router>
         </AuthProvider>
