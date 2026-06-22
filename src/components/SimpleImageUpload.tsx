@@ -1,41 +1,59 @@
 // components/SimpleImageUpload.tsx
 import { useState, useRef, useEffect } from 'react';
-import { Upload, X, CheckCircle, AlertCircle, Calendar, Loader2, Image as ImageIcon, Trash2, UploadCloud } from 'lucide-react';
+import {
+    Upload, X, CheckCircle, AlertCircle, Calendar, Loader2,
+    Image as ImageIcon, Trash2, UploadCloud, Plus, Pencil,
+    ChevronDown, ChevronUp, Save, Settings
+} from 'lucide-react';
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface UploadedImage {
     id?: string;
     url: string;
     name: string;
     size: number;
-    publicId?: string;
     status?: 'pending' | 'uploading' | 'success' | 'error';
     error?: string;
     progress?: number;
 }
 
-// ─────────────────────────────────────────────
-// DINNER CONFIG — add a new dinner here only
-// ─────────────────────────────────────────────
 interface DinnerConfig {
     id: string;
     label: string;
     dateRange: string;
     tag: string;
     gradient: string;
-    // inclusive boundaries used to backdate the image's createdAt via a fake upload date
-    startDate: string; // ISO date string — first day of the dinner window
-    endDate: string;   // ISO date string — last day (23:59:59)
+    startDate: string;
+    endDate: string;
+    path: string;
 }
 
-const DINNER_CONFIGS: DinnerConfig[] = [
+// ─── Gradient options ─────────────────────────────────────────────────────────
+
+const GRADIENT_OPTIONS = [
+    { label: 'Amber', value: 'from-amber-500 to-orange-500' },
+    { label: 'Purple', value: 'from-purple-600 to-pink-600' },
+    { label: 'Emerald', value: 'from-emerald-600 to-teal-600' },
+    { label: 'Rose',   value: 'from-rose-500 to-pink-700' },
+    { label: 'Sky',    value: 'from-sky-500 to-indigo-600' },
+    { label: 'Lime',   value: 'from-lime-500 to-green-600' },
+    { label: 'Fuchsia',value: 'from-fuchsia-500 to-purple-700' },
+    { label: 'Cyan',   value: 'from-cyan-500 to-blue-600' },
+];
+
+// ─── Default built-in dinners ─────────────────────────────────────────────────
+
+const DEFAULT_DINNERS: DinnerConfig[] = [
     {
         id: 'second',
         label: 'Second Dinner',
         dateRange: 'Before March 19, 2026',
         tag: 'second-dinner',
         gradient: 'from-amber-500 to-orange-500',
-        startDate: '2025-01-01T00:00:00Z',
-        endDate: '2026-03-19T23:59:59Z',
+        startDate: '2025-01-01',
+        endDate: '2026-03-19',
+        path: '/second-dinner',
     },
     {
         id: 'third',
@@ -43,8 +61,9 @@ const DINNER_CONFIGS: DinnerConfig[] = [
         dateRange: 'March 20 – April 1, 2026',
         tag: 'third-dinner',
         gradient: 'from-purple-600 to-pink-600',
-        startDate: '2026-03-20T00:00:00Z',
-        endDate: '2026-04-01T23:59:59Z',
+        startDate: '2026-03-20',
+        endDate: '2026-04-01',
+        path: '/third-dinner',
     },
     {
         id: 'fourth',
@@ -52,8 +71,9 @@ const DINNER_CONFIGS: DinnerConfig[] = [
         dateRange: 'April 2 – May 31, 2026',
         tag: 'fourth-dinner',
         gradient: 'from-emerald-600 to-teal-600',
-        startDate: '2026-04-02T00:00:00Z',
-        endDate: '2026-05-31T23:59:59Z',
+        startDate: '2026-04-02',
+        endDate: '2026-05-31',
+        path: '/fourth-dinner',
     },
     {
         id: 'fifth',
@@ -61,558 +81,646 @@ const DINNER_CONFIGS: DinnerConfig[] = [
         dateRange: 'June 19 – June 25, 2026',
         tag: 'fifth-dinner',
         gradient: 'from-rose-500 to-pink-700',
-        startDate: '2026-06-19T00:00:00Z',
-        endDate: '2026-06-25T23:59:59Z',
+        startDate: '2026-06-19',
+        endDate: '2026-06-25',
+        path: '/fifth-dinner',
     },
-    // ── ADD FUTURE DINNERS BELOW ──────────────────────────────────────
-    // {
-    //   id: 'sixth',
-    //   label: 'Sixth Dinner',
-    //   dateRange: 'TBD',
-    //   tag: 'sixth-dinner',
-    //   gradient: 'from-sky-500 to-indigo-600',
-    //   startDate: '2026-09-01T00:00:00Z',
-    //   endDate:   '2026-09-07T23:59:59Z',
-    // },
 ];
 
-type DinnerType = typeof DINNER_CONFIGS[number]['id'];
+const STORAGE_KEY = 'mused_dinner_configs';
 
 const API_BASE_URL = 'https://mused-backend.onrender.com';
 
+// ─── Helper ───────────────────────────────────────────────────────────────────
+
+function buildDateRange(start: string, end: string): string {
+    if (!start || !end) return '';
+    const fmt = (d: string) => new Date(d + 'T00:00:00Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
+    return `${fmt(start)} – ${fmt(end)}`;
+}
+
+// ─── New Dinner Form ──────────────────────────────────────────────────────────
+
+function DinnerForm({
+                        initial,
+                        onSave,
+                        onCancel,
+                    }: {
+    initial?: Partial<DinnerConfig>;
+    onSave: (d: DinnerConfig) => void;
+    onCancel: () => void;
+}) {
+    const [label, setLabel]       = useState(initial?.label ?? '');
+    const [startDate, setStart]   = useState(initial?.startDate ?? '');
+    const [endDate, setEnd]       = useState(initial?.endDate ?? '');
+    const [gradient, setGradient] = useState(initial?.gradient ?? GRADIENT_OPTIONS[4].value);
+    const [error, setError]       = useState('');
+
+    const handleSave = () => {
+        if (!label.trim())       { setError('Give this dinner a name.');              return; }
+        if (!startDate)          { setError('Pick a start date.');                    return; }
+        if (!endDate)            { setError('Pick an end date.');                     return; }
+        if (endDate < startDate) { setError('End date must be after start date.');   return; }
+
+        const slug = label.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+        const id   = initial?.id ?? slug + '-' + Date.now();
+        onSave({
+            id,
+            label: label.trim(),
+            dateRange: buildDateRange(startDate, endDate),
+            tag: slug,
+            gradient,
+            startDate,
+            endDate,
+            path: `/${slug}`,
+        });
+    };
+
+    return (
+        <div className="bg-white border border-gray-200 rounded-2xl shadow-lg p-6 space-y-4">
+            <h3 className="text-lg font-bold text-gray-800">
+                {initial?.id ? 'Edit Collection' : 'New Dinner Collection'}
+            </h3>
+
+            {/* Name */}
+            <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Collection Name</label>
+                <input
+                    type="text"
+                    value={label}
+                    onChange={e => setLabel(e.target.value)}
+                    placeholder="e.g. Sixth Dinner"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+                />
+            </div>
+
+            {/* Dates */}
+            <div className="grid grid-cols-2 gap-4">
+                <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Start Date</label>
+                    <input
+                        type="date"
+                        value={startDate}
+                        onChange={e => setStart(e.target.value)}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+                    />
+                </div>
+                <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">End Date</label>
+                    <input
+                        type="date"
+                        value={endDate}
+                        onChange={e => setEnd(e.target.value)}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+                    />
+                </div>
+            </div>
+
+            {/* Color */}
+            <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Accent Color</label>
+                <div className="flex flex-wrap gap-2">
+                    {GRADIENT_OPTIONS.map(g => (
+                        <button
+                            key={g.value}
+                            type="button"
+                            onClick={() => setGradient(g.value)}
+                            className={`w-9 h-9 rounded-full bg-gradient-to-br ${g.value} transition-all duration-200
+                                ${gradient === g.value ? 'ring-2 ring-offset-2 ring-gray-600 scale-110' : 'opacity-70 hover:opacity-100'}`}
+                            title={g.label}
+                        />
+                    ))}
+                </div>
+            </div>
+
+            {/* Preview */}
+            {label && startDate && endDate && (
+                <div className={`rounded-xl p-3 bg-gradient-to-r ${gradient} text-white text-sm font-semibold flex justify-between items-center`}>
+                    <span>{label}</span>
+                    <span className="opacity-80 text-xs">{buildDateRange(startDate, endDate)}</span>
+                </div>
+            )}
+
+            {error && <p className="text-red-500 text-sm">{error}</p>}
+
+            <div className="flex gap-3 pt-1">
+                <button
+                    type="button"
+                    onClick={handleSave}
+                    className="flex-1 bg-gray-900 text-white rounded-lg py-2 text-sm font-semibold hover:bg-gray-700 transition-colors flex items-center justify-center gap-2"
+                >
+                    <Save size={14} /> Save Collection
+                </button>
+                <button
+                    type="button"
+                    onClick={onCancel}
+                    className="px-4 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-100 transition-colors"
+                >
+                    Cancel
+                </button>
+            </div>
+        </div>
+    );
+}
+
+// ─── Main Component ───────────────────────────────────────────────────────────
+
 export function SimpleImageUpload() {
-    const [images, setImages] = useState<UploadedImage[]>([]);
-    const [isUploading, setIsUploading] = useState(false);
+    const [dinners, setDinners]               = useState<DinnerConfig[]>(DEFAULT_DINNERS);
+    const [selectedDinnerId, setSelected]     = useState<string>('fifth');
+    const [images, setImages]                 = useState<UploadedImage[]>([]);
+    const [files, setFiles]                   = useState<File[]>([]);
+    const [isUploading, setIsUploading]       = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
-    const [currentFileIndex, setCurrentFileIndex] = useState(0);
-    const [uploadedIds, setUploadedIds] = useState<string[]>([]);
-    const [message, setMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
-    const [selectedDinnerId, setSelectedDinnerId] = useState<DinnerType>('fifth');
-    const [batchMode, setBatchMode] = useState<'sequential' | 'parallel'>('sequential');
+    const [currentFileIndex, setCurrentFile]  = useState(0);
+    const [uploadedIds, setUploadedIds]       = useState<string[]>([]);
+    const [message, setMessage]               = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+    const [batchMode, setBatchMode]           = useState<'sequential' | 'parallel'>('sequential');
+    const [managerOpen, setManagerOpen]       = useState(false);
+    const [showForm, setShowForm]             = useState(false);
+    const [editingDinner, setEditingDinner]   = useState<DinnerConfig | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const [files, setFiles] = useState<File[]>([]);
 
-    const selectedDinner = DINNER_CONFIGS.find(d => d.id === selectedDinnerId)!;
-
-    // Cleanup object URLs on unmount
+    // Persist custom dinners
     useEffect(() => {
-        return () => {
-            images.forEach(image => {
-                if (image.url.startsWith('blob:')) URL.revokeObjectURL(image.url);
-            });
-        };
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+            try {
+                const parsed = JSON.parse(stored) as DinnerConfig[];
+                // Merge: keep defaults, append any extras not in defaults
+                const defaultIds = new Set(DEFAULT_DINNERS.map(d => d.id));
+                const extras = parsed.filter(d => !defaultIds.has(d.id));
+                setDinners([...DEFAULT_DINNERS, ...extras]);
+            } catch (e) {
+                console.warn('Failed to parse stored dinner configs', e);
+            }
+        }
     }, []);
 
+    const persistDinners = (list: DinnerConfig[]) => {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+        setDinners(list);
+    };
+
+    const handleSaveDinner = (dinner: DinnerConfig) => {
+        const exists = dinners.find(d => d.id === dinner.id);
+        const next = exists
+            ? dinners.map(d => d.id === dinner.id ? dinner : d)
+            : [...dinners, dinner];
+        persistDinners(next);
+        setShowForm(false);
+        setEditingDinner(null);
+        setSelected(dinner.id);
+    };
+
+    const handleDeleteDinner = (id: string) => {
+        const isDefault = DEFAULT_DINNERS.some(d => d.id === id);
+        if (isDefault) return; // protect built-ins
+        const next = dinners.filter(d => d.id !== id);
+        persistDinners(next);
+        if (selectedDinnerId === id) setSelected('fifth');
+    };
+
+    const selectedDinner = dinners.find(d => d.id === selectedDinnerId) ?? dinners[dinners.length - 1];
+
+    // ── File handling ──────────────────────────────────────────────────
+
+    useEffect(() => {
+        const currentImages = images;
+        return () => {
+            currentImages.forEach(img => {
+                if (img.url.startsWith('blob:')) URL.revokeObjectURL(img.url);
+            });
+        };
+    }, [images]);
+
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const selectedFiles = Array.from(e.target.files || []);
-        const imageFiles = selectedFiles.filter(f => f.type.startsWith('image/') && f.size <= 10 * 1024 * 1024);
+        const selected = Array.from(e.target.files || []);
+        const valid    = selected.filter(f => f.type.startsWith('image/') && f.size <= 10 * 1024 * 1024);
+        if (valid.length === 0) { setMessage({ type: 'error', text: 'Please select valid image files (max 10MB each)' }); return; }
+        if (files.length + valid.length > 20) { setMessage({ type: 'error', text: 'Maximum 20 images allowed at once' }); return; }
 
-        if (imageFiles.length === 0) {
-            setMessage({ type: 'error', text: 'Please select valid image files (max 10MB each)' });
-            return;
-        }
-        if (files.length + imageFiles.length > 20) {
-            setMessage({ type: 'error', text: 'Maximum 20 images allowed at once' });
-            return;
-        }
-
-        setFiles(prev => [...prev, ...imageFiles]);
-        setImages(prev => [...prev, ...imageFiles.map(file => ({
-            url: URL.createObjectURL(file),
-            name: file.name,
-            size: file.size,
-            status: 'pending' as const,
-        }))]);
-
-        setMessage(imageFiles.length < selectedFiles.length
-            ? { type: 'error', text: 'Some files were skipped (non-image or too large)' }
-            : null
-        );
-
+        setFiles(prev => [...prev, ...valid]);
+        setImages(prev => [...prev, ...valid.map(f => ({ url: URL.createObjectURL(f), name: f.name, size: f.size, status: 'pending' as const }))]);
+        setMessage(valid.length < selected.length ? { type: 'error', text: 'Some files were skipped (non-image or too large)' } : null);
         if (fileInputRef.current) fileInputRef.current.value = '';
     };
 
-    const removeImage = (index: number) => {
-        const newFiles = [...files];
-        newFiles.splice(index, 1);
-        setFiles(newFiles);
-
-        const newImages = [...images];
-        const removed = newImages.splice(index, 1)[0];
-        if (removed.url.startsWith('blob:')) URL.revokeObjectURL(removed.url);
-        setImages(newImages);
-
-        const newIds = [...uploadedIds];
-        newIds.splice(index, 1);
-        setUploadedIds(newIds);
+    const removeImage = (i: number) => {
+        const nf = [...files]; nf.splice(i, 1); setFiles(nf);
+        const ni = [...images]; const rm = ni.splice(i, 1)[0];
+        if (rm.url.startsWith('blob:')) URL.revokeObjectURL(rm.url);
+        setImages(ni);
+        const ni2 = [...uploadedIds]; ni2.splice(i, 1); setUploadedIds(ni2);
         setMessage(null);
     };
 
     const removeAllImages = () => {
         images.forEach(img => { if (img.url.startsWith('blob:')) URL.revokeObjectURL(img.url); });
-        setImages([]);
-        setFiles([]);
-        setUploadedIds([]);
-        setMessage(null);
-        setUploadProgress(0);
-        setCurrentFileIndex(0);
+        setImages([]); setFiles([]); setUploadedIds([]); setMessage(null);
+        setUploadProgress(0); setCurrentFile(0);
     };
 
-    const updateImageStatus = (index: number, status: UploadedImage['status'], error?: string, progress?: number) => {
-        setImages(prev => prev.map((img, i) => i === index ? { ...img, status, error, progress } : img));
+    const updateStatus = (i: number, status: UploadedImage['status'], error?: string, progress?: number) => {
+        setImages(prev => prev.map((img, idx) => idx === i ? { ...img, status, error, progress } : img));
     };
 
-    const uploadFile = (file: File, _index: number, onProgress?: (pct: number) => void): Promise<any> => {
-        return new Promise((resolve, reject) => {
-            const formData = new FormData();
-            formData.append('image', file);
-            formData.append('tags', `${selectedDinner.tag},uploaded,simple-upload,frontend`);
-            formData.append('dinnerType', selectedDinner.id);
+    // ── Upload logic ───────────────────────────────────────────────────
 
-            const xhr = new XMLHttpRequest();
+    interface UploadResult {
+        _id: string;
+        [key: string]: unknown;
+    }
 
-            xhr.upload.addEventListener('progress', (event) => {
-                if (event.lengthComputable && onProgress) {
-                    onProgress(Math.round((event.loaded / event.total) * 100));
-                }
-            });
-
-            xhr.addEventListener('load', () => {
-                if (xhr.status === 201) {
-                    try {
-                        const result = JSON.parse(xhr.responseText);
-                        if (result.success) resolve(result.data);
-                        else reject(new Error(result.message || 'Upload failed'));
-                    } catch {
-                        reject(new Error('Invalid response from server'));
+    const uploadFile = (file: File, onProgress?: (p: number) => void): Promise<UploadResult> => new Promise((resolve, reject) => {
+        const fd = new FormData();
+        fd.append('image', file);
+        fd.append('tags', `${selectedDinner.tag},uploaded,simple-upload,frontend`);
+        fd.append('dinnerType', selectedDinner.id);
+        const xhr = new XMLHttpRequest();
+        xhr.upload.addEventListener('progress', e => { if (e.lengthComputable && onProgress) onProgress(Math.round(e.loaded / e.total * 100)); });
+        xhr.addEventListener('load', () => {
+            if (xhr.status === 201) {
+                try {
+                    const r = JSON.parse(xhr.responseText) as { success: boolean; data: UploadResult; message?: string };
+                    if (r.success) {
+                        resolve(r.data);
+                    } else {
+                        reject(new Error(r.message ?? 'Upload failed'));
                     }
-                } else {
-                    reject(new Error(`HTTP ${xhr.status}: ${xhr.statusText}`));
+                } catch (parseErr) {
+                    reject(new Error(`Invalid response: ${parseErr instanceof Error ? parseErr.message : String(parseErr)}`));
                 }
-            });
-
-            xhr.addEventListener('error', () => reject(new Error('Network error')));
-            xhr.addEventListener('abort', () => reject(new Error('Upload aborted')));
-
-            xhr.open('POST', `${API_BASE_URL}/api/images/upload`);
-            xhr.withCredentials = true;
-            xhr.send(formData);
+            } else { reject(new Error(`HTTP ${xhr.status}`)); }
         });
-    };
+        xhr.addEventListener('error', () => reject(new Error('Network error')));
+        xhr.open('POST', `${API_BASE_URL}/api/images/upload`);
+        xhr.withCredentials = true;
+        xhr.send(fd);
+    });
 
-    const uploadSequentially = async (): Promise<string[]> => {
+    const uploadSequentially = async () => {
         const ids: string[] = [];
         for (let i = 0; i < files.length; i++) {
-            updateImageStatus(i, 'uploading', undefined, 0);
-            setCurrentFileIndex(i);
+            updateStatus(i, 'uploading', undefined, 0);
+            setCurrentFile(i);
             try {
-                const result = await uploadFile(files[i], i, pct => updateImageStatus(i, 'uploading', undefined, pct));
-                ids.push(result._id);
-                updateImageStatus(i, 'success');
-                setUploadProgress(Math.round(((i + 1) / files.length) * 100));
-            } catch (err) {
-                updateImageStatus(i, 'error', err instanceof Error ? err.message : 'Upload failed');
-            }
+                const res = await uploadFile(files[i], p => updateStatus(i, 'uploading', undefined, p));
+                ids.push(res._id);
+                updateStatus(i, 'success');
+                setUploadProgress(Math.round((i + 1) / files.length * 100));
+            } catch (err) { updateStatus(i, 'error', err instanceof Error ? err.message : 'Failed'); }
         }
         return ids;
     };
 
-    const uploadInParallel = async (): Promise<string[]> => {
-        const results = await Promise.all(files.map(async (file, i) => {
-            updateImageStatus(i, 'uploading', undefined, 0);
+    const uploadInParallel = async () => {
+        const results = await Promise.all(files.map(async (f, i) => {
+            updateStatus(i, 'uploading', undefined, 0);
             try {
-                const result = await uploadFile(file, i, pct => updateImageStatus(i, 'uploading', undefined, pct));
-                updateImageStatus(i, 'success');
-                return result._id as string;
-            } catch (err) {
-                updateImageStatus(i, 'error', err instanceof Error ? err.message : 'Upload failed');
-                return null;
-            }
+                const res = await uploadFile(f, p => updateStatus(i, 'uploading', undefined, p));
+                updateStatus(i, 'success'); return res._id as string;
+            } catch (err) { updateStatus(i, 'error', err instanceof Error ? err.message : 'Failed'); return null; }
         }));
         setUploadProgress(100);
         return results.filter(Boolean) as string[];
     };
 
     const uploadToBackend = async () => {
-        if (files.length === 0) {
-            setMessage({ type: 'error', text: 'Please select at least one image' });
-            return;
-        }
-
-        setIsUploading(true);
-        setUploadProgress(0);
-        setCurrentFileIndex(0);
-        setMessage(null);
-        setUploadedIds([]);
-
+        if (files.length === 0) { setMessage({ type: 'error', text: 'Please select at least one image' }); return; }
+        setIsUploading(true); setUploadProgress(0); setCurrentFile(0); setMessage(null); setUploadedIds([]);
         try {
-            const uploadedImageIds = batchMode === 'sequential'
-                ? await uploadSequentially()
-                : await uploadInParallel();
-
-            const successCount = uploadedImageIds.length;
-            const failCount = files.length - successCount;
-
-            if (successCount > 0) {
-                setMessage({
-                    type: 'success',
-                    text: `Successfully uploaded ${successCount} image(s) to ${selectedDinner.label} gallery!${failCount > 0 ? ` (${failCount} failed)` : ''}`
-                });
+            const ids  = batchMode === 'sequential' ? await uploadSequentially() : await uploadInParallel();
+            const okCount   = ids.length;
+            const failCount = files.length - okCount;
+            if (okCount === 0) {
+                setMessage({ type: 'error', text: 'All uploads failed. Please try again.' });
             } else {
-                throw new Error('All uploads failed');
+                setMessage({ type: 'success', text: `Uploaded ${okCount} image(s) to ${selectedDinner.label}!${failCount > 0 ? ` (${failCount} failed)` : ''}` });
+                setUploadedIds(ids);
+                setTimeout(() => {
+                    setImages(prev => {
+                        const failedImages = prev.filter(img => img.status === 'error');
+                        if (failedImages.length === 0) {
+                            removeAllImages();
+                            return [];
+                        }
+                        setFiles(f => f.filter((_, i) => prev[i]?.status !== 'success'));
+                        setUploadedIds([]);
+                        setMessage({ type: 'error', text: `${failedImages.length} image(s) failed. Please try again.` });
+                        return failedImages;
+                    });
+                }, 5000);
             }
-
-            setUploadedIds(uploadedImageIds);
-
-            setTimeout(() => {
-                const failedImages = images.filter(img => img.status === 'error');
-                if (failedImages.length === 0) {
-                    removeAllImages();
-                } else {
-                    setImages(images.filter(img => img.status !== 'success'));
-                    setFiles(files.filter((_, i) => images[i]?.status !== 'success'));
-                    setUploadedIds([]);
-                    setMessage({ type: 'error', text: `${failedImages.length} image(s) failed. Please try again.` });
-                }
-            }, 5000);
-
         } catch (err) {
             setMessage({ type: 'error', text: `Upload failed: ${err instanceof Error ? err.message : 'Unknown error'}` });
-        } finally {
-            setIsUploading(false);
-            setCurrentFileIndex(0);
-        }
+        } finally { setIsUploading(false); setCurrentFile(0); }
     };
 
-    // ── Helpers ────────────────────────────────────────────────────────
-    const formatFileSize = (bytes: number) => {
-        if (bytes < 1024) return bytes + ' B';
-        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-        return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    // ── Misc ───────────────────────────────────────────────────────────
+
+    const fmt = (bytes: number) => bytes < 1024 ? bytes + ' B' : bytes < 1048576 ? (bytes / 1024).toFixed(1) + ' KB' : (bytes / 1048576).toFixed(1) + ' MB';
+
+    const statusIcon = (s?: UploadedImage['status']) => {
+        if (s === 'uploading') return <Loader2 className="h-4 w-4 animate-spin text-blue-500" />;
+        if (s === 'success')   return <CheckCircle className="h-4 w-4 text-green-500" />;
+        if (s === 'error')     return <AlertCircle className="h-4 w-4 text-red-500" />;
+        return <ImageIcon className="h-4 w-4 text-gray-400" />;
     };
 
-    const getStatusIcon = (status?: UploadedImage['status']) => {
-        switch (status) {
-            case 'uploading': return <Loader2 className="h-4 w-4 animate-spin text-blue-500" />;
-            case 'success':   return <CheckCircle className="h-4 w-4 text-green-500" />;
-            case 'error':     return <AlertCircle className="h-4 w-4 text-red-500" />;
-            default:          return <ImageIcon className="h-4 w-4 text-gray-400" />;
-        }
-    };
-
-    const getStatusColor = (status?: UploadedImage['status']) => {
-        switch (status) {
-            case 'uploading': return 'border-blue-300 bg-blue-50';
-            case 'success':   return 'border-green-300 bg-green-50';
-            case 'error':     return 'border-red-300 bg-red-50';
-            default:          return 'border-gray-200 bg-gray-50';
-        }
+    const statusColor = (s?: UploadedImage['status']): string => {
+        if (s === 'uploading') return 'border-blue-300 bg-blue-50';
+        if (s === 'success')   return 'border-green-300 bg-green-50';
+        if (s === 'error')     return 'border-red-300 bg-red-50';
+        return 'border-gray-200 bg-gray-50';
     };
 
     const handleDragOver = (e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); };
-
     const handleDrop = (e: React.DragEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
+        e.preventDefault(); e.stopPropagation();
         if (isUploading) return;
-        const droppedFiles = Array.from(e.dataTransfer.files);
-        if (droppedFiles.length > 0) {
-            const dt = new DataTransfer();
-            droppedFiles.forEach(f => dt.items.add(f));
-            if (fileInputRef.current) {
-                fileInputRef.current.files = dt.files;
-                handleFileSelect({ target: fileInputRef.current } as React.ChangeEvent<HTMLInputElement>);
-            }
+        const dt = new DataTransfer();
+        Array.from(e.dataTransfer.files).forEach(f => dt.items.add(f));
+        if (fileInputRef.current) {
+            fileInputRef.current.files = dt.files;
+            handleFileSelect({ target: fileInputRef.current } as React.ChangeEvent<HTMLInputElement>);
         }
     };
 
-    const successfulUploads = images.filter(img => img.status === 'success').length;
-    const failedUploads    = images.filter(img => img.status === 'error').length;
-    const pendingUploads   = images.filter(img => img.status === 'pending').length;
+    const ok      = images.filter(i => i.status === 'success').length;
+    const failed  = images.filter(i => i.status === 'error').length;
+    const pending = images.filter(i => i.status === 'pending').length;
 
     // ── Render ─────────────────────────────────────────────────────────
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4">
-            <div className="max-w-6xl mx-auto">
+            <div className="max-w-6xl mx-auto space-y-6">
 
                 {/* Header */}
-                <div className="text-center mb-10">
-                    <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
-                        Bulk Image Upload for Dinner Galleries
-                    </h1>
-                    <p className="text-gray-600 text-lg">
-                        Upload multiple images at once to Cloudinary and assign them to the appropriate dinner gallery
-                    </p>
-                    <p className="text-sm text-gray-500 mt-2">
-                        API: {API_BASE_URL}/api/images/upload | Max 20 images at once
-                    </p>
+                <div className="text-center">
+                    <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-2">Dinner Gallery Upload</h1>
+                    <p className="text-gray-500 text-sm">Assign photos to a dinner collection and upload to Cloudinary</p>
                 </div>
 
-                {/* Upload Area */}
-                <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
+                {/* ── Collection Manager ── */}
+                <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+                    <button
+                        type="button"
+                        onClick={() => setManagerOpen(v => !v)}
+                        className="w-full flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition-colors"
+                    >
+                        <div className="flex items-center gap-2 font-semibold text-gray-700">
+                            <Settings size={18} />
+                            Manage Collections
+                            <span className="text-xs bg-gray-100 text-gray-500 rounded-full px-2 py-0.5 font-normal">
+                                {dinners.length} dinners
+                            </span>
+                        </div>
+                        {managerOpen ? <ChevronUp size={18} className="text-gray-400" /> : <ChevronDown size={18} className="text-gray-400" />}
+                    </button>
 
-                    {/* ── Dinner Selector ── */}
+                    {managerOpen && (
+                        <div className="px-6 pb-6 space-y-4 border-t border-gray-100">
+                            {/* Dinner list */}
+                            <div className="grid sm:grid-cols-2 gap-3 mt-4">
+                                {dinners.map(d => {
+                                    const isDefault = DEFAULT_DINNERS.some(def => def.id === d.id);
+                                    return (
+                                        <div key={d.id} className={`flex items-center gap-3 rounded-xl p-3 border transition-all
+                                            ${selectedDinnerId === d.id ? 'border-gray-400 bg-gray-50' : 'border-gray-200'}`}>
+                                            <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${d.gradient} flex-shrink-0`} />
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm font-semibold text-gray-800 truncate">{d.label}</p>
+                                                <p className="text-xs text-gray-400 truncate">{d.dateRange}</p>
+                                            </div>
+                                            <div className="flex gap-1 flex-shrink-0">
+                                                {!isDefault && (
+                                                    <>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => { setEditingDinner(d); setShowForm(true); }}
+                                                            className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-colors"
+                                                            title="Edit"
+                                                        >
+                                                            <Pencil size={13} />
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleDeleteDinner(d.id)}
+                                                            className="p-1.5 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors"
+                                                            title="Delete"
+                                                        >
+                                                            <Trash2 size={13} />
+                                                        </button>
+                                                    </>
+                                                )}
+                                                {isDefault && (
+                                                    <span className="text-xs text-gray-300 px-2 py-1">built-in</span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+
+                            {/* Form or add button */}
+                            {showForm ? (
+                                <DinnerForm
+                                    initial={editingDinner ?? undefined}
+                                    onSave={handleSaveDinner}
+                                    onCancel={() => { setShowForm(false); setEditingDinner(null); }}
+                                />
+                            ) : (
+                                <button
+                                    type="button"
+                                    onClick={() => { setEditingDinner(null); setShowForm(true); }}
+                                    className="w-full border-2 border-dashed border-gray-300 rounded-xl py-3 text-sm text-gray-500 hover:border-purple-400 hover:text-purple-600 hover:bg-purple-50 transition-all flex items-center justify-center gap-2"
+                                >
+                                    <Plus size={16} /> Add New Dinner Collection
+                                </button>
+                            )}
+
+                            <p className="text-xs text-gray-400 text-center">
+                                Custom collections are saved in your browser. Built-in dinners can't be deleted.
+                            </p>
+                        </div>
+                    )}
+                </div>
+
+                {/* ── Upload Card ── */}
+                <div className="bg-white rounded-2xl shadow-xl p-8">
+
+                    {/* Dinner selector tabs */}
                     <div className="mb-6 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl">
                         <label className="flex items-center gap-2 text-lg font-semibold text-gray-800 mb-3">
                             <Calendar className="w-5 h-5 text-purple-600" />
-                            Select Dinner Gallery
+                            Upload to Collection
                         </label>
 
-                        {/* Dinner buttons — generated from config */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
-                            {DINNER_CONFIGS.map(dinner => {
-                                const isActive = selectedDinnerId === dinner.id;
-                                return (
-                                    <button
-                                        key={dinner.id}
-                                        type="button"
-                                        onClick={() => setSelectedDinnerId(dinner.id)}
-                                        disabled={isUploading}
-                                        className={`py-3 px-4 rounded-xl font-semibold text-sm transition-all duration-300 text-center leading-tight
-                                            ${isActive
-                                            ? `bg-gradient-to-r ${dinner.gradient} text-white shadow-lg scale-105`
-                                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                                        }
-                                            ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                    >
-                                        <span className="block font-bold">{dinner.label}</span>
-                                        <span className="block text-xs mt-0.5 opacity-80">{dinner.dateRange}</span>
-                                    </button>
-                                );
-                            })}
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
+                            {dinners.map(d => (
+                                <button
+                                    key={d.id}
+                                    type="button"
+                                    onClick={() => setSelected(d.id)}
+                                    disabled={isUploading}
+                                    className={`py-2.5 px-3 rounded-xl font-semibold text-xs transition-all duration-200 text-center leading-tight
+                                        ${selectedDinnerId === d.id
+                                        ? `bg-gradient-to-r ${d.gradient} text-white shadow-md scale-105`
+                                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}
+                                        ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                >
+                                    <span className="block font-bold">{d.label}</span>
+                                    <span className="block opacity-80 mt-0.5" style={{ fontSize: '10px' }}>{d.dateRange}</span>
+                                </button>
+                            ))}
+
+                            {/* Quick-add shortcut */}
+                            <button
+                                type="button"
+                                onClick={() => { setManagerOpen(true); setShowForm(true); setEditingDinner(null); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                                disabled={isUploading}
+                                className="py-2.5 px-3 rounded-xl text-xs text-gray-400 border-2 border-dashed border-gray-300 hover:border-purple-400 hover:text-purple-500 hover:bg-purple-50 transition-all flex flex-col items-center justify-center gap-1 disabled:opacity-50"
+                            >
+                                <Plus size={16} />
+                                <span>New</span>
+                            </button>
                         </div>
 
                         {/* Batch mode */}
-                        <div className="mt-4 flex items-center justify-center gap-4">
-                            <label className="text-sm text-gray-600">Upload Mode:</label>
-                            <div className="flex gap-2">
-                                {(['sequential', 'parallel'] as const).map(mode => (
-                                    <button
-                                        key={mode}
-                                        type="button"
-                                        onClick={() => setBatchMode(mode)}
-                                        disabled={isUploading}
-                                        className={`px-3 py-1 rounded-lg text-sm font-medium transition-all
-                                            ${batchMode === mode ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}
-                                            ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                    >
-                                        {mode === 'sequential' ? 'Sequential (Slower, Memory Safe)' : 'Parallel (Faster, More Memory)'}
-                                    </button>
-                                ))}
-                            </div>
+                        <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+                            <span className="text-sm text-gray-500">Upload mode:</span>
+                            {(['sequential', 'parallel'] as const).map(m => (
+                                <button
+                                    key={m}
+                                    type="button"
+                                    onClick={() => setBatchMode(m)}
+                                    disabled={isUploading}
+                                    className={`px-3 py-1 rounded-lg text-xs font-medium transition-all
+                                        ${batchMode === m ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}
+                                        ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                >
+                                    {m === 'sequential' ? 'Sequential — memory safe' : 'Parallel — faster'}
+                                </button>
+                            ))}
                         </div>
 
-                        {/* Info blurb */}
-                        <p className="text-sm text-gray-500 mt-3 text-center">
-                            📸 Images uploaded now will appear in the <strong>{selectedDinner.label}</strong> gallery ({selectedDinner.dateRange})
+                        <p className="text-xs text-gray-400 mt-3 text-center">
+                            📸 Photos will appear in <strong>{selectedDinner?.label}</strong> ({selectedDinner?.dateRange})
                         </p>
                     </div>
 
                     {/* Drop Zone */}
                     <div
-                        className={`border-3 border-dashed rounded-xl p-12 text-center transition-all duration-300 ${
-                            isUploading
-                                ? 'border-blue-300 bg-blue-50'
-                                : 'border-gray-300 hover:border-purple-500 hover:bg-purple-50 cursor-pointer'
+                        className={`border-2 border-dashed rounded-xl p-12 text-center transition-all duration-300 ${
+                            isUploading ? 'border-blue-300 bg-blue-50' : 'border-gray-300 hover:border-purple-400 hover:bg-purple-50 cursor-pointer'
                         }`}
                         onClick={() => !isUploading && fileInputRef.current?.click()}
                         onDragOver={handleDragOver}
                         onDrop={handleDrop}
-                        role="button"
-                        tabIndex={0}
-                        aria-label="Upload images by clicking or dragging and dropping"
+                        role="button" tabIndex={0}
                     >
-                        <input
-                            ref={fileInputRef}
-                            type="file"
-                            accept="image/*"
-                            multiple
-                            onChange={handleFileSelect}
-                            className="hidden"
-                            disabled={isUploading}
-                        />
-                        <div className="space-y-4">
-                            <div className="flex justify-center">
-                                <div className={`p-4 rounded-full ${isUploading ? 'bg-blue-100' : 'bg-gray-100'}`}>
-                                    <UploadCloud className={`h-12 w-12 ${isUploading ? 'text-blue-500' : 'text-gray-400'}`} />
-                                </div>
+                        <input ref={fileInputRef} type="file" accept="image/*" multiple onChange={handleFileSelect} className="hidden" disabled={isUploading} />
+                        <div className="space-y-3">
+                            <div className={`mx-auto w-fit p-4 rounded-full ${isUploading ? 'bg-blue-100' : 'bg-gray-100'}`}>
+                                <UploadCloud className={`h-10 w-10 ${isUploading ? 'text-blue-500' : 'text-gray-400'}`} />
                             </div>
-                            <div>
-                                <h3 className="text-2xl font-semibold text-gray-800 mb-2">
-                                    {isUploading ? 'Uploading...' : 'Drag & drop or click to upload'}
-                                </h3>
-                                <p className="text-gray-500">Upload JPG, PNG, GIF, WebP. Max 10MB per image.</p>
-                                <p className="text-sm text-gray-400 mt-2">Maximum 20 images at once</p>
-                            </div>
+                            <h3 className="text-xl font-semibold text-gray-700">
+                                {isUploading ? 'Uploading…' : 'Drag & drop or click to upload'}
+                            </h3>
+                            <p className="text-sm text-gray-400">JPG, PNG, GIF, WebP · max 10 MB each · up to 20 at once</p>
                         </div>
                     </div>
 
-                    {/* Progress Bar */}
-                    {isUploading && files.length > 0 && (
-                        <div className="mt-8">
-                            <div className="flex justify-between text-sm text-gray-600 mb-2">
-                                <span>
-                                    Uploading {currentFileIndex + 1} of {files.length} images...
-                                    {batchMode === 'parallel' && ' (Parallel Mode)'}
-                                </span>
+                    {/* Progress */}
+                    {isUploading && (
+                        <div className="mt-6">
+                            <div className="flex justify-between text-sm text-gray-500 mb-1">
+                                <span>Uploading {currentFileIndex + 1} of {files.length}…</span>
                                 <span>{uploadProgress}%</span>
                             </div>
-                            <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                            <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                                 <div
-                                    className={`h-full bg-gradient-to-r ${selectedDinner.gradient} transition-all duration-300`}
+                                    className={`h-full bg-gradient-to-r ${selectedDinner?.gradient} transition-all duration-300`}
                                     style={{ width: `${uploadProgress}%` }}
                                 />
                             </div>
-                            <div className="mt-2 text-center text-sm text-gray-500">
-                                Successful: {successfulUploads} | Failed: {failedUploads} | Pending: {pendingUploads}
-                            </div>
+                            <p className="text-xs text-gray-400 text-center mt-1">
+                                ✅ {ok} · ❌ {failed} · ⏳ {pending}
+                            </p>
                         </div>
                     )}
 
-                    {/* Image Grid */}
+                    {/* Image grid */}
                     {images.length > 0 && (
-                        <div className="mt-10">
+                        <div className="mt-8">
                             <div className="flex justify-between items-center mb-4">
-                                <h3 className="text-xl font-semibold text-gray-800">
-                                    Selected Images ({images.length})
-                                </h3>
+                                <h3 className="font-semibold text-gray-700">Selected ({images.length})</h3>
                                 <div className="flex gap-2">
-                                    <button
-                                        onClick={removeAllImages}
-                                        disabled={isUploading}
-                                        className="text-sm text-red-500 hover:text-red-700 px-3 py-1 border border-red-200 rounded hover:bg-red-50 transition-colors flex items-center gap-1"
-                                    >
-                                        <Trash2 size={14} /> Clear All
+                                    <button onClick={removeAllImages} disabled={isUploading}
+                                            className="text-xs text-red-500 border border-red-200 rounded px-3 py-1 hover:bg-red-50 flex items-center gap-1 disabled:opacity-50">
+                                        <Trash2 size={12} /> Clear all
                                     </button>
-                                    <button
-                                        onClick={uploadToBackend}
-                                        disabled={isUploading || images.length === 0}
-                                        className={`px-4 py-1 rounded text-sm font-medium flex items-center gap-1 ${
-                                            isUploading || images.length === 0
-                                                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                                : `bg-gradient-to-r ${selectedDinner.gradient} text-white hover:shadow-lg`
-                                        }`}
-                                    >
-                                        {isUploading
-                                            ? <><Loader2 size={14} className="animate-spin" /> Uploading...</>
-                                            : <><Upload size={14} /> Upload All ({images.length})</>
-                                        }
+                                    <button onClick={uploadToBackend} disabled={isUploading || images.length === 0}
+                                            className={`text-xs rounded px-3 py-1 font-semibold flex items-center gap-1
+                                            ${isUploading || images.length === 0
+                                                ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                                : `bg-gradient-to-r ${selectedDinner?.gradient} text-white hover:shadow`}`}>
+                                        {isUploading ? <><Loader2 size={12} className="animate-spin" /> Uploading…</> : <><Upload size={12} /> Upload ({images.length})</>}
                                     </button>
                                 </div>
                             </div>
-
-                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                                {images.map((image, index) => (
-                                    <div
-                                        key={index}
-                                        className={`relative group border-2 rounded-lg overflow-hidden transition-all duration-300 ${getStatusColor(image.status)}`}
-                                    >
-                                        <div className="aspect-square bg-gray-200 relative">
-                                            <img
-                                                src={image.url}
-                                                alt={image.name}
-                                                className="w-full h-full object-cover"
-                                                loading="lazy"
-                                            />
-
-                                            {image.status === 'uploading' && (
+                            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
+                                {images.map((img, i) => (
+                                    <div key={i} className={`relative group border-2 rounded-lg overflow-hidden ${statusColor(img.status)}`}>
+                                        <div className="aspect-square bg-gray-100 relative">
+                                            <img src={img.url} alt={img.name} className="w-full h-full object-cover" loading="lazy" />
+                                            {img.status === 'uploading' && (
                                                 <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center">
-                                                    <Loader2 className="h-8 w-8 text-white animate-spin mb-2" />
-                                                    <span className="text-white text-xs font-medium">{image.progress || 0}%</span>
+                                                    <Loader2 className="h-6 w-6 text-white animate-spin" />
+                                                    <span className="text-white text-xs mt-1">{img.progress ?? 0}%</span>
                                                 </div>
                                             )}
-                                            {image.status === 'success' && (
-                                                <div className="absolute inset-0 bg-green-500/80 flex items-center justify-center">
-                                                    <CheckCircle className="h-12 w-12 text-white" />
-                                                </div>
-                                            )}
-                                            {image.status === 'error' && (
-                                                <div className="absolute inset-0 bg-red-500/80 flex items-center justify-center">
-                                                    <AlertCircle className="h-12 w-12 text-white" />
-                                                </div>
-                                            )}
+                                            {img.status === 'success' && <div className="absolute inset-0 bg-green-500/70 flex items-center justify-center"><CheckCircle className="h-8 w-8 text-white" /></div>}
+                                            {img.status === 'error'   && <div className="absolute inset-0 bg-red-500/70 flex items-center justify-center"><AlertCircle className="h-8 w-8 text-white" /></div>}
                                         </div>
-
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
-                                            <p className="text-white text-xs font-medium truncate">{image.name}</p>
-                                            <p className="text-gray-300 text-xs">{formatFileSize(image.size)}</p>
-                                            <p className="text-gray-300 text-xs mt-1">Target: {selectedDinner.label}</p>
-                                            {image.error && <p className="text-red-300 text-xs mt-1 truncate">Error: {image.error}</p>}
+                                        <div className="absolute top-1 left-1 flex items-center gap-1 bg-black/40 rounded-full px-1.5 py-0.5">
+                                            {statusIcon(img.status)}
+                                            <span className="text-white text-[10px] capitalize">{img.status ?? 'pending'}</span>
                                         </div>
-
-                                        <div className="absolute top-2 left-2 flex items-center gap-1 bg-black/50 rounded-full px-2 py-1">
-                                            {getStatusIcon(image.status)}
-                                            <span className="text-white text-xs capitalize">{image.status || 'pending'}</span>
-                                        </div>
-
-                                        {!isUploading && image.status !== 'uploading' && (
-                                            <button
-                                                onClick={e => { e.stopPropagation(); removeImage(index); }}
-                                                className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-red-600"
-                                                aria-label={`Remove ${image.name}`}
-                                            >
-                                                <X size={14} />
+                                        {!isUploading && img.status !== 'uploading' && (
+                                            <button onClick={e => { e.stopPropagation(); removeImage(i); }}
+                                                    className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600">
+                                                <X size={10} />
                                             </button>
                                         )}
                                     </div>
                                 ))}
                             </div>
-
-                            <div className="mt-4 text-sm text-gray-600 text-center">
-                                Total size: {formatFileSize(files.reduce((t, f) => t + f.size, 0))}
-                                {successfulUploads > 0 && <span className="ml-2 text-green-600">| ✅ {successfulUploads} uploaded</span>}
-                                {failedUploads > 0 && <span className="ml-2 text-red-600">| ❌ {failedUploads} failed</span>}
-                            </div>
+                            <p className="text-xs text-gray-400 text-center mt-3">
+                                Total: {fmt(files.reduce((t, f) => t + f.size, 0))}
+                                {ok > 0 && <span className="ml-2 text-green-600">✅ {ok} uploaded</span>}
+                                {failed > 0 && <span className="ml-2 text-red-500">❌ {failed} failed</span>}
+                            </p>
                         </div>
                     )}
 
                     {/* Message */}
                     {message && (
-                        <div className={`mt-6 p-4 rounded-lg flex items-start gap-3 ${
-                            message.type === 'success'
-                                ? 'bg-green-50 text-green-800 border border-green-200'
-                                : 'bg-red-50 text-red-800 border border-red-200'
+                        <div className={`mt-6 p-4 rounded-xl flex items-start gap-3 border ${
+                            message.type === 'success' ? 'bg-green-50 border-green-200 text-green-800' : 'bg-red-50 border-red-200 text-red-800'
                         }`}>
-                            {message.type === 'success'
-                                ? <CheckCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
-                                : <AlertCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
-                            }
-                            <div>
-                                <p className="font-medium">{message.text}</p>
-                                {message.type === 'error' && <p className="text-sm mt-1 opacity-80">Check browser console for details</p>}
-                            </div>
+                            {message.type === 'success' ? <CheckCircle className="h-5 w-5 mt-0.5" /> : <AlertCircle className="h-5 w-5 mt-0.5" />}
+                            <p className="text-sm font-medium">{message.text}</p>
                         </div>
                     )}
                 </div>
 
-                {/* Info section */}
-                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8">
-                    <h3 className="text-2xl font-bold text-gray-800 mb-6 text-center">Bulk Upload Features</h3>
-                    <div className="grid md:grid-cols-3 gap-8">
-                        {[
-                            { n: 1, title: 'Multiple Files', desc: 'Select up to 20 images at once. Supported formats: JPG, PNG, GIF, WebP.' },
-                            { n: 2, title: 'Two Upload Modes', desc: 'Sequential: upload one by one (memory safe). Parallel: upload multiple at once (faster).' },
-                            { n: 3, title: 'Progress Tracking', desc: 'Real-time progress for each image with individual status indicators. Failed uploads can be retried.' },
-                        ].map(({ n, title, desc }) => (
-                            <div key={n} className="text-center space-y-3">
-                                <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xl font-bold mx-auto">{n}</div>
-                                <h4 className="font-bold text-gray-800">{title}</h4>
-                                <p className="text-gray-600 text-sm">{desc}</p>
-                            </div>
-                        ))}
-                    </div>
-
-                    <div className="mt-8 bg-blue-50 border border-blue-200 rounded-xl p-6">
-                        <h4 className="font-bold text-blue-800 mb-3">💡 Pro Tips</h4>
-                        <ul className="text-blue-700 text-sm space-y-2">
-                            <li>• <strong>Sequential mode</strong> is recommended for slow connections or many large files</li>
-                            <li>• <strong>Parallel mode</strong> is faster but uses more browser memory — best for 5–10 images</li>
-                            <li>• Failed uploads stay in the list so you can retry them</li>
-                            <li>• All images are automatically optimized and resized to 1200×1200px max</li>
-                            <li>• To add a new dinner collection, edit the <code className="bg-blue-100 px-1 rounded">DINNER_CONFIGS</code> array at the top of this file</li>
-                        </ul>
-                    </div>
-                </div>
+                {/* Footer note */}
+                <p className="text-center text-xs text-gray-400 pb-4">
+                    Custom collections are stored in your browser. To make them permanent, copy the config to <code>DINNER_CONFIGS</code> in the source file.
+                </p>
             </div>
         </div>
     );
