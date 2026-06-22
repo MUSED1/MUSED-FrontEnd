@@ -160,7 +160,7 @@ export function FourthDinner() {
                     {/* Header Section */}
                     <div className="text-center mb-12">
                         <h1 className="text-5xl md:text-6xl font-bold text-plum mb-6">
-                            Fourth <span className="text-gold">Dinner</span>
+                            Quick  <span className="text-gold">Eternity</span>
                         </h1>
                         <p className="text-xl text-plum/80 max-w-2xl mx-auto">
                             Step inside our fourth Wear Something Borrowed Dinner event.

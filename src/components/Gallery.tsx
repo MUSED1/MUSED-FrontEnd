@@ -57,6 +57,8 @@ const THIRD_DINNER_START_DATE  = new Date('2026-03-20T00:00:00Z');
 const THIRD_DINNER_END_DATE    = new Date('2026-04-02T00:00:00Z');
 const FOURTH_DINNER_START_DATE = new Date('2026-04-02T00:00:00Z');
 const FOURTH_DINNER_END_DATE   = new Date('2026-05-31T23:59:59Z');
+const FIFTH_DINNER_START_DATE  = new Date('2026-06-19T00:00:00Z');
+const FIFTH_DINNER_END_DATE    = new Date('2026-06-25T23:59:59Z');
 
 export function Gallery() {
     const [isVisible, setIsVisible] = useState(false);
@@ -64,11 +66,12 @@ export function Gallery() {
     const [secondDinnerImages, setSecondDinnerImages] = useState<ImageData[]>([]);
     const [thirdDinnerImages, setThirdDinnerImages] = useState<ImageData[]>([]);
     const [fourthDinnerImages, setFourthDinnerImages] = useState<ImageData[]>([]);
+    const [fifthDinnerImages, setFifthDinnerImages] = useState<ImageData[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
-    const [randomizedImages, setRandomizedImages] = useState<Array<{ url: string; type: 'first' | 'second' | 'third' | 'fourth'; id: string }>>([]);
+    const [randomizedImages, setRandomizedImages] = useState<Array<{ url: string; type: 'first' | 'second' | 'third' | 'fourth' | 'fifth'; id: string }>>([]);
     const carouselRef = useRef<HTMLDivElement>(null);
 
     // Typewriter: "Our" then "Gallery" in italic
@@ -105,7 +108,7 @@ export function Gallery() {
             setRandomizedImages(shuffled);
             setCurrentIndex(0);
         }
-    }, [firstDinnerImages, secondDinnerImages, thirdDinnerImages, fourthDinnerImages]);
+    }, [firstDinnerImages, secondDinnerImages, thirdDinnerImages, fourthDinnerImages, fifthDinnerImages]);
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -157,6 +160,10 @@ export function Gallery() {
                 const d = new Date(img.createdAt);
                 return d >= FOURTH_DINNER_START_DATE && d < FOURTH_DINNER_END_DATE;
             }));
+            setFifthDinnerImages(allImages.filter(img => {
+                const d = new Date(img.createdAt);
+                return d >= FIFTH_DINNER_START_DATE && d <= FIFTH_DINNER_END_DATE;
+            }));
         } catch (err) {
             console.error('Error fetching dinner images:', err);
             setError(err instanceof Error ? err.message : 'Failed to load images');
@@ -165,7 +172,7 @@ export function Gallery() {
         }
     };
 
-    const getAllImages = (): Array<{ url: string; type: 'first' | 'second' | 'third' | 'fourth'; id: string }> => {
+    const getAllImages = (): Array<{ url: string; type: 'first' | 'second' | 'third' | 'fourth' | 'fifth'; id: string }> => {
         const firstImages = firstDinnerImages.map((url, index) => ({
             url, type: 'first' as const, id: `first-${index}`
         }));
@@ -178,7 +185,10 @@ export function Gallery() {
         const fourthImages = fourthDinnerImages.map((img) => ({
             url: img.cloudinaryUrl, type: 'fourth' as const, id: img._id
         }));
-        return [...firstImages, ...secondImages, ...thirdImages, ...fourthImages];
+        const fifthImages = fifthDinnerImages.map((img) => ({
+            url: img.cloudinaryUrl, type: 'fifth' as const, id: img._id
+        }));
+        return [...firstImages, ...secondImages, ...thirdImages, ...fourthImages, ...fifthImages];
     };
 
     const getImagesToShow = () => {
@@ -206,6 +216,16 @@ export function Gallery() {
     };
 
     const collections = [
+        {
+            id: 5,
+            title: "Fifth Dinner",
+            date: "2026",
+            image: "https://res.cloudinary.com/dapfjngt2/image/upload/v1782104109/WhatsApp_Image_2026-06-21_at_10.05.50_PM_1_gdfqvo.jpg",
+            path: "/fifth-dinner",
+            description: "The one where east met west",
+            stats: { photos: fifthDinnerImages.length, attendees: 0 },
+            location: "HK"
+        },
         {
             id: 4,
             title: "Fourth Dinner",
@@ -472,7 +492,8 @@ export function Gallery() {
                                                     {image.type === 'first' ? 'First Dinner'
                                                         : image.type === 'second' ? 'Second Dinner'
                                                             : image.type === 'third' ? 'Third Dinner'
-                                                                : 'Fourth Dinner'}
+                                                                : image.type === 'fourth' ? 'Fourth Dinner'
+                                                                    : 'Fifth Dinner'}
                                                 </span>
                                             </div>
                                         </div>
