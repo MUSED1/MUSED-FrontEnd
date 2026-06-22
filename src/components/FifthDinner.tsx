@@ -28,6 +28,11 @@ export function FifthDinner() {
     const [images, setImages] = useState<ImageData[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [brokenIds, setBrokenIds] = useState<Set<string>>(new Set());
+
+    const handleImageError = (id: string) => {
+        setBrokenIds(prev => new Set(prev).add(id));
+    };
 
     useEffect(() => {
         fetchImages();
@@ -102,16 +107,18 @@ export function FifthDinner() {
         document.body.removeChild(link);
     };
 
+    const visibleImages = images.filter(img => !brokenIds.has(img._id));
+
     const getPreviousImage = () => {
         if (!selectedImage) return null;
-        const currentIndex = images.findIndex(img => img._id === selectedImage._id);
-        return currentIndex > 0 ? images[currentIndex - 1] : images[images.length - 1];
+        const currentIndex = visibleImages.findIndex(img => img._id === selectedImage._id);
+        return currentIndex > 0 ? visibleImages[currentIndex - 1] : visibleImages[visibleImages.length - 1];
     };
 
     const getNextImage = () => {
         if (!selectedImage) return null;
-        const currentIndex = images.findIndex(img => img._id === selectedImage._id);
-        return currentIndex < images.length - 1 ? images[currentIndex + 1] : images[0];
+        const currentIndex = visibleImages.findIndex(img => img._id === selectedImage._id);
+        return currentIndex < visibleImages.length - 1 ? visibleImages[currentIndex + 1] : visibleImages[0];
     };
 
     if (loading) {
@@ -168,7 +175,7 @@ export function FifthDinner() {
                     </div>
 
                     {/* Empty State */}
-                    {images.length === 0 ? (
+                    {visibleImages.length === 0 ? (
                         <div className="text-center py-20">
                             <div className="text-5xl mb-4">📷</div>
                             <h3 className="text-2xl font-bold text-plum mb-2">No Images Yet</h3>
@@ -178,7 +185,7 @@ export function FifthDinner() {
                         <>
                             {/* Gallery Grid */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-12">
-                                {images.map((image, index) => (
+                                {images.filter(img => !brokenIds.has(img._id)).map((image, index) => (
                                     <div
                                         key={image._id}
                                         className="group relative bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-xl"
@@ -189,9 +196,7 @@ export function FifthDinner() {
                                             alt={`Photo ${index + 1}`}
                                             className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-110"
                                             loading="lazy"
-                                            onError={(e) => {
-                                                (e.target as HTMLImageElement).src = '/placeholder-image.jpg';
-                                            }}
+                                            onError={() => handleImageError(image._id)}
                                         />
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center p-4">
                                             <span className="text-cream font-semibold text-lg">
@@ -230,14 +235,14 @@ export function FifthDinner() {
 
                                 <img
                                     src={selectedImage.cloudinaryUrl}
-                                    alt={`Photo ${images.findIndex(img => img._id === selectedImage._id) + 1}`}
+                                    alt={`Photo ${visibleImages.findIndex(img => img._id === selectedImage._id) + 1}`}
                                     className="max-w-full max-h-[80vh] object-contain rounded-lg"
                                 />
 
                                 <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-4">
                                     <button
                                         onClick={() => {
-                                            const currentIndex = images.findIndex(img => img._id === selectedImage._id);
+                                            const currentIndex = visibleImages.findIndex(img => img._id === selectedImage._id);
                                             downloadImage(selectedImage, currentIndex);
                                         }}
                                         className="bg-gold text-plum px-6 py-2 rounded-full hover:bg-plum hover:text-cream transition-all duration-300 font-semibold flex items-center gap-2"
@@ -270,7 +275,7 @@ export function FifthDinner() {
                                 </div>
 
                                 <div className="text-cream text-center mt-2">
-                                    Photo {images.findIndex(img => img._id === selectedImage._id) + 1} of {images.length}
+                                    Photo {visibleImages.findIndex(img => img._id === selectedImage._id) + 1} of {visibleImages.length}
                                 </div>
                             </div>
                         </div>
