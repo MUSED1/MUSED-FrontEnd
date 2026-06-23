@@ -121,7 +121,7 @@ export function WishlistHK() {
                     />
                 ))}
                 {/* Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-b from-plum/40 via-plum/20 to-cream" />
+                <div className="absolute inset-0 bg-gradient-to-b from-plum/20 via-plum/10 to-cream/60 pointer-events-none" />
 
                 {/* Dots */}
                 <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2">
@@ -139,13 +139,13 @@ export function WishlistHK() {
                 {/* Hero text */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 pb-16">
                     <p className="font-abril text-cream/80 text-lg italic mb-2 tracking-wide">
-                        you've been waiting —
+                        Join the waiting list —
                     </p>
                     <h1 className="font-kaldera text-cream text-5xl md:text-7xl tracking-widest leading-none mb-4">
-                        WISHLIST
+                        MUSED DRESS
                     </h1>
                     <p className="text-cream/70 text-sm tracking-[0.25em] uppercase">
-                        Hong Kong · Next Collection
+                        - pre-order it now
                     </p>
                 </div>
             </section>
@@ -154,8 +154,7 @@ export function WishlistHK() {
             <section className="max-w-2xl mx-auto px-6 py-12 text-center">
                 <div className="w-12 h-px bg-plum/30 mx-auto mb-8" />
                 <p className="text-plum/80 text-lg leading-relaxed mb-4">
-                    Our next Hong Kong collection is being curated. Join the wishlist and we'll
-                    reach out first when it drops — with priority access to the pieces you love.
+                    The dress made by RIIDE inspired by MUSED. Pre-order it now, it will be sold in limited edition only.
                 </p>
                 <p className="text-plum/50 text-sm tracking-wide">
                     Leave your details below and we'll be in touch.
