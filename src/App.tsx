@@ -43,7 +43,7 @@ import { FourthDinner } from './components/FourthDinner';
 import { ForgotPassword, ResetPassword } from './components/ForgotPassword'
 import { CollectionsHK } from './components/CollectionsHK';
 import { FifthDinner } from './components/FifthDinner';
-
+import { WishlistHK } from './components/WishlistHK';
 function HomePage() {
     return (
         <div className="font-sans">
@@ -118,6 +118,8 @@ export function App() {
                     <Route path="/reset-password" element={<ResetPassword />} />
                     <Route path="/collections-hk" element={<CollectionsHK />} />
                     <Route path="/fifth-dinner" element={<FifthDinner />} />
+                    <Route path="/wishlist" element={<WishlistHK />} />
+
                 </Routes>
             </Router>
         </AuthProvider>
