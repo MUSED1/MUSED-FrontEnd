@@ -332,21 +332,22 @@ export function WishlistHK() {
             {/* ── Lightbox ── */}
             {lightboxImage && (
                 <div
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm"
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm cursor-zoom-out"
                     onClick={() => setLightboxImage(null)}
                 >
                     <button
-                        className="absolute top-5 right-5 text-white/70 hover:text-white transition-colors"
+                        className="absolute top-5 right-5 z-10 text-white/70 hover:text-white transition-colors bg-black/40 rounded-full p-1"
                         onClick={() => setLightboxImage(null)}
                         aria-label="Close"
                     >
-                        <X size={32} />
+                        <X size={28} />
                     </button>
                     <img
                         src={lightboxImage}
                         alt="MUSED HK"
-                        className="max-h-[90vh] max-w-[90vw] object-contain rounded-2xl shadow-2xl"
-                        onClick={e => e.stopPropagation()}
+                        className="max-h-screen max-w-full w-auto h-auto object-contain"
+                        style={{ maxHeight: '100dvh', maxWidth: '100dvw' }}
+                        onClick={() => setLightboxImage(null)}
                     />
                 </div>
             )}
