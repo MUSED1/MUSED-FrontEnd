@@ -2,23 +2,21 @@
 import React, { createContext, useState, useEffect, type ReactNode } from 'react';
 import axios, { AxiosError } from 'axios';
 
-// Types
 interface User {
     id: string;
     name: string;
     email: string;
     phone?: string;
-    role: 'user' | 'admin';
+    role: 'user' | 'admin' | 'staff';
     avatar?: string;
     provider?: 'local' | 'google' | 'facebook' | 'apple';
     referralCode?: string;
     referralCount?: number;
     referredBy?: string | { _id: string; name: string; email: string };
     referralCompleted?: boolean;
-    createdAt?: string;  // Add this line
+    createdAt?: string;
 }
 
-// Add to AuthContextType interface
 interface AuthContextType {
     user: User | null;
     loading: boolean;
@@ -27,9 +25,10 @@ interface AuthContextType {
     login: (credentials: LoginData) => Promise<AuthResponse>;
     loginWithToken: (token: string) => Promise<AuthResponse>;
     logout: () => void;
-    updateUser: (userData: Partial<User>) => void;  // Already there, ensure it's implemented
+    updateUser: (userData: Partial<User>) => void;
     isAuthenticated: boolean;
     isAdmin: boolean;
+    isStaff: boolean;
 }
 
 interface SignupData {
@@ -204,7 +203,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         logout,
         updateUser,
         isAuthenticated: !!user,
-        isAdmin: user?.role === 'admin'
+        isAdmin: user?.role === 'admin',
+        isStaff: user?.role === 'staff' || user?.role === 'admin',
     };
 
     return (

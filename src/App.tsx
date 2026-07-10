@@ -44,6 +44,7 @@ import { ForgotPassword, ResetPassword } from './components/ForgotPassword'
 import { CollectionsHK } from './components/CollectionsHK';
 import { FifthDinner } from './components/FifthDinner';
 import { WishlistHK } from './components/WishlistHK';
+import { StaffRedeem } from './components/StaffRedeem';
 function HomePage() {
     return (
         <div className="font-sans">
@@ -119,7 +120,7 @@ export function App() {
                     <Route path="/collections-hk" element={<CollectionsHK />} />
                     <Route path="/fifth-dinner" element={<FifthDinner />} />
                     <Route path="/wishlist" element={<WishlistHK />} />
-
+                    <Route path="/staff/redeem" element={<StaffRedeem />} />
                 </Routes>
             </Router>
         </AuthProvider>
