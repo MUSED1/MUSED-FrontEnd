@@ -1,14 +1,15 @@
 // components/BrandDashboard.tsx
 //
 // The seller's "admin page for my brand": manage inventory (add items,
-// set/edit prices, mark stock available/reserved/sold, delete), sync a
-// buy item's price to Stripe, and see incoming orders/reservations.
+// set/edit prices & currency, track stock, mark available/reserved/sold,
+// delete), sync a buy item's price to Stripe, and see incoming orders.
 //
-// Talks to the existing routes/clothing.js endpoints:
+// Talks to the existing routes/clothing.js + routes/brand.js endpoints:
+//   GET    /api/brand/me                 (existing — used to show the seller's own brand header, no re-asking for the name)
 //   GET    /api/clothing/my-items        (existing)
-//   GET    /api/clothing/my-orders       (NEW — see clothing-routes-ADD-my-orders.js)
-//   POST   /api/clothing                 (existing — auto-syncs 'buy' items to Stripe)
-//   PUT    /api/clothing/:id             (existing)
+//   GET    /api/clothing/my-orders       (existing)
+//   POST   /api/clothing                 (existing — auto-syncs 'buy' items to Stripe; userInfo/brand are now optional, filled server-side)
+//   PUT    /api/clothing/:id             (existing — now also accepts `stock`)
 //   DELETE /api/clothing/:id             (existing)
 //   POST   /api/clothing/:id/sync-stripe (existing — manual retry)
 //
@@ -21,7 +22,7 @@ import { Header } from './Header'
 import { Footer } from './Footer'
 import {
     Plus, Trash2, RefreshCw, X, Package, ShoppingBag,
-    CheckCircle2, AlertCircle, Clock, Upload
+    CheckCircle2, AlertCircle, Clock, Upload, Boxes, Store, Layers
 } from 'lucide-react'
 import { API_CONFIG } from '../utils/api'
 
@@ -29,6 +30,7 @@ import { API_CONFIG } from '../utils/api'
 // Types
 // ------------------------------------------------------------------
 type SizeSystem = 'S/M/L' | 'UK' | 'US' | 'EU';
+type Currency = 'HKD' | 'USD' | 'GBP' | 'EUR';
 
 interface ClothingItem {
     _id: string;
@@ -41,7 +43,8 @@ interface ClothingItem {
     price?: number | null;
     resalePrice?: number | null;
     retailPrice?: number | null;
-    currency: string;
+    currency: Currency;
+    stock: number;
     status: 'available' | 'reserved' | 'sold';
     images: string[];
     stripeSyncStatus?: 'not_applicable' | 'pending' | 'synced' | 'failed';
@@ -66,6 +69,12 @@ interface Order {
     createdAt: string | null;
 }
 
+interface BrandProfile {
+    brandName: string;
+    logoUrl: string;
+    approvalStatus: 'pending' | 'approved' | 'rejected';
+}
+
 const CATEGORIES = ['Dresses', 'Tops', 'Bottoms', 'Outerwear', 'Accessories', 'Shoes', 'Bags', 'Jewelry', 'Skirts', 'Vests', 'Others'];
 
 const SIZE_OPTIONS: Record<SizeSystem, string[]> = {
@@ -74,6 +83,9 @@ const SIZE_OPTIONS: Record<SizeSystem, string[]> = {
     'US': ['0', '2', '4', '6', '8', '10', '12'],
     'EU': ['32', '34', '36', '38', '40', '42', '44', '46']
 };
+
+const CURRENCIES: Currency[] = ['HKD', 'USD', 'GBP', 'EUR'];
+const CURRENCY_SYMBOL: Record<Currency, string> = { HKD: 'HK$', USD: '$', GBP: '£', EUR: '€' };
 
 function fileToDataUrl(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -84,27 +96,11 @@ function fileToDataUrl(file: File): Promise<string> {
     });
 }
 
-function getStoredContact() {
-    // Best-effort prefill from whatever your AuthProvider stashes locally.
-    // Falls back to blank fields the seller can fill in once.
-    try {
-        const raw = localStorage.getItem('user');
-        if (!raw) return { fullName: '', email: '', phoneNumber: '' };
-        const u = JSON.parse(raw);
-        return {
-            fullName: u.fullName || u.name || '',
-            email: u.email || '',
-            phoneNumber: u.phoneNumber || u.phone || ''
-        };
-    } catch {
-        return { fullName: '', email: '', phoneNumber: '' };
-    }
-}
-
 export function BrandDashboard() {
     const [tab, setTab] = useState<'inventory' | 'orders'>('inventory');
     const [items, setItems] = useState<ClothingItem[]>([]);
     const [orders, setOrders] = useState<Order[]>([]);
+    const [brandProfile, setBrandProfile] = useState<BrandProfile | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [showAddModal, setShowAddModal] = useState(false);
@@ -140,19 +136,30 @@ export function BrandDashboard() {
         }
     }, [clothingBase]);
 
+    const loadBrandProfile = useCallback(async () => {
+        try {
+            const res = await fetch(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.brandMe}`, { headers: getAuthHeaders() });
+            if (!res.ok) return; // no profile yet, or not a seller — header just falls back
+            const result = await res.json();
+            if (result.success) setBrandProfile(result.data);
+        } catch {
+            // Non-fatal — dashboard still works without the brand header.
+        }
+    }, []);
+
     useEffect(() => {
         (async () => {
             setLoading(true);
             setError('');
             try {
-                await Promise.all([loadItems(), loadOrders()]);
+                await Promise.all([loadItems(), loadOrders(), loadBrandProfile()]);
             } catch (err) {
                 setError(err instanceof Error ? err.message : 'Error loading dashboard');
             } finally {
                 setLoading(false);
             }
         })();
-    }, [loadItems, loadOrders]);
+    }, [loadItems, loadOrders, loadBrandProfile]);
 
     const setItemSaving = (id: string, val: boolean) =>
         setSavingIds(prev => ({ ...prev, [id]: val }));
@@ -232,23 +239,61 @@ export function BrandDashboard() {
         );
     };
 
+    // ── Dashboard-level stats, computed from what's already loaded ────────
+    const totalStock = items.reduce((sum, it) => sum + (it.stock ?? 0), 0);
+    const availableCount = items.filter(it => it.status === 'available').length;
+    const needsAttentionCount = items.filter(it => it.listingType === 'buy' && it.stripeSyncStatus === 'failed').length;
+
     return (
         <div className="font-sans">
             <Header />
             <main className="min-h-screen bg-gradient-to-br from-cream to-amber-50 py-8">
                 <div className="container mx-auto px-4 max-w-6xl">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-                        <div>
-                            <h1 className="text-4xl font-bold text-plum">Brand Dashboard</h1>
-                            <p className="text-plum/70 mt-1">Manage your stock, prices, and orders.</p>
+
+                    {/* ── Brand header ────────────────────────────────────── */}
+                    <div className="bg-white rounded-2xl shadow-lg p-6 mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div className="flex items-center gap-4">
+                            <div className="w-16 h-16 rounded-xl bg-cream border border-plum/10 flex items-center justify-center overflow-hidden shrink-0">
+                                {brandProfile?.logoUrl ? (
+                                    <img src={brandProfile.logoUrl} alt={`${brandProfile.brandName} logo`} className="w-full h-full object-contain" />
+                                ) : (
+                                    <Store className="text-plum/30" size={26} />
+                                )}
+                            </div>
+                            <div>
+                                <h1 className="text-2xl md:text-3xl font-bold text-plum leading-tight">
+                                    {brandProfile?.brandName || 'Brand Dashboard'}
+                                </h1>
+                                <p className="text-plum/60 text-sm mt-0.5">Manage your stock, prices, and orders.</p>
+                            </div>
                         </div>
                         <button
                             onClick={() => setShowAddModal(true)}
-                            className="inline-flex items-center gap-2 bg-rose text-white px-5 py-3 rounded-lg font-medium hover:bg-rose/90 transition-colors"
+                            className="inline-flex items-center justify-center gap-2 bg-rose text-white px-5 py-3 rounded-lg font-medium hover:bg-rose/90 transition-colors shrink-0"
                         >
                             <Plus size={18} /> Add item
                         </button>
                     </div>
+
+                    {/* ── Stat cards ──────────────────────────────────────── */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                        <StatCard icon={Package} label="Listings" value={items.length} />
+                        <StatCard icon={Boxes} label="Units in stock" value={totalStock} />
+                        <StatCard icon={Layers} label="Available now" value={availableCount} />
+                        <StatCard
+                            icon={ShoppingBag}
+                            label="Orders"
+                            value={orders.length}
+                            accent={needsAttentionCount > 0 ? undefined : undefined}
+                        />
+                    </div>
+
+                    {needsAttentionCount > 0 && (
+                        <div className="mb-6 p-4 bg-yellow-50 text-yellow-900 rounded-xl border border-yellow-200 flex items-center gap-2 text-sm">
+                            <AlertCircle size={16} className="shrink-0" />
+                            {needsAttentionCount} item{needsAttentionCount > 1 ? 's need' : ' needs'} a Stripe re-sync — check the Inventory tab.
+                        </div>
+                    )}
 
                     {error && (
                         <div className="mb-6 p-4 bg-red-100 text-red-800 rounded-xl border border-red-300 flex justify-between items-center">
@@ -260,16 +305,16 @@ export function BrandDashboard() {
                     <div className="flex gap-2 mb-6 border-b border-plum/10">
                         <button
                             onClick={() => setTab('inventory')}
-                            className={`px-4 py-2 font-medium inline-flex items-center gap-2 border-b-2 -mb-px ${
-                                tab === 'inventory' ? 'border-rose text-plum' : 'border-transparent text-plum/50'
+                            className={`px-4 py-2 font-medium inline-flex items-center gap-2 border-b-2 -mb-px transition-colors ${
+                                tab === 'inventory' ? 'border-rose text-plum' : 'border-transparent text-plum/50 hover:text-plum/80'
                             }`}
                         >
                             <Package size={16} /> Inventory ({items.length})
                         </button>
                         <button
                             onClick={() => setTab('orders')}
-                            className={`px-4 py-2 font-medium inline-flex items-center gap-2 border-b-2 -mb-px ${
-                                tab === 'orders' ? 'border-rose text-plum' : 'border-transparent text-plum/50'
+                            className={`px-4 py-2 font-medium inline-flex items-center gap-2 border-b-2 -mb-px transition-colors ${
+                                tab === 'orders' ? 'border-rose text-plum' : 'border-transparent text-plum/50 hover:text-plum/80'
                             }`}
                         >
                             <ShoppingBag size={16} /> Orders ({orders.length})
@@ -301,6 +346,7 @@ export function BrandDashboard() {
                 <AddItemModal
                     clothingBase={clothingBase}
                     getAuthHeaders={getAuthHeaders}
+                    brandName={brandProfile?.brandName}
                     onClose={() => setShowAddModal(false)}
                     onCreated={async () => {
                         setShowAddModal(false);
@@ -309,6 +355,28 @@ export function BrandDashboard() {
                     }}
                 />
             )}
+        </div>
+    );
+}
+
+// ------------------------------------------------------------------
+// Stat card
+// ------------------------------------------------------------------
+function StatCard({ icon: Icon, label, value, accent }: {
+    icon: React.ComponentType<{ size?: number; className?: string }>;
+    label: string;
+    value: number;
+    accent?: string;
+}) {
+    return (
+        <div className="bg-white rounded-2xl shadow p-4 flex items-center gap-3">
+            <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${accent || 'bg-rose/10 text-rose'}`}>
+                <Icon size={20} />
+            </div>
+            <div>
+                <div className="text-2xl font-bold text-plum leading-none">{value}</div>
+                <div className="text-plum/50 text-xs mt-1">{label}</div>
+            </div>
         </div>
     );
 }
@@ -326,7 +394,8 @@ function InventoryTable({
     onSyncStripe: (id: string) => void;
     stripeBadge: (item: ClothingItem) => React.ReactNode;
 }) {
-    const [drafts, setDrafts] = useState<Record<string, string>>({});
+    const [priceDrafts, setPriceDrafts] = useState<Record<string, string>>({});
+    const [stockDrafts, setStockDrafts] = useState<Record<string, string>>({});
 
     if (items.length === 0) {
         return (
@@ -340,96 +409,127 @@ function InventoryTable({
 
     return (
         <div className="bg-white rounded-2xl shadow overflow-hidden">
-            <table className="w-full text-sm">
-                <thead className="bg-cream text-plum/70 text-left">
-                <tr>
-                    <th className="p-3">Item</th>
-                    <th className="p-3">Type</th>
-                    <th className="p-3">Size</th>
-                    <th className="p-3">Price</th>
-                    <th className="p-3">Status</th>
-                    <th className="p-3">Stripe</th>
-                    <th className="p-3 text-right">Actions</th>
-                </tr>
-                </thead>
-                <tbody>
-                {items.map(item => {
-                    const field = priceField(item);
-                    const currentPrice = item[field] ?? '';
-                    const draftVal = drafts[item._id] ?? String(currentPrice);
-                    const busy = !!savingIds[item._id];
-                    return (
-                        <tr key={item._id} className="border-t border-cream">
-                            <td className="p-3">
-                                <div className="flex items-center gap-3">
-                                    {item.images?.[0] && (
-                                        <img src={item.images[0]} alt="" className="w-12 h-12 rounded-lg object-cover" />
-                                    )}
-                                    <div>
-                                        <div className="font-medium text-plum">{item.productName || item.category}</div>
-                                        <div className="text-plum/50">{item.category}</div>
+            <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                    <thead className="bg-cream text-plum/70 text-left">
+                    <tr>
+                        <th className="p-3">Item</th>
+                        <th className="p-3">Type</th>
+                        <th className="p-3">Size</th>
+                        <th className="p-3">Price</th>
+                        <th className="p-3">Stock</th>
+                        <th className="p-3">Status</th>
+                        <th className="p-3">Stripe</th>
+                        <th className="p-3 text-right">Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {items.map(item => {
+                        const field = priceField(item);
+                        const currentPrice = item[field] ?? '';
+                        const priceDraft = priceDrafts[item._id] ?? String(currentPrice);
+                        const stockDraft = stockDrafts[item._id] ?? String(item.stock ?? 0);
+                        const busy = !!savingIds[item._id];
+                        const outOfStock = (item.stock ?? 0) <= 0;
+                        return (
+                            <tr key={item._id} className="border-t border-cream">
+                                <td className="p-3">
+                                    <div className="flex items-center gap-3">
+                                        {item.images?.[0] && (
+                                            <img src={item.images[0]} alt="" className="w-12 h-12 rounded-lg object-cover" />
+                                        )}
+                                        <div>
+                                            <div className="font-medium text-plum">{item.productName || item.category}</div>
+                                            <div className="text-plum/50">{item.category}</div>
+                                        </div>
                                     </div>
-                                </div>
-                            </td>
-                            <td className="p-3 capitalize">{item.listingType}</td>
-                            <td className="p-3">{item.size}</td>
-                            <td className="p-3">
-                                <div className="flex items-center gap-1">
-                                    <span className="text-plum/50">{item.currency}</span>
-                                    <input
-                                        type="number"
-                                        className="w-20 border border-plum/20 rounded px-2 py-1"
-                                        value={draftVal}
-                                        onChange={(e) => setDrafts(prev => ({ ...prev, [item._id]: e.target.value }))}
-                                    />
+                                </td>
+                                <td className="p-3 capitalize">{item.listingType}</td>
+                                <td className="p-3">{item.size}</td>
+                                <td className="p-3">
+                                    <div className="flex items-center gap-1">
+                                        <select
+                                            value={item.currency}
+                                            disabled={busy}
+                                            onChange={(e) => onUpdate(item._id, { currency: e.target.value as Currency })}
+                                            className="border border-plum/20 rounded px-1 py-1 text-plum/70 text-xs"
+                                        >
+                                            {CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}
+                                        </select>
+                                        <input
+                                            type="number"
+                                            className="w-20 border border-plum/20 rounded px-2 py-1"
+                                            value={priceDraft}
+                                            onChange={(e) => setPriceDrafts(prev => ({ ...prev, [item._id]: e.target.value }))}
+                                        />
+                                        <button
+                                            disabled={busy}
+                                            onClick={() => onUpdate(item._id, { [field]: Number(priceDraft) } as Partial<ClothingItem>)}
+                                            className="text-xs text-rose font-medium hover:underline disabled:opacity-40"
+                                        >
+                                            Save
+                                        </button>
+                                    </div>
+                                </td>
+                                <td className="p-3">
+                                    <div className="flex items-center gap-1">
+                                        <input
+                                            type="number"
+                                            min={0}
+                                            className={`w-16 border rounded px-2 py-1 ${outOfStock ? 'border-red-300 text-red-700' : 'border-plum/20'}`}
+                                            value={stockDraft}
+                                            onChange={(e) => setStockDrafts(prev => ({ ...prev, [item._id]: e.target.value }))}
+                                        />
+                                        <button
+                                            disabled={busy}
+                                            onClick={() => onUpdate(item._id, { stock: Math.max(0, Number(stockDraft)) })}
+                                            className="text-xs text-rose font-medium hover:underline disabled:opacity-40"
+                                        >
+                                            Save
+                                        </button>
+                                    </div>
+                                    {outOfStock && <div className="text-xs text-red-600 mt-1">Out of stock</div>}
+                                </td>
+                                <td className="p-3">
+                                    <select
+                                        value={item.status}
+                                        disabled={busy}
+                                        onChange={(e) => onUpdate(item._id, { status: e.target.value as ClothingItem['status'] })}
+                                        className="border border-plum/20 rounded px-2 py-1"
+                                    >
+                                        <option value="available">Available</option>
+                                        <option value="reserved">Reserved</option>
+                                        <option value="sold">Sold</option>
+                                    </select>
+                                </td>
+                                <td className="p-3">
+                                    {stripeBadge(item)}
+                                    {item.listingType === 'buy' && item.stripeSyncStatus !== 'synced' && (
+                                        <button
+                                            disabled={busy}
+                                            onClick={() => onSyncStripe(item._id)}
+                                            className="ml-2 inline-flex items-center gap-1 text-xs text-plum/70 hover:text-plum disabled:opacity-40"
+                                        >
+                                            <RefreshCw size={12} /> Sync
+                                        </button>
+                                    )}
+                                </td>
+                                <td className="p-3 text-right">
                                     <button
                                         disabled={busy}
-                                        onClick={() => onUpdate(item._id, { [field]: Number(draftVal) } as Partial<ClothingItem>)}
-                                        className="text-xs text-rose font-medium hover:underline disabled:opacity-40"
+                                        onClick={() => onDelete(item._id)}
+                                        className="text-plum/40 hover:text-red-600 disabled:opacity-40"
+                                        title="Delete"
                                     >
-                                        Save
+                                        <Trash2 size={16} />
                                     </button>
-                                </div>
-                            </td>
-                            <td className="p-3">
-                                <select
-                                    value={item.status}
-                                    disabled={busy}
-                                    onChange={(e) => onUpdate(item._id, { status: e.target.value as ClothingItem['status'] })}
-                                    className="border border-plum/20 rounded px-2 py-1"
-                                >
-                                    <option value="available">Available</option>
-                                    <option value="reserved">Reserved</option>
-                                    <option value="sold">Sold</option>
-                                </select>
-                            </td>
-                            <td className="p-3">
-                                {stripeBadge(item)}
-                                {item.listingType === 'buy' && item.stripeSyncStatus !== 'synced' && (
-                                    <button
-                                        disabled={busy}
-                                        onClick={() => onSyncStripe(item._id)}
-                                        className="ml-2 inline-flex items-center gap-1 text-xs text-plum/70 hover:text-plum disabled:opacity-40"
-                                    >
-                                        <RefreshCw size={12} /> Sync
-                                    </button>
-                                )}
-                            </td>
-                            <td className="p-3 text-right">
-                                <button
-                                    disabled={busy}
-                                    onClick={() => onDelete(item._id)}
-                                    className="text-plum/40 hover:text-red-600 disabled:opacity-40"
-                                    title="Delete"
-                                >
-                                    <Trash2 size={16} />
-                                </button>
-                            </td>
-                        </tr>
-                    );
-                })}
-                </tbody>
-            </table>
+                                </td>
+                            </tr>
+                        );
+                    })}
+                    </tbody>
+                </table>
+            </div>
         </div>
     );
 }
@@ -448,48 +548,50 @@ function OrdersTable({ orders }: { orders: Order[] }) {
 
     return (
         <div className="bg-white rounded-2xl shadow overflow-hidden">
-            <table className="w-full text-sm">
-                <thead className="bg-cream text-plum/70 text-left">
-                <tr>
-                    <th className="p-3">Item</th>
-                    <th className="p-3">Type</th>
-                    <th className="p-3">Buyer / Renter</th>
-                    <th className="p-3">Price</th>
-                    <th className="p-3">Status</th>
-                    <th className="p-3">Dates</th>
-                </tr>
-                </thead>
-                <tbody>
-                {orders.map((o, i) => (
-                    <tr key={`${o.clothingId}-${i}`} className="border-t border-cream">
-                        <td className="p-3">
-                            <div className="flex items-center gap-3">
-                                {o.itemImage && <img src={o.itemImage} alt="" className="w-10 h-10 rounded-lg object-cover" />}
-                                <span className="font-medium text-plum">{o.itemName}</span>
-                            </div>
-                        </td>
-                        <td className="p-3 capitalize">{o.orderType}</td>
-                        <td className="p-3">
-                            {o.buyerName ? (
-                                <div>
-                                    <div>{o.buyerName}</div>
-                                    <div className="text-plum/50 text-xs">{o.buyerEmail}</div>
-                                </div>
-                            ) : (
-                                <span className="text-plum/40">—</span>
-                            )}
-                        </td>
-                        <td className="p-3">{o.price != null ? `${o.currency ?? ''} ${o.price}` : '—'}</td>
-                        <td className="p-3 capitalize">{o.status}</td>
-                        <td className="p-3 text-plum/60">
-                            {o.orderType === 'rent'
-                                ? [o.pickupDay, o.returnDay].filter(Boolean).join(' → ') || '—'
-                                : '—'}
-                        </td>
+            <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                    <thead className="bg-cream text-plum/70 text-left">
+                    <tr>
+                        <th className="p-3">Item</th>
+                        <th className="p-3">Type</th>
+                        <th className="p-3">Buyer / Renter</th>
+                        <th className="p-3">Price</th>
+                        <th className="p-3">Status</th>
+                        <th className="p-3">Dates</th>
                     </tr>
-                ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                    {orders.map((o, i) => (
+                        <tr key={`${o.clothingId}-${i}`} className="border-t border-cream">
+                            <td className="p-3">
+                                <div className="flex items-center gap-3">
+                                    {o.itemImage && <img src={o.itemImage} alt="" className="w-10 h-10 rounded-lg object-cover" />}
+                                    <span className="font-medium text-plum">{o.itemName}</span>
+                                </div>
+                            </td>
+                            <td className="p-3 capitalize">{o.orderType}</td>
+                            <td className="p-3">
+                                {o.buyerName ? (
+                                    <div>
+                                        <div>{o.buyerName}</div>
+                                        <div className="text-plum/50 text-xs">{o.buyerEmail}</div>
+                                    </div>
+                                ) : (
+                                    <span className="text-plum/40">—</span>
+                                )}
+                            </td>
+                            <td className="p-3">{o.price != null ? `${o.currency ?? ''} ${o.price}` : '—'}</td>
+                            <td className="p-3 capitalize">{o.status}</td>
+                            <td className="p-3 text-plum/60">
+                                {o.orderType === 'rent'
+                                    ? [o.pickupDay, o.returnDay].filter(Boolean).join(' → ') || '—'
+                                    : '—'}
+                            </td>
+                        </tr>
+                    ))}
+                    </tbody>
+                </table>
+            </div>
         </div>
     );
 }
@@ -498,26 +600,23 @@ function OrdersTable({ orders }: { orders: Order[] }) {
 // Add item modal
 // ------------------------------------------------------------------
 function AddItemModal({
-                          clothingBase, getAuthHeaders, onClose, onCreated
+                          clothingBase, getAuthHeaders, brandName, onClose, onCreated
                       }: {
     clothingBase: string;
     getAuthHeaders: () => Record<string, string>;
+    brandName?: string;
     onClose: () => void;
     onCreated: () => void;
 }) {
-    const contact = getStoredContact();
-    const [fullName, setFullName] = useState(contact.fullName);
-    const [email, setEmail] = useState(contact.email);
-    const [phoneNumber, setPhoneNumber] = useState(contact.phoneNumber);
-
     const [productName, setProductName] = useState('');
-    const [brand, setBrand] = useState('');
     const [category, setCategory] = useState('Dresses');
     const [sizeSystem, setSizeSystem] = useState<SizeSystem>('S/M/L');
     const [size, setSize] = useState('M');
     const [listingType, setListingType] = useState<'rent' | 'buy'>('buy');
+    const [currency, setCurrency] = useState<Currency>('HKD');
     const [price, setPrice] = useState('');
     const [retailPrice, setRetailPrice] = useState('');
+    const [stock, setStock] = useState('1');
     const [additionalInfo, setAdditionalInfo] = useState('');
     const [images, setImages] = useState<string[]>([]);
     const [saving, setSaving] = useState(false);
@@ -534,8 +633,7 @@ function AddItemModal({
     };
 
     const canSubmit =
-        fullName.trim() && email.trim() && phoneNumber.trim() &&
-        category && size && images.length > 0 &&
+        category && size && images.length > 0 && Number(stock) >= 0 &&
         (listingType === 'rent' ? price : retailPrice) && !saving;
 
     const handleSubmit = async () => {
@@ -544,15 +642,17 @@ function AddItemModal({
         setError('');
         try {
             const payload = {
-                userInfo: { fullName, email, phoneNumber, address: '', needsPickupHere: 'no' },
+                // Contact details are no longer collected here — the backend
+                // fills them in from the logged-in seller's own account.
                 clothingItems: [{
                     images,
                     productName,
-                    brand,
                     category,
                     sizeSystem,
                     size,
                     listingType,
+                    currency,
+                    stock: Number(stock),
                     price: listingType === 'rent' ? Number(price) : undefined,
                     // 'buy' items: resalePrice is the actual sale price synced to Stripe
                     resalePrice: listingType === 'buy' ? Number(retailPrice) : undefined,
@@ -579,10 +679,13 @@ function AddItemModal({
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
             <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6">
-                <div className="flex justify-between items-center mb-4">
+                <div className="flex justify-between items-center mb-1">
                     <h2 className="text-xl font-bold text-plum">Add item</h2>
                     <button onClick={onClose}><X size={20} className="text-plum/60" /></button>
                 </div>
+                {brandName && (
+                    <p className="text-sm text-plum/50 mb-4">Listing under <span className="font-medium text-plum/70">{brandName}</span></p>
+                )}
 
                 {error && <div className="mb-4 p-3 bg-red-100 text-red-800 rounded-lg text-sm">{error}</div>}
 
@@ -613,12 +716,8 @@ function AddItemModal({
                         />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3">
-                        <input placeholder="Product name" value={productName} onChange={(e) => setProductName(e.target.value)}
-                               className="border border-plum/20 rounded-lg px-3 py-2" />
-                        <input placeholder="Brand" value={brand} onChange={(e) => setBrand(e.target.value)}
-                               className="border border-plum/20 rounded-lg px-3 py-2" />
-                    </div>
+                    <input placeholder="Product name" value={productName} onChange={(e) => setProductName(e.target.value)}
+                           className="w-full border border-plum/20 rounded-lg px-3 py-2" />
 
                     <div className="grid grid-cols-3 gap-3">
                         <select value={category} onChange={(e) => setCategory(e.target.value)} className="border border-plum/20 rounded-lg px-3 py-2">
@@ -649,25 +748,24 @@ function AddItemModal({
                         </label>
                     </div>
 
-                    {listingType === 'buy' ? (
-                        <input placeholder="Sale price" type="number" value={retailPrice} onChange={(e) => setRetailPrice(e.target.value)}
-                               className="w-full border border-plum/20 rounded-lg px-3 py-2" />
-                    ) : (
-                        <input placeholder="Rental price" type="number" value={price} onChange={(e) => setPrice(e.target.value)}
-                               className="w-full border border-plum/20 rounded-lg px-3 py-2" />
-                    )}
+                    <div className="grid grid-cols-3 gap-3">
+                        <select value={currency} onChange={(e) => setCurrency(e.target.value as Currency)}
+                                className="border border-plum/20 rounded-lg px-3 py-2">
+                            {CURRENCIES.map(c => <option key={c} value={c}>{c} ({CURRENCY_SYMBOL[c]})</option>)}
+                        </select>
+                        {listingType === 'buy' ? (
+                            <input placeholder="Sale price" type="number" value={retailPrice} onChange={(e) => setRetailPrice(e.target.value)}
+                                   className="border border-plum/20 rounded-lg px-3 py-2" />
+                        ) : (
+                            <input placeholder="Rental price" type="number" value={price} onChange={(e) => setPrice(e.target.value)}
+                                   className="border border-plum/20 rounded-lg px-3 py-2" />
+                        )}
+                        <input placeholder="Stock" type="number" min={0} value={stock} onChange={(e) => setStock(e.target.value)}
+                               className="border border-plum/20 rounded-lg px-3 py-2" />
+                    </div>
 
                     <textarea placeholder="Additional details" value={additionalInfo} onChange={(e) => setAdditionalInfo(e.target.value)}
                               rows={2} className="w-full border border-plum/20 rounded-lg px-3 py-2" />
-
-                    <div className="grid grid-cols-3 gap-3">
-                        <input placeholder="Your name" value={fullName} onChange={(e) => setFullName(e.target.value)}
-                               className="border border-plum/20 rounded-lg px-3 py-2" />
-                        <input placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)}
-                               className="border border-plum/20 rounded-lg px-3 py-2" />
-                        <input placeholder="Phone" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)}
-                               className="border border-plum/20 rounded-lg px-3 py-2" />
-                    </div>
 
                     <button
                         onClick={handleSubmit}
