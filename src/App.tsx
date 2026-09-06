@@ -47,6 +47,9 @@ import { WishlistHK } from './components/WishlistHK';
 import { StaffRedeem } from './components/StaffRedeem';
 import { MyBrand } from './components/MyBrand';
 import { AdminBrands } from './components/AdminBrands';
+import { SellerLogin } from './components/SellerLogin.tsx';
+import { SellerSignup } from './components/SellerSignup.tsx';
+import { RequireSeller } from './components/RequireSeller';
 function HomePage() {
     return (
         <div className="font-sans">
@@ -125,6 +128,13 @@ export function App() {
                     <Route path="/staff/redeem" element={<StaffRedeem />} />
                     <Route path="/brand" element={<MyBrand />} />
                     <Route path="/admin/brands" element={<AdminBrands />} />
+                    <Route path="/seller/login" element={<SellerLogin />} />
+                    <Route path="/seller/signup" element={<SellerSignup />} />
+                    <Route path="/brand" element={<RequireSeller><MyBrand /></RequireSeller>} />
+
+
+
+
                 </Routes>
             </Router>
         </AuthProvider>
