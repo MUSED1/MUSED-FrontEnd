@@ -126,7 +126,6 @@ export function App() {
                     <Route path="/fifth-dinner" element={<FifthDinner />} />
                     <Route path="/wishlist" element={<WishlistHK />} />
                     <Route path="/staff/redeem" element={<StaffRedeem />} />
-                    <Route path="/brand" element={<MyBrand />} />
                     <Route path="/admin/brands" element={<AdminBrands />} />
                     <Route path="/seller/login" element={<SellerLogin />} />
                     <Route path="/seller/signup" element={<SellerSignup />} />
