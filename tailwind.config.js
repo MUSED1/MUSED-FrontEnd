@@ -30,6 +30,14 @@ export default {
                 gold: '#f5d98a',
                 // Hand notes / quotes
                 burgundy: '#6B0202',
+                // Tailwind's default palette has no DEFAULT shade for
+                // named colors, so bare classes like `bg-rose`, `text-rose`,
+                // `border-rose` (used throughout MyBrand/BrandDashboard)
+                // compile to nothing without this.
+                rose: {
+                    ...colors.rose,
+                    DEFAULT: colors.rose[500],
+                },
             },
             letterSpacing: {
                 'label': '0.2em',
