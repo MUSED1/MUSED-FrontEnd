@@ -45,6 +45,8 @@ import { CollectionsHK } from './components/CollectionsHK';
 import { FifthDinner } from './components/FifthDinner';
 import { WishlistHK } from './components/WishlistHK';
 import { StaffRedeem } from './components/StaffRedeem';
+import { MyBrand } from './components/MyBrand';
+import { AdminBrands } from './components/AdminBrands';
 function HomePage() {
     return (
         <div className="font-sans">
@@ -121,6 +123,8 @@ export function App() {
                     <Route path="/fifth-dinner" element={<FifthDinner />} />
                     <Route path="/wishlist" element={<WishlistHK />} />
                     <Route path="/staff/redeem" element={<StaffRedeem />} />
+                    <Route path="/brand" element={<MyBrand />} />
+                    <Route path="/admin/brands" element={<AdminBrands />} />
                 </Routes>
             </Router>
         </AuthProvider>
