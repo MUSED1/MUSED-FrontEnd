@@ -16,14 +16,14 @@
 // `user`/`loading` actually exist on the hook — share hooks/useAuth.ts (and
 // context/AuthContext, if separate) and I'll adjust the field names if they
 // differ.
-import { JSX } from 'react';
+import type { ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 
 const SELLER_ROLES = ['seller', 'admin'];
 
 interface RequireSellerProps {
-    children: JSX.Element;
+    children: ReactNode;
 }
 
 export function RequireSeller({ children }: RequireSellerProps) {
