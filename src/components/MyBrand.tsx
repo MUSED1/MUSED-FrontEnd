@@ -1,5 +1,6 @@
 // components/MyBrand.tsx
 import { useState, useEffect, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Header } from './Header'
 import { Footer } from './Footer'
 import { Upload, CheckCircle2, Clock, AlertCircle } from 'lucide-react'
@@ -33,6 +34,7 @@ function fileToDataUrl(file: File): Promise<string> {
 }
 
 export function MyBrand() {
+    const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
@@ -146,6 +148,9 @@ export function MyBrand() {
                 setExisting(result.data);
                 setLogoDataUrl(null);
                 setLogoPreview(result.data.logoUrl);
+                // Take the seller straight to their management dashboard
+                // once their brand info is submitted/updated.
+                navigate('/brand/dashboard');
             } else {
                 throw new Error(result.message || 'Failed to save brand profile');
             }
