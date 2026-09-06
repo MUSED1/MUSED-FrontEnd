@@ -72,6 +72,14 @@ export function MyBrand() {
                 const result = await res.json();
                 if (res.ok && result.success) {
                     const brand: BrandProfile = result.data;
+
+                    // Already approved sellers manage everything from the
+                    // dashboard — skip the form entirely.
+                    if (brand.approvalStatus === 'approved') {
+                        navigate('/brand/dashboard', { replace: true });
+                        return;
+                    }
+
                     setExisting(brand);
                     setBrandName(brand.brandName);
                     setFounderStory(brand.founderStory);
