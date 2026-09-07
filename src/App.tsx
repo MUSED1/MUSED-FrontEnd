@@ -45,6 +45,12 @@ import { CollectionsHK } from './components/CollectionsHK';
 import { FifthDinner } from './components/FifthDinner';
 import { WishlistHK } from './components/WishlistHK';
 import { StaffRedeem } from './components/StaffRedeem';
+import { MyBrand } from './components/MyBrand';
+import { AdminBrands } from './components/AdminBrands';
+import { SellerLogin } from './components/SellerLogin.tsx';
+import { SellerSignup } from './components/SellerSignup.tsx';
+import { RequireSeller } from './components/RequireSeller';
+import { BrandDashboard } from './components/BrandDashboard';
 function HomePage() {
     return (
         <div className="font-sans">
@@ -121,6 +127,15 @@ export function App() {
                     <Route path="/fifth-dinner" element={<FifthDinner />} />
                     <Route path="/wishlist" element={<WishlistHK />} />
                     <Route path="/staff/redeem" element={<StaffRedeem />} />
+                    <Route path="/admin/brands" element={<AdminBrands />} />
+                    <Route path="/seller/login" element={<SellerLogin />} />
+                    <Route path="/seller/signup" element={<SellerSignup />} />
+                    <Route path="/brand" element={<RequireSeller><MyBrand /></RequireSeller>} />
+                    <Route path="/brand/dashboard" element={<RequireSeller><BrandDashboard /></RequireSeller>} />
+
+
+
+
                 </Routes>
             </Router>
         </AuthProvider>

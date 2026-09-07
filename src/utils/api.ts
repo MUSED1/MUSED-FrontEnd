@@ -13,7 +13,10 @@ export const API_CONFIG = {
         auth: '/auth',
         createCheckout: '/create-checkout-session',
         adminReservations: '/admin/reservations',
-        uploadImage: '/images/upload'  // FIXED: correct path
+        uploadImage: '/images/upload',  // FIXED: correct path
+        brand: '/brand',
+        brandMe: '/brand/me',
+        brandAdminAll: '/brand/admin/all'
     },
     pagination: {
         defaultLimit: 20,
