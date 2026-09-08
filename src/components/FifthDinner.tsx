@@ -212,7 +212,7 @@ export function FifthDinner() {
                     {/* Back to Gallery Button */}
                     <div className="text-center pb-8">
                         <Link
-                            to="/gallery"
+                            to="/events"
                             className="inline-flex items-center gap-2 bg-plum text-cream px-8 py-3 rounded-full hover:bg-gold hover:text-plum transition-all duration-300 font-semibold"
                         >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
