@@ -6,10 +6,9 @@ import { Header } from './components/Header'
 import { Hero } from './components/Hero'
 // import { JoinWsb } from './components/JoinWsb.tsx'
 // import { HowItWorks } from './components/HowItWorks.tsx'
-import { BrandStory } from './components/BrandStory'
 import { Footer } from './components/Footer'
 import { LoadingScreen } from './components/LoadingScreen'
-import { Collections } from './components/Collections'
+// import { Collections } from './components/Collections'
 import { Diner } from './components/Diner'
 import { About } from './components/About'
 import { FirstDinner } from './components/FirstDinner'
@@ -19,7 +18,7 @@ import { DinnerCollectionTwo } from './components/DinnerCollectionTwo'
 import { Confirmation } from './components/Confirmation'
 import { SimpleImageUpload } from './components/SimpleImageUpload'
 import { SecondDinner } from './components/SecondDinner'
-// import { Events } from './components/Events'
+import { Events } from './components/Events'
 // import { Collection } from './components/Collection'
 // import { ThePics } from './components/ThePics'
 // import { FAQ } from './components/FAQ'
@@ -34,7 +33,6 @@ import { Privacy } from './components/Privacy'
 import { CollectionsM } from './components/CollectionsM';
 import { CollectionsNY } from './components/CollectionsNY';
 import { AdminReservations } from './components/AdminReservations';
-import { Gallery } from './components/Gallery'
 import { ThirdDinner } from './components/ThirdDinner';
 import { OAuthCallback } from './components/OAuthCallback';
 import { SubmissionSuccess } from "./components/SubsmissionSuccess";
@@ -59,7 +57,6 @@ function HomePage() {
                 <Hero />
                 {/* <JoinWsb /> */}
                 {/* <HowItWorks /> */}
-                <BrandStory />
             </main>
             <Footer />
         </div>
@@ -89,8 +86,8 @@ export function App() {
                     <Route path="/" element={<HomePage />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/signup" element={<Signup />} />
-                    {/* <Route path="/events" element={<Events />} /> */}
-                    <Route path="/collections" element={<Collections />} />
+                    <Route path="/events" element={<Events />} />
+                    {/* <Route path="/collections" element={<Collections />} /> */}
                     <Route path="/diner" element={<Diner />} />
                     <Route path="/about" element={<About />} />
                     <Route path="/first-dinner" element={<FirstDinner />} />
@@ -115,7 +112,6 @@ export function App() {
                     <Route path="/admin/reservations" element={<AdminReservations />} />
                     <Route path="/collections-ny" element={<CollectionsNY />} />
 
-                    <Route path="/gallery" element={<Gallery />} />
                     <Route path="/third-dinner" element={<ThirdDinner />} />
                     <Route path="/oauth/callback" element={<OAuthCallback />} />
                     <Route path="/submission-success" element={<SubmissionSuccess />} />
