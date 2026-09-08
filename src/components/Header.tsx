@@ -50,8 +50,8 @@ export function Header() {
                     {/* Desktop Navigation */}
                     <nav className="hidden md:block">
                         <ul className="flex space-x-8">
-                            {['/', '/diner', '/gallery', '/about'].map((path, i) => {
-                                const labels = ['Home', 'Events', 'Gallery', 'About']
+                            {['/', '/events', '/about'].map((path, i) => {
+                                const labels = ['Home', 'Events', 'About']
                                 return (
                                     <li key={path}>
                                         <Link
@@ -81,7 +81,7 @@ export function Header() {
                 {isMenuOpen && (
                     <div className="md:hidden pt-4 pb-2 border-t mt-4 border-gold animate-slideDown">
                         <ul className="space-y-3">
-                            {[['/', 'Home'], ['/diner', 'Events'], ['/gallery', 'Gallery'], ['/about', 'About']].map(
+                            {[['/', 'Home'], ['/events', 'Events'], ['/about', 'About']].map(
                                 ([path, label]) => (
                                     <li key={path}>
                                         <Link

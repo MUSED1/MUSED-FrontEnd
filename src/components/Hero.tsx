@@ -58,7 +58,8 @@ const SUB_DELAY        = 1400
 // Tagline starts after MUSED + 852 have fully appeared (≈2000ms last char + 1.4s fade = 2600ms feels right)
 const TAGLINE_DELAY    = 2600
 
-const TAGLINE = 'Your trusted shared wardrobe. Because your favorite piece already exists.'
+const TAGLINE_LINE_1 = 'The Roommate You Wish You Had.'
+const TAGLINE_LINE_2 = 'She Sources You. She Hosts You. She Styles You.'
 
 export function Hero() {
     const [currentSlide, setCurrentSlide] = useState(0)
@@ -213,8 +214,25 @@ export function Hero() {
                             lineHeight: 1.6,
                         }}
                     >
-                        {TAGLINE}
+                        {TAGLINE_LINE_1}
+                        <br />
+                        {TAGLINE_LINE_2}
                     </p>
+
+                    {/* CTA — hidden for now
+                    <Link
+                        to="/collections"
+                        className={`tagline-text mt-8 inline-block rounded-full transition-all duration-300 hover:scale-105 hover:opacity-90${taglineVisible ? ' visible' : ''}`}
+                        style={{ backgroundColor: '#FFF0C8', color: '#5B1B3A' }}
+                    >
+                        <span
+                            className="font-abril uppercase block px-8 py-3 text-[13px] md:text-[15px]"
+                            style={{ letterSpacing: '0.2em' }}
+                        >
+                            Find Your Next Obsession
+                        </span>
+                    </Link>
+                    */}
                 </div>
             </div>
 

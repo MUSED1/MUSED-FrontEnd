@@ -32,20 +32,6 @@ export function Footer() {
                     </div>
 
                     <div>
-                        <h4 className="text-lg font-medium mb-4">Lend & Rent</h4>
-                        <ul className="space-y-2">
-                            <li>
-                                <Link
-                                    to="/upload"
-                                    className="text-cream/70 hover:text-gold transition-colors"
-                                >
-                                    Upload
-                                </Link>
-                            </li>
-                        </ul>
-                    </div>
-
-                    <div>
                         <h4 className="text-lg font-medium mb-4">Company</h4>
                         <ul className="space-y-2">
                             <li>
@@ -79,6 +65,16 @@ export function Footer() {
                                 >
                                     Privacy Policy
                                 </Link>
+                            </li>
+                            <li>
+                                <a
+                                    href="https://www.mused852.com/brand"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-cream/70 hover:text-gold transition-colors"
+                                >
+                                    Partner With Us
+                                </a>
                             </li>
                         </ul>
                     </div>
