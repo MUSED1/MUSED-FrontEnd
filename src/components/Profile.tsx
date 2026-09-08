@@ -337,7 +337,7 @@ export function Profile() {
         return (
             <div className="font-inter">
                 <Header />
-                <main className="min-h-screen bg-gradient-to-br from-cream to-amber-50 py-8">
+                <main className="min-h-screen bg-cream py-8">
                     <div className="container mx-auto px-4 max-w-4xl text-center">
                         <div className="bg-white rounded-2xl shadow-lg p-12">
                             <div className="w-16 h-16 border-4 border-rose border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
@@ -357,8 +357,18 @@ export function Profile() {
     return (
         <div className="font-inter">
             <Header />
-            <main className="min-h-screen bg-gradient-to-br from-cream to-amber-50 py-12">
-                <div className="container mx-auto px-4 max-w-6xl">
+            <main className="min-h-screen bg-cream">
+                {/* Cover photo — full-bleed, flush with the nav */}
+                <div className="relative h-56 w-full overflow-hidden sm:h-72 md:h-80">
+                    <img
+                        src="/main1-hero.jpg"
+                        alt=""
+                        className="absolute inset-0 h-full w-full object-cover object-[center_15%]"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-plum-dark/60 via-plum-dark/5 to-transparent" />
+                </div>
+
+                <div className="container mx-auto px-4 max-w-6xl py-8 md:py-12">
                     {/* Phone Required Warning Banner */}
                     {showPhoneRequiredWarning && !hasPhoneNumber() && (
                         <div id="phone-required-warning" className="flex items-center justify-between gap-4 bg-amber-50 border border-amber-200 text-amber-800 rounded-xl px-5 py-4 mb-6 shadow-sm animate-fadeIn">
@@ -399,57 +409,48 @@ export function Profile() {
                         </div>
                     )}
 
-                    {/* Profile Header */}
-                    <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-8">
-                        <div className="h-32 md:h-48 overflow-hidden relative">
-                            <img
-                                src="https://res.cloudinary.com/dapfjngt2/image/upload/v1778910768/Profile_banner_new_home_image_pages-to-jpg-0005_j8qowy.jpg"
-                                alt="Profile banner"
-                                className="block md:hidden w-full h-full object-cover object-center"
-                            />
-                            <img
-                                src="https://res.cloudinary.com/dapfjngt2/image/upload/v1778910768/Profile_banner_new_home_image_pages-to-jpg-0006_sewxrk.jpg"
-                                alt="Profile banner"
-                                className="hidden md:block w-full h-full object-cover object-center"
-                            />
-                        </div>
-                        <div className="px-8 pb-8 relative">
-                            <div className="flex flex-col md:flex-row md:items-end gap-6 -mt-16">
+                    {/* Identity row — avatar overlaps the cover photo above */}
+                    <div className="relative mb-8">
+                        <div className="flex flex-col gap-4 -mt-20 sm:-mt-24 sm:flex-row sm:items-end">
                                 {/* Avatar Section with Upload */}
-                                <div className="relative group">
-                                    <div className="w-32 h-32 bg-cream rounded-2xl border-4 border-white shadow-lg overflow-hidden">
-                                        {avatar ? (
-                                            <img
-                                                src={avatar}
-                                                alt={user.name}
-                                                className="w-full h-full object-cover"
-                                                onError={() => setAvatar(null)}
-                                            />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center">
-                                                <User size={48} className="text-plum/40" />
+                                <div className="group relative shrink-0">
+                                    <div className="h-28 w-28 rounded-full bg-white p-1 shadow-md sm:h-32 sm:w-32">
+                                        <div className="h-full w-full rounded-full bg-gradient-to-br from-[#C9A96E] via-burgundy to-plum-dark p-[3px]">
+                                            <div className="h-full w-full overflow-hidden rounded-full bg-white">
+                                                {avatar ? (
+                                                    <img
+                                                        src={avatar}
+                                                        alt={user.name}
+                                                        className="h-full w-full object-cover"
+                                                        onError={() => setAvatar(null)}
+                                                    />
+                                                ) : (
+                                                    <div className="flex h-full w-full items-center justify-center">
+                                                        <User size={36} className="text-plum/30" />
+                                                    </div>
+                                                )}
                                             </div>
-                                        )}
+                                        </div>
                                     </div>
 
                                     {/* Upload button overlay - appears on hover */}
-                                    <div className="absolute inset-0 bg-black/50 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                    <div className="absolute inset-1 flex items-center justify-center gap-2 rounded-full bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
                                         <button
                                             onClick={() => fileInputRef.current?.click()}
                                             disabled={isUploadingAvatar}
-                                            className="p-2 bg-white rounded-full hover:bg-cream transition-colors disabled:opacity-50"
+                                            className="rounded-full bg-white p-1.5 transition-colors hover:bg-cream disabled:opacity-50"
                                             title="Upload photo"
                                         >
-                                            <Camera size={18} className="text-plum" />
+                                            <Camera size={14} className="text-plum" />
                                         </button>
                                         {avatar && (
                                             <button
                                                 onClick={handleRemoveAvatar}
                                                 disabled={isUploadingAvatar}
-                                                className="p-2 bg-white rounded-full hover:bg-red-50 transition-colors disabled:opacity-50"
+                                                className="rounded-full bg-white p-1.5 transition-colors hover:bg-red-50 disabled:opacity-50"
                                                 title="Remove photo"
                                             >
-                                                <X size={18} className="text-red-500" />
+                                                <X size={14} className="text-[#C9614E]" />
                                             </button>
                                         )}
                                     </div>
@@ -465,120 +466,102 @@ export function Profile() {
 
                                     {/* Loading spinner */}
                                     {isUploadingAvatar && (
-                                        <div className="absolute inset-0 bg-white/80 rounded-2xl flex items-center justify-center">
-                                            <div className="w-6 h-6 border-2 border-rose border-t-transparent rounded-full animate-spin" />
+                                        <div className="absolute inset-1 flex items-center justify-center rounded-full bg-white/80">
+                                            <div className="h-5 w-5 animate-spin rounded-full border-2 border-plum-dark border-t-transparent" />
                                         </div>
                                     )}
-                                </div>
 
-                                {/* Avatar error message */}
-                                {avatarError && (
-                                    <p className="text-red-500 text-xs mt-1 absolute left-36 bottom-0">{avatarError}</p>
-                                )}
-
-                                <div className="flex-1">
-                                    <h1 className="text-3xl font-kaldera text-plum">{user.name}</h1>
-                                    <p className="text-plum/60">{user.email}</p>
-                                    {user.phone && (
-                                        <p className="text-plum/60 text-sm mt-1">
-                                            {user.phone}
+                                    {/* Avatar error message */}
+                                    {avatarError && (
+                                        <p className="absolute left-1/2 top-full mt-2 w-40 -translate-x-1/2 text-center text-xs text-[#C9614E] font-inter">
+                                            {avatarError}
                                         </p>
                                     )}
-                                    {!user.phone && (
-                                        <p className="text-amber-600 text-sm mt-1 flex items-center gap-1">
-                                            <AlertCircle size={14} />
-                                            Phone number required for certain actions
-                                        </p>
-                                    )}
-                                    <div className="flex items-center gap-2 mt-2">
-                                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                                            user.role === 'admin'
-                                                ? 'bg-rose/20 text-rose'
-                                                : 'bg-plum/10 text-plum'
-                                        }`}>
-                                            {user.role === 'admin' ? 'Administrator' : 'Member'}
-                                        </span>
-                                    </div>
                                 </div>
+
+                                <div className="min-w-0 flex-1 pb-1">
+                                    <h1 className="flex items-center gap-2 font-amandine font-normal text-3xl text-plum-dark tracking-tight sm:text-4xl">
+                                        {user.name}
+                                        <Star size={18} className={user.role === 'admin' ? 'text-burgundy' : 'text-plum-dark/40'} />
+                                    </h1>
+                                </div>
+
                                 <button
                                     onClick={handleLogout}
-                                    className="flex items-center gap-2 px-4 py-2 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+                                    className="inline-flex shrink-0 items-center gap-1.5 self-start rounded-full px-3 py-1.5 text-sm font-normal text-plum/50 transition-colors hover:bg-[#C9614E]/8 hover:text-[#C9614E] font-inter sm:self-center"
                                 >
-                                    <LogOut size={18} />
+                                    <LogOut size={16} />
                                     Logout
                                 </button>
                             </div>
-                        </div>
                     </div>
 
-                    {/* Tabs */}
-                    <div className="flex gap-2 mb-8 border-b border-cream overflow-x-auto">
-                        <button
-                            onClick={() => setActiveTab('profile')}
-                            className={`px-6 py-3 font-medium transition-all relative whitespace-nowrap ${
-                                activeTab === 'profile'
-                                    ? 'text-rose after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-rose'
-                                    : 'text-plum/60 hover:text-plum'
-                            }`}
-                        >
-                            Profile Info
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('uploads')}
-                            className={`px-6 py-3 font-medium transition-all relative whitespace-nowrap ${
-                                activeTab === 'uploads'
-                                    ? 'text-rose after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-rose'
-                                    : 'text-plum/60 hover:text-plum'
-                            }`}
-                        >
-                            My Uploads
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('picks')}
-                            className={`px-6 py-3 font-medium transition-all relative whitespace-nowrap ${
-                                activeTab === 'picks'
-                                    ? 'text-rose after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-rose'
-                                    : 'text-plum/60 hover:text-plum'
-                            }`}
-                        >
-                            <span className="flex items-center gap-2">
-                                <Heart size={16} />
+                    {/* Tabs — segmented control */}
+                    <div className="mb-8 flex overflow-x-auto">
+                        <div className="inline-flex items-center gap-1 rounded-full bg-plum-dark/6 p-1 font-inter">
+                            <button
+                                onClick={() => setActiveTab('profile')}
+                                className={`whitespace-nowrap rounded-full px-4 py-2 text-sm transition-all ${
+                                    activeTab === 'profile'
+                                        ? 'bg-white text-plum-dark font-medium shadow-sm'
+                                        : 'text-plum/50 font-normal hover:text-plum-dark'
+                                }`}
+                            >
+                                Profile Info
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('uploads')}
+                                className={`whitespace-nowrap rounded-full px-4 py-2 text-sm transition-all ${
+                                    activeTab === 'uploads'
+                                        ? 'bg-white text-plum-dark font-medium shadow-sm'
+                                        : 'text-plum/50 font-normal hover:text-plum-dark'
+                                }`}
+                            >
+                                My Uploads
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('picks')}
+                                className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-4 py-2 text-sm transition-all ${
+                                    activeTab === 'picks'
+                                        ? 'bg-white text-plum-dark font-medium shadow-sm'
+                                        : 'text-plum/50 font-normal hover:text-plum-dark'
+                                }`}
+                            >
+                                <Heart size={14} />
                                 My Picks
                                 {activityCounts.picks > 0 && (
-                                    <span className="bg-rose text-white text-xs px-2 py-0.5 rounded-full">
+                                    <span className="rounded-full bg-plum-dark/10 px-1.5 text-[10px] text-plum-dark">
                                         {activityCounts.picks}
                                     </span>
                                 )}
-                            </span>
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('reservations')}
-                            className={`px-6 py-3 font-medium transition-all relative whitespace-nowrap ${
-                                activeTab === 'reservations'
-                                    ? 'text-rose after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-rose'
-                                    : 'text-plum/60 hover:text-plum'
-                            }`}
-                        >
-                            <span className="flex items-center gap-2">
-                                <CheckCircle size={16} />
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('reservations')}
+                                className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-4 py-2 text-sm transition-all ${
+                                    activeTab === 'reservations'
+                                        ? 'bg-white text-plum-dark font-medium shadow-sm'
+                                        : 'text-plum/50 font-normal hover:text-plum-dark'
+                                }`}
+                            >
+                                <CheckCircle size={14} />
                                 My Reservations
                                 {activityCounts.reservations > 0 && (
-                                    <span className="bg-green-500 text-white text-xs px-2 py-0.5 rounded-full">
+                                    <span className="rounded-full bg-plum-dark/10 px-1.5 text-[10px] text-plum-dark">
                                         {activityCounts.reservations}
                                     </span>
                                 )}
-                            </span>
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('settings')}
-                            className={`px-6 py-3 font-medium transition-all relative whitespace-nowrap ${
-                                activeTab === 'settings'
-                                    ? 'text-rose after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-rose'
-                                    : 'text-plum/60 hover:text-plum'
-                            }`}
-                        >
-                            Settings
-                        </button>
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('settings')}
+                                className={`whitespace-nowrap rounded-full px-4 py-2 text-sm transition-all ${
+                                    activeTab === 'settings'
+                                        ? 'bg-white text-plum-dark font-medium shadow-sm'
+                                        : 'text-plum/50 font-normal hover:text-plum-dark'
+                                }`}
+                            >
+                                Settings
+                            </button>
+                        </div>
                     </div>
 
                     {/* Tab Content */}
