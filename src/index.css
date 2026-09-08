@@ -71,4 +71,13 @@
     .filter-container {
         @apply transform transition-all duration-300 hover:scale-105;
     }
+
+    /* Hide the native scrollbar on horizontally-scrolling pill rows */
+    .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+    }
 }

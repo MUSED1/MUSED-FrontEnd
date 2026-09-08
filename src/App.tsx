@@ -1,6 +1,6 @@
 // App.tsx
 import { useState, useEffect } from 'react'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'
 import { AuthProvider } from './context'
 import { Header } from './components/Header'
 import { Hero } from './components/Hero'
@@ -19,6 +19,7 @@ import { Confirmation } from './components/Confirmation'
 import { SimpleImageUpload } from './components/SimpleImageUpload'
 import { SecondDinner } from './components/SecondDinner'
 import { Events } from './components/Events'
+import { EventDetail } from './components/EventDetail'
 // import { Collection } from './components/Collection'
 // import { ThePics } from './components/ThePics'
 // import { FAQ } from './components/FAQ'
@@ -26,6 +27,9 @@ import { Events } from './components/Events'
 import { Login } from './components/Login'
 import { Signup } from './components/Signup'
 import { MyUploads } from './components/MyUploads'
+import { MyPicks } from './components/MyPicks'
+import { MyReservations } from './components/MyReservations'
+import { AccountSettings } from './components/AccountSettings'
 import { Profile } from './components/Profile'
 import { OAuthSuccess } from './components/OAuthSuccess'
 import { Terms } from './components/Terms'
@@ -49,7 +53,26 @@ import { SellerLogin } from './components/SellerLogin.tsx';
 import { SellerSignup } from './components/SellerSignup.tsx';
 import { RequireSeller } from './components/RequireSeller';
 import { BrandDashboard } from './components/BrandDashboard';
+import { Feed } from './components/Feed';
+import { useAuth } from './hooks/useAuth';
+
+function ScrollToTop() {
+    const { pathname } = useLocation();
+
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, [pathname]);
+
+    return null;
+}
+
 function HomePage() {
+    const { isAuthenticated } = useAuth();
+
+    if (isAuthenticated) {
+        return <Feed />;
+    }
+
     return (
         <div className="font-sans">
             <Header />
@@ -82,11 +105,13 @@ export function App() {
     return (
         <AuthProvider>
             <Router>
+                <ScrollToTop />
                 <Routes>
                     <Route path="/" element={<HomePage />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/signup" element={<Signup />} />
                     <Route path="/events" element={<Events />} />
+                    <Route path="/events/next" element={<EventDetail />} />
                     {/* <Route path="/collections" element={<Collections />} /> */}
                     <Route path="/diner" element={<Diner />} />
                     <Route path="/about" element={<About />} />
@@ -102,6 +127,9 @@ export function App() {
                     {/* <Route path="/faq" element={<FAQ />} /> */}
                     {/* <Route path="/reachout" element={<Reachout />} /> */}
                     <Route path="/my-uploads" element={<MyUploads />} />
+                    <Route path="/my-picks" element={<MyPicks />} />
+                    <Route path="/my-reservations" element={<MyReservations />} />
+                    <Route path="/settings" element={<AccountSettings />} />
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/oauth-success" element={<OAuthSuccess />} />
                     {/* Legal Pages */}

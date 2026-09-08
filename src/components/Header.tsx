@@ -1,20 +1,176 @@
 import { useState, useEffect } from 'react'
-import { User, Menu, X } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Menu, X, User, LogOut, Package, Heart, CheckCircle, Settings } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../hooks/useAuth'
+
+const NAV_LINKS = [
+    { path: '/', label: 'Home' },
+    { path: '/events', label: 'Events' },
+    { path: '/about', label: 'About' },
+]
 
 export function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const [isScrolled, setIsScrolled] = useState(false)
+    const { user, isAuthenticated, logout } = useAuth()
+    const navigate = useNavigate()
 
     useEffect(() => {
-        const handleScroll = () => {
-            setIsScrolled(window.scrollY > 40)
-        }
-
+        const handleScroll = () => setIsScrolled(window.scrollY > 40)
         window.addEventListener('scroll', handleScroll, { passive: true })
         return () => window.removeEventListener('scroll', handleScroll)
     }, [])
 
+    // Lock page scroll while the logged-in drawer is open
+    useEffect(() => {
+        if (!isAuthenticated) return
+        document.body.style.overflow = isMenuOpen ? 'hidden' : ''
+        return () => {
+            document.body.style.overflow = ''
+        }
+    }, [isMenuOpen, isAuthenticated])
+
+    const closeMenu = () => setIsMenuOpen(false)
+
+    const handleLogout = () => {
+        logout()
+        closeMenu()
+        navigate('/')
+    }
+
+    // Logged-in header — glass bar + right-side blurred drawer
+    if (isAuthenticated) {
+        return (
+            <>
+                <header
+                    className={`fixed top-0 z-50 w-full transition-all duration-500 ease-in-out ${
+                        isScrolled ? 'bg-transparent' : 'bg-[#5b1b3a] shadow-sm'
+                    }`}
+                >
+                    <div className="container mx-auto flex items-center justify-between px-4 py-3.5">
+                        <Link
+                            to="/"
+                            onClick={closeMenu}
+                            className={`transition-opacity duration-300 ${
+                                isScrolled ? 'pointer-events-none opacity-0' : 'opacity-100'
+                            }`}
+                        >
+                            <div className="inline-flex flex-col items-center">
+                                <h1 className="font-kaldera text-2xl tracking-wider text-cream transition-colors hover:text-gold">
+                                    MUSED
+                                </h1>
+                                <span className="-mt-1 font-kaldera text-xs tracking-widest text-cream opacity-80">
+                                    852
+                                </span>
+                            </div>
+                        </Link>
+
+                        <button
+                            onClick={() => setIsMenuOpen((v) => !v)}
+                            className={`ml-auto text-cream transition-all duration-200 ease-in-out hover:scale-110 hover:text-gold ${
+                                isScrolled
+                                    ? 'rounded-full bg-[#5b1b3a] p-2.5 shadow-md'
+                                    : ''
+                            }`}
+                            aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
+                            aria-expanded={isMenuOpen}
+                        >
+                            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                        </button>
+                    </div>
+                </header>
+
+                {/* Blurred scrim — blur applies instantly, no fade lag */}
+                <div
+                    className={`fixed inset-0 z-40 ${
+                        isMenuOpen ? 'pointer-events-auto' : 'pointer-events-none'
+                    }`}
+                >
+                    <div
+                        className={`absolute inset-0 bg-plum-dark/25 backdrop-blur-2xl transition-opacity duration-100 ${
+                            isMenuOpen ? 'opacity-100' : 'opacity-0'
+                        }`}
+                        onClick={closeMenu}
+                    />
+                </div>
+
+                {/* Right-side drawer — full height, ~half width, slides in from the right */}
+                <nav
+                    className={`fixed inset-y-0 right-0 z-50 flex w-1/2 max-w-sm flex-col items-start justify-center gap-2 border-l border-white/20 bg-plum-dark/60 px-8 backdrop-blur-2xl transition-transform duration-300 ease-in-out sm:px-10 ${
+                        isMenuOpen ? 'translate-x-0' : 'translate-x-full'
+                    }`}
+                >
+                    {NAV_LINKS.map(({ path, label }) => (
+                        <Link
+                            key={path}
+                            to={path}
+                            onClick={closeMenu}
+                            className="py-2 font-kaldera text-2xl text-cream transition-colors hover:text-gold sm:text-3xl"
+                        >
+                            {label}
+                        </Link>
+                    ))}
+
+                    <div className="my-5 h-px w-9 bg-[#C9A96E]" />
+
+                    <div className="flex flex-col items-start gap-0.5 font-inter">
+                        <span className="px-2 pb-1 text-xs uppercase tracking-label text-cream/40">
+                            {user?.name || 'Account'}
+                        </span>
+                        <Link
+                            to="/profile"
+                            onClick={closeMenu}
+                            className="flex items-center gap-2 rounded-full px-2 py-1.5 text-sm text-cream/80 transition-colors hover:text-gold"
+                        >
+                            <User size={15} />
+                            Profile Info
+                        </Link>
+                        <Link
+                            to="/my-uploads"
+                            onClick={closeMenu}
+                            className="flex items-center gap-2 rounded-full px-2 py-1.5 text-sm text-cream/80 transition-colors hover:text-gold"
+                        >
+                            <Package size={15} />
+                            My Uploads
+                        </Link>
+                        <Link
+                            to="/my-picks"
+                            onClick={closeMenu}
+                            className="flex items-center gap-2 rounded-full px-2 py-1.5 text-sm text-cream/80 transition-colors hover:text-gold"
+                        >
+                            <Heart size={15} />
+                            My Picks
+                        </Link>
+                        <Link
+                            to="/my-reservations"
+                            onClick={closeMenu}
+                            className="flex items-center gap-2 rounded-full px-2 py-1.5 text-sm text-cream/80 transition-colors hover:text-gold"
+                        >
+                            <CheckCircle size={15} />
+                            My Reservations
+                        </Link>
+                        <Link
+                            to="/settings"
+                            onClick={closeMenu}
+                            className="flex items-center gap-2 rounded-full px-2 py-1.5 text-sm text-cream/80 transition-colors hover:text-gold"
+                        >
+                            <Settings size={15} />
+                            Settings
+                        </Link>
+                        <button
+                            onClick={handleLogout}
+                            className="mt-1 flex items-center gap-2 rounded-full px-2 py-1.5 text-sm text-cream/45 transition-colors hover:text-[#C9614E]"
+                        >
+                            <LogOut size={15} />
+                            Logout
+                        </button>
+                    </div>
+                </nav>
+            </>
+        )
+    }
+
+    // Public / landing header — unchanged classic nav
     return (
         <header
             className={`w-full fixed top-0 z-50 transition-all duration-500 ease-in-out ${

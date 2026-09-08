@@ -9,11 +9,11 @@ export const Privacy: React.FC = () => {
     return (
         <div className="min-h-screen flex flex-col bg-gradient-to-br from-cream via-cream to-rose/30">
             <Header />
-            <main className="flex-grow py-12 px-4 sm:px-6 lg:px-8 relative">
+            <main className="flex-grow pt-28 pb-12 px-4 sm:px-6 lg:px-8 relative md:pt-32">
                 {/* Back Button */}
                 <button
                     onClick={() => navigate(-1)}
-                    className="absolute top-6 left-6 md:top-8 md:left-8 flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full shadow-md hover:shadow-lg transition-all duration-200 border border-gold/20 group z-10"
+                    className="absolute top-28 left-6 md:top-32 md:left-8 flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full shadow-md hover:shadow-lg transition-all duration-200 border border-gold/20 group z-10"
                     style={{ fontFamily: 'Inter, sans-serif' }}
                 >
                     <svg
@@ -30,7 +30,7 @@ export const Privacy: React.FC = () => {
                 {/* Close Button (Alternative) */}
                 <button
                     onClick={() => navigate('/signup')}
-                    className="absolute top-6 right-6 md:top-8 md:right-8 w-10 h-10 bg-white/80 backdrop-blur-sm rounded-full shadow-md hover:shadow-lg transition-all duration-200 border border-gold/20 flex items-center justify-center group z-10"
+                    className="absolute top-28 right-6 md:top-32 md:right-8 w-10 h-10 bg-white/80 backdrop-blur-sm rounded-full shadow-md hover:shadow-lg transition-all duration-200 border border-gold/20 flex items-center justify-center group z-10"
                     aria-label="Close"
                 >
                     <svg

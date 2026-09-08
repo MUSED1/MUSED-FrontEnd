@@ -20,7 +20,7 @@ export const Login: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
-    const from = (location.state as any)?.from || '/profile';
+    const from = (location.state as any)?.from || '/';
     const redirectMessage = (location.state as any)?.message;
 
     useEffect(() => {
