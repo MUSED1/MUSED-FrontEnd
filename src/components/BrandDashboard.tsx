@@ -2,27 +2,48 @@
 //
 // The seller's "admin page for my brand": manage inventory (add items,
 // set/edit prices & currency, track stock, mark available/reserved/sold,
-// delete), sync a buy item's price to Stripe, and see incoming orders.
+// delete), sync a buy item's price to Stripe, see incoming orders, and add
+// shipment tracking numbers as orders go out.
 //
 // Talks to the existing routes/clothing.js + routes/brand.js endpoints:
-//   GET    /api/brand/me                 (existing — used to show the seller's own brand header, no re-asking for the name)
-//   GET    /api/clothing/my-items        (existing)
-//   GET    /api/clothing/my-orders       (existing)
-//   POST   /api/clothing                 (existing — auto-syncs 'buy' items to Stripe; userInfo/brand are now optional, filled server-side)
-//   PUT    /api/clothing/:id             (existing — now also accepts `stock`)
-//   DELETE /api/clothing/:id             (existing)
-//   POST   /api/clothing/:id/sync-stripe (existing — manual retry)
+//   GET    /api/brand/me                       (existing — brand header)
+//   GET    /api/clothing/my-items               (existing)
+//   GET    /api/clothing/my-orders              (existing — now also returns
+//                                                orderId, trackingNumber,
+//                                                carrier, stripeProductId)
+//   POST   /api/clothing                        (existing — auto-syncs 'buy'
+//                                                items to Stripe)
+//   PUT    /api/clothing/:id                    (existing — now also accepts
+//                                                `trackingNumber`/`carrier`
+//                                                for sold 'buy' items)
+//   PUT    /api/clothing/orders/:id/tracking    (NEW — tracking for 'rent'
+//                                                orders, i.e. reservations)
+//   DELETE /api/clothing/:id                    (existing)
+//   POST   /api/clothing/:id/sync-stripe        (existing — manual retry)
+//
+// Stripe: there's no Connect onboarding flow yet, so we can't deep-link to
+// a brand's own Stripe dashboard. What we CAN do today is link straight to
+// the Stripe Product page for each synced 'buy' item (we already have
+// stripeProductId once an item syncs) — that's the "access to the Stripe
+// link" piece. The brand-level "Open Stripe dashboard" button in the header
+// is wired to `brandProfile.stripeAccountId`, which is `null` until Connect
+// is actually built — until then it just renders as a disabled/greyed
+// affordance so the UI doesn't lie about being connected.
+//
+// Tracking numbers are plain free-text — no carrier API is called. The
+// brand just types in whatever the courier gave them.
 //
 // NOTE: this assumes `API_CONFIG.endpoints.clothing` resolves to
 // '/api/clothing' (same base used by ClothingUploadForm.tsx). If your
 // utils/api.ts uses different keys, adjust `clothingBase` below.
 
-import React, { useState, useEffect, useRef, useCallback } from 'react'
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { Header } from './Header'
 import { Footer } from './Footer'
 import {
     Plus, Trash2, RefreshCw, X, Package, ShoppingBag,
-    CheckCircle2, AlertCircle, Clock, Upload, Boxes, Store, Layers
+    CheckCircle2, AlertCircle, Clock, Upload, Boxes, Store, Layers,
+    ExternalLink, Search, Truck, Check, ChevronDown, Ban
 } from 'lucide-react'
 import { API_CONFIG } from '../utils/api'
 
@@ -47,12 +68,17 @@ interface ClothingItem {
     stock: number;
     status: 'available' | 'reserved' | 'sold';
     images: string[];
+    stripeProductId?: string | null;
     stripeSyncStatus?: 'not_applicable' | 'pending' | 'synced' | 'failed';
     stripeSyncError?: string | null;
 }
 
 interface Order {
     orderType: 'rent' | 'buy';
+    // orderId is what tracking updates PATCH to. For 'rent' this is the
+    // Reservation _id; for 'buy' it's the Clothing _id (a sold buy item IS
+    // the order).
+    orderId: string;
     clothingId: string;
     itemName: string;
     itemImage: string | null;
@@ -66,6 +92,16 @@ interface Order {
     pickupTime?: string | null;
     returnDay?: string | null;
     returnTime?: string | null;
+    trackingNumber?: string;
+    carrier?: string;
+    // Live status from 17TRACK, filled in once a tracking number has been
+    // registered and the carrier has reported at least one event. Stays
+    // 'unknown' until the first webhook push arrives — see
+    // POST /webhooks/17track in routes/clothing.js.
+    trackingStatus?: 'unknown' | 'not_found' | 'info_received' | 'in_transit' | 'available_for_pickup' | 'out_for_delivery' | 'delivery_failure' | 'delivered' | 'exception';
+    trackingLastEvent?: string;
+    trackingLastEventTime?: string | null;
+    stripeProductId?: string | null;
     createdAt: string | null;
 }
 
@@ -73,6 +109,7 @@ interface BrandProfile {
     brandName: string;
     logoUrl: string;
     approvalStatus: 'pending' | 'approved' | 'rejected';
+    stripeAccountId?: string | null;
 }
 
 const CATEGORIES = ['Dresses', 'Tops', 'Bottoms', 'Outerwear', 'Accessories', 'Shoes', 'Bags', 'Jewelry', 'Skirts', 'Vests', 'Others'];
@@ -87,6 +124,18 @@ const SIZE_OPTIONS: Record<SizeSystem, string[]> = {
 const CURRENCIES: Currency[] = ['HKD', 'USD', 'GBP', 'EUR'];
 const CURRENCY_SYMBOL: Record<Currency, string> = { HKD: 'HK$', USD: '$', GBP: '£', EUR: '€' };
 
+// Stripe dashboard links point at the LIVE dashboard. This only affects
+// which dashboard these links *open* — it has no effect on which Stripe
+// secret key the backend actually charges with (that's whatever
+// STRIPE_SECRET_KEY is set to in routes/stripe.js / routes/clothing.js).
+// If you ever need to debug against test-mode data again, flip this back
+// to `true`.
+const STRIPE_TEST_MODE = false;
+const stripeProductUrl = (productId: string) =>
+    `https://dashboard.stripe.com/${STRIPE_TEST_MODE ? 'test/' : ''}products/${productId}`;
+const stripeAccountUrl = (accountId: string) =>
+    `https://dashboard.stripe.com/${STRIPE_TEST_MODE ? 'test/' : ''}connect/accounts/${accountId}`;
+
 function fileToDataUrl(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -96,6 +145,9 @@ function fileToDataUrl(file: File): Promise<string> {
     });
 }
 
+// ------------------------------------------------------------------
+// Main component
+// ------------------------------------------------------------------
 export function BrandDashboard() {
     const [tab, setTab] = useState<'inventory' | 'orders'>('inventory');
     const [items, setItems] = useState<ClothingItem[]>([]);
@@ -146,6 +198,18 @@ export function BrandDashboard() {
             // Non-fatal — dashboard still works without the brand header.
         }
     }, []);
+
+    // Tracking status arrives asynchronously via the 17TRACK webhook
+    // (POST /webhooks/17track), not the request that saved the tracking
+    // number — so poll while the Orders tab is open to pick up updates
+    // without asking the brand to refresh manually.
+    useEffect(() => {
+        if (tab !== 'orders') return;
+        const id = setInterval(() => {
+            loadOrders().catch(() => {}); // silent — a missed poll isn't worth surfacing an error for
+        }, 30000);
+        return () => clearInterval(id);
+    }, [tab, loadOrders]);
 
     useEffect(() => {
         (async () => {
@@ -220,12 +284,37 @@ export function BrandDashboard() {
         }
     };
 
+    // Tracking updates go to different endpoints depending on order type —
+    // 'buy' orders are Clothing docs (existing PUT /:id), 'rent' orders are
+    // Reservation docs (new PUT /orders/:id/tracking).
+    const updateTracking = async (order: Order, patch: { trackingNumber?: string; carrier?: string }) => {
+        setItemSaving(order.orderId, true);
+        setError('');
+        try {
+            const url = order.orderType === 'buy'
+                ? `${clothingBase}/${order.orderId}`
+                : `${clothingBase}/orders/${order.orderId}/tracking`;
+            const res = await fetch(url, {
+                method: 'PUT',
+                headers: getAuthHeaders(),
+                body: JSON.stringify(patch)
+            });
+            const result = await res.json();
+            if (!res.ok || !result.success) throw new Error(result.message || 'Failed to save tracking number');
+            setOrders(prev => prev.map(o => (o.orderId === order.orderId ? { ...o, ...patch } : o)));
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Error saving tracking number');
+        } finally {
+            setItemSaving(order.orderId, false);
+        }
+    };
+
     const stripeBadge = (item: ClothingItem): React.ReactNode => {
         if (item.listingType !== 'buy') return null;
         const map = {
             not_applicable: null,
-            pending: { icon: Clock, classes: 'bg-yellow-100 text-yellow-800', label: 'Syncing…' },
-            synced: { icon: CheckCircle2, classes: 'bg-green-100 text-green-800', label: 'On Stripe' },
+            pending: { icon: Clock, classes: 'bg-amber-100 text-amber-800', label: 'Syncing…' },
+            synced: { icon: CheckCircle2, classes: 'bg-emerald-100 text-emerald-800', label: 'On Stripe' },
             failed: { icon: AlertCircle, classes: 'bg-red-100 text-red-800', label: 'Sync failed' }
         } as const;
         const entry = map[item.stripeSyncStatus || 'not_applicable'];
@@ -243,6 +332,7 @@ export function BrandDashboard() {
     const totalStock = items.reduce((sum, it) => sum + (it.stock ?? 0), 0);
     const availableCount = items.filter(it => it.status === 'available').length;
     const needsAttentionCount = items.filter(it => it.listingType === 'buy' && it.stripeSyncStatus === 'failed').length;
+    const unshippedCount = orders.filter(o => !o.trackingNumber && o.status !== 'cancelled').length;
 
     return (
         <div className="font-sans">
@@ -252,7 +342,7 @@ export function BrandDashboard() {
 
                     {/* ── Brand header ────────────────────────────────────── */}
                     <div className="bg-white rounded-2xl shadow-lg p-6 mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-4 min-w-0">
                             <div className="w-16 h-16 rounded-xl bg-cream border border-plum/10 flex items-center justify-center overflow-hidden shrink-0">
                                 {brandProfile?.logoUrl ? (
                                     <img src={brandProfile.logoUrl} alt={`${brandProfile.brandName} logo`} className="w-full h-full object-contain" />
@@ -260,19 +350,33 @@ export function BrandDashboard() {
                                     <Store className="text-plum/30" size={26} />
                                 )}
                             </div>
-                            <div>
-                                <h1 className="text-2xl md:text-3xl font-bold text-plum leading-tight">
-                                    {brandProfile?.brandName || 'Brand Dashboard'}
-                                </h1>
+                            <div className="min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    <h1 className="text-2xl md:text-3xl font-bold text-plum leading-tight truncate">
+                                        {brandProfile?.brandName || 'Brand Dashboard'}
+                                    </h1>
+                                    {brandProfile?.approvalStatus && brandProfile.approvalStatus !== 'approved' && (
+                                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium shrink-0 ${
+                                            brandProfile.approvalStatus === 'pending'
+                                                ? 'bg-amber-100 text-amber-800'
+                                                : 'bg-red-100 text-red-800'
+                                        }`}>
+                                            {brandProfile.approvalStatus === 'pending' ? 'Pending review' : 'Rejected'}
+                                        </span>
+                                    )}
+                                </div>
                                 <p className="text-plum/60 text-sm mt-0.5">Manage your stock, prices, and orders.</p>
                             </div>
                         </div>
-                        <button
-                            onClick={() => setShowAddModal(true)}
-                            className="inline-flex items-center justify-center gap-2 bg-rose text-white px-5 py-3 rounded-lg font-medium hover:bg-rose/90 transition-colors shrink-0"
-                        >
-                            <Plus size={18} /> Add item
-                        </button>
+                        <div className="flex items-center gap-2 shrink-0">
+                            <StripeDashboardButton accountId={brandProfile?.stripeAccountId} />
+                            <button
+                                onClick={() => setShowAddModal(true)}
+                                className="inline-flex items-center justify-center gap-2 bg-rose text-white px-5 py-3 rounded-lg font-medium hover:bg-rose/90 transition-colors"
+                            >
+                                <Plus size={18} /> Add item
+                            </button>
+                        </div>
                     </div>
 
                     {/* ── Stat cards ──────────────────────────────────────── */}
@@ -282,14 +386,14 @@ export function BrandDashboard() {
                         <StatCard icon={Layers} label="Available now" value={availableCount} />
                         <StatCard
                             icon={ShoppingBag}
-                            label="Orders"
-                            value={orders.length}
-                            accent={needsAttentionCount > 0 ? undefined : undefined}
+                            label="Orders to ship"
+                            value={unshippedCount}
+                            accent={unshippedCount > 0 ? 'bg-amber-100 text-amber-700' : undefined}
                         />
                     </div>
 
                     {needsAttentionCount > 0 && (
-                        <div className="mb-6 p-4 bg-yellow-50 text-yellow-900 rounded-xl border border-yellow-200 flex items-center gap-2 text-sm">
+                        <div className="mb-6 p-4 bg-amber-50 text-amber-900 rounded-xl border border-amber-200 flex items-center gap-2 text-sm">
                             <AlertCircle size={16} className="shrink-0" />
                             {needsAttentionCount} item{needsAttentionCount > 1 ? 's need' : ' needs'} a Stripe re-sync — check the Inventory tab.
                         </div>
@@ -313,11 +417,14 @@ export function BrandDashboard() {
                         </button>
                         <button
                             onClick={() => setTab('orders')}
-                            className={`px-4 py-2 font-medium inline-flex items-center gap-2 border-b-2 -mb-px transition-colors ${
+                            className={`px-4 py-2 font-medium inline-flex items-center gap-2 border-b-2 -mb-px transition-colors relative ${
                                 tab === 'orders' ? 'border-rose text-plum' : 'border-transparent text-plum/50 hover:text-plum/80'
                             }`}
                         >
                             <ShoppingBag size={16} /> Orders ({orders.length})
+                            {unshippedCount > 0 && (
+                                <span className="w-2 h-2 rounded-full bg-rose" />
+                            )}
                         </button>
                     </div>
 
@@ -336,7 +443,7 @@ export function BrandDashboard() {
                             stripeBadge={stripeBadge}
                         />
                     ) : (
-                        <OrdersTable orders={orders} />
+                        <OrdersPanel orders={orders} savingIds={savingIds} onUpdateTracking={updateTracking} />
                     )}
                 </div>
             </main>
@@ -356,6 +463,32 @@ export function BrandDashboard() {
                 />
             )}
         </div>
+    );
+}
+
+// ------------------------------------------------------------------
+// Stripe dashboard button (header) — greyed out until Connect is wired up
+// ------------------------------------------------------------------
+function StripeDashboardButton({ accountId }: { accountId?: string | null }) {
+    if (!accountId) {
+        return (
+            <span
+                className="inline-flex items-center gap-2 border border-plum/15 text-plum/40 px-4 py-3 rounded-lg font-medium text-sm cursor-not-allowed select-none"
+                title="Stripe account linking isn't set up yet — per-item Stripe links are still available from the Inventory tab."
+            >
+                <Ban size={16} /> Stripe not connected
+            </span>
+        );
+    }
+    return (
+        <a
+            href={stripeAccountUrl(accountId)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 border border-plum/20 text-plum px-4 py-3 rounded-lg font-medium text-sm hover:bg-plum/5 transition-colors"
+        >
+            <ExternalLink size={16} /> Open Stripe dashboard
+        </a>
     );
 }
 
@@ -396,6 +529,19 @@ function InventoryTable({
 }) {
     const [priceDrafts, setPriceDrafts] = useState<Record<string, string>>({});
     const [stockDrafts, setStockDrafts] = useState<Record<string, string>>({});
+    const [search, setSearch] = useState('');
+    const [typeFilter, setTypeFilter] = useState<'all' | 'rent' | 'buy'>('all');
+    const [statusFilter, setStatusFilter] = useState<'all' | ClothingItem['status']>('all');
+
+    const filtered = useMemo(() => {
+        const q = search.trim().toLowerCase();
+        return items.filter(it => {
+            if (typeFilter !== 'all' && it.listingType !== typeFilter) return false;
+            if (statusFilter !== 'all' && it.status !== statusFilter) return false;
+            if (q && !(it.productName?.toLowerCase().includes(q) || it.category.toLowerCase().includes(q))) return false;
+            return true;
+        });
+    }, [items, search, typeFilter, statusFilter]);
 
     if (items.length === 0) {
         return (
@@ -409,6 +555,32 @@ function InventoryTable({
 
     return (
         <div className="bg-white rounded-2xl shadow overflow-hidden">
+            {/* ── Filters ─────────────────────────────────────────────── */}
+            <div className="p-4 border-b border-cream flex flex-col sm:flex-row gap-3 sm:items-center">
+                <div className="relative flex-1 min-w-[180px]">
+                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-plum/30" />
+                    <input
+                        placeholder="Search by name or category"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="w-full pl-9 pr-3 py-2 border border-plum/15 rounded-lg text-sm"
+                    />
+                </div>
+                <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value as any)}
+                        className="border border-plum/15 rounded-lg px-3 py-2 text-sm text-plum/80">
+                    <option value="all">All types</option>
+                    <option value="buy">Sell</option>
+                    <option value="rent">Rent</option>
+                </select>
+                <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as any)}
+                        className="border border-plum/15 rounded-lg px-3 py-2 text-sm text-plum/80">
+                    <option value="all">All statuses</option>
+                    <option value="available">Available</option>
+                    <option value="reserved">Reserved</option>
+                    <option value="sold">Sold</option>
+                </select>
+            </div>
+
             <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                     <thead className="bg-cream text-plum/70 text-left">
@@ -424,7 +596,7 @@ function InventoryTable({
                     </tr>
                     </thead>
                     <tbody>
-                    {items.map(item => {
+                    {filtered.map(item => {
                         const field = priceField(item);
                         const currentPrice = item[field] ?? '';
                         const priceDraft = priceDrafts[item._id] ?? String(currentPrice);
@@ -432,7 +604,7 @@ function InventoryTable({
                         const busy = !!savingIds[item._id];
                         const outOfStock = (item.stock ?? 0) <= 0;
                         return (
-                            <tr key={item._id} className="border-t border-cream">
+                            <tr key={item._id} className="border-t border-cream hover:bg-cream/40 transition-colors">
                                 <td className="p-3">
                                     <div className="flex items-center gap-3">
                                         {item.images?.[0] && (
@@ -503,16 +675,29 @@ function InventoryTable({
                                     </select>
                                 </td>
                                 <td className="p-3">
-                                    {stripeBadge(item)}
-                                    {item.listingType === 'buy' && item.stripeSyncStatus !== 'synced' && (
-                                        <button
-                                            disabled={busy}
-                                            onClick={() => onSyncStripe(item._id)}
-                                            className="ml-2 inline-flex items-center gap-1 text-xs text-plum/70 hover:text-plum disabled:opacity-40"
-                                        >
-                                            <RefreshCw size={12} /> Sync
-                                        </button>
-                                    )}
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                        {stripeBadge(item)}
+                                        {item.listingType === 'buy' && item.stripeSyncStatus !== 'synced' && (
+                                            <button
+                                                disabled={busy}
+                                                onClick={() => onSyncStripe(item._id)}
+                                                className="inline-flex items-center gap-1 text-xs text-plum/70 hover:text-plum disabled:opacity-40"
+                                            >
+                                                <RefreshCw size={12} /> Sync
+                                            </button>
+                                        )}
+                                        {item.listingType === 'buy' && item.stripeProductId && (
+                                            <a
+                                                href={stripeProductUrl(item.stripeProductId)}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="inline-flex items-center gap-1 text-xs text-plum/70 hover:text-plum"
+                                                title="Open this product in Stripe"
+                                            >
+                                                <ExternalLink size={12} /> View
+                                            </a>
+                                        )}
+                                    </div>
                                 </td>
                                 <td className="p-3 text-right">
                                     <button
@@ -527,6 +712,11 @@ function InventoryTable({
                             </tr>
                         );
                     })}
+                    {filtered.length === 0 && (
+                        <tr>
+                            <td colSpan={8} className="p-8 text-center text-plum/50">No items match those filters.</td>
+                        </tr>
+                    )}
                     </tbody>
                 </table>
             </div>
@@ -535,9 +725,24 @@ function InventoryTable({
 }
 
 // ------------------------------------------------------------------
-// Orders table
+// Orders panel — filterable list of order cards, each with an inline
+// tracking-number editor.
 // ------------------------------------------------------------------
-function OrdersTable({ orders }: { orders: Order[] }) {
+function OrdersPanel({
+                         orders, savingIds, onUpdateTracking
+                     }: {
+    orders: Order[];
+    savingIds: Record<string, boolean>;
+    onUpdateTracking: (order: Order, patch: { trackingNumber?: string; carrier?: string }) => void;
+}) {
+    const [filter, setFilter] = useState<'all' | 'to_ship' | 'shipped'>('all');
+
+    const filtered = useMemo(() => {
+        if (filter === 'to_ship') return orders.filter(o => !o.trackingNumber);
+        if (filter === 'shipped') return orders.filter(o => !!o.trackingNumber);
+        return orders;
+    }, [orders, filter]);
+
     if (orders.length === 0) {
         return (
             <div className="bg-white rounded-2xl shadow p-12 text-center text-plum/60">
@@ -547,50 +752,168 @@ function OrdersTable({ orders }: { orders: Order[] }) {
     }
 
     return (
-        <div className="bg-white rounded-2xl shadow overflow-hidden">
-            <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                    <thead className="bg-cream text-plum/70 text-left">
-                    <tr>
-                        <th className="p-3">Item</th>
-                        <th className="p-3">Type</th>
-                        <th className="p-3">Buyer / Renter</th>
-                        <th className="p-3">Price</th>
-                        <th className="p-3">Status</th>
-                        <th className="p-3">Dates</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {orders.map((o, i) => (
-                        <tr key={`${o.clothingId}-${i}`} className="border-t border-cream">
-                            <td className="p-3">
-                                <div className="flex items-center gap-3">
-                                    {o.itemImage && <img src={o.itemImage} alt="" className="w-10 h-10 rounded-lg object-cover" />}
-                                    <span className="font-medium text-plum">{o.itemName}</span>
-                                </div>
-                            </td>
-                            <td className="p-3 capitalize">{o.orderType}</td>
-                            <td className="p-3">
-                                {o.buyerName ? (
-                                    <div>
-                                        <div>{o.buyerName}</div>
-                                        <div className="text-plum/50 text-xs">{o.buyerEmail}</div>
-                                    </div>
-                                ) : (
-                                    <span className="text-plum/40">—</span>
-                                )}
-                            </td>
-                            <td className="p-3">{o.price != null ? `${o.currency ?? ''} ${o.price}` : '—'}</td>
-                            <td className="p-3 capitalize">{o.status}</td>
-                            <td className="p-3 text-plum/60">
-                                {o.orderType === 'rent'
-                                    ? [o.pickupDay, o.returnDay].filter(Boolean).join(' → ') || '—'
-                                    : '—'}
-                            </td>
-                        </tr>
-                    ))}
-                    </tbody>
-                </table>
+        <div className="space-y-4">
+            <div className="flex gap-2">
+                {([
+                    ['all', 'All'],
+                    ['to_ship', 'To ship'],
+                    ['shipped', 'Shipped'],
+                ] as const).map(([key, label]) => (
+                    <button
+                        key={key}
+                        onClick={() => setFilter(key)}
+                        className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                            filter === key ? 'bg-plum text-white' : 'bg-white text-plum/60 border border-plum/15 hover:bg-cream'
+                        }`}
+                    >
+                        {label}
+                    </button>
+                ))}
+            </div>
+
+            <div className="bg-white rounded-2xl shadow divide-y divide-cream overflow-hidden">
+                {filtered.length === 0 ? (
+                    <div className="p-12 text-center text-plum/50">No orders in this view.</div>
+                ) : (
+                    filtered.map((o) => (
+                        <OrderRow
+                            key={`${o.orderType}-${o.orderId}`}
+                            order={o}
+                            busy={!!savingIds[o.orderId]}
+                            onUpdateTracking={onUpdateTracking}
+                        />
+                    ))
+                )}
+            </div>
+        </div>
+    );
+}
+
+// Label + color for the live 17TRACK status, shown next to the tracking
+// number once it's known. 'unknown' means we've registered the number but
+// haven't heard back from the carrier yet (can take a few minutes).
+const TRACKING_STATUS_META: Record<string, { label: string; className: string }> = {
+    unknown: { label: 'Awaiting carrier', className: 'bg-gray-100 text-gray-600' },
+    not_found: { label: 'Not found', className: 'bg-gray-100 text-gray-600' },
+    info_received: { label: 'Label created', className: 'bg-blue-50 text-blue-700' },
+    in_transit: { label: 'In transit', className: 'bg-blue-50 text-blue-700' },
+    available_for_pickup: { label: 'Ready for pickup', className: 'bg-amber-50 text-amber-700' },
+    out_for_delivery: { label: 'Out for delivery', className: 'bg-amber-50 text-amber-700' },
+    delivery_failure: { label: 'Delivery failed', className: 'bg-red-50 text-red-700' },
+    delivered: { label: 'Delivered', className: 'bg-emerald-50 text-emerald-700' },
+    exception: { label: 'Exception', className: 'bg-red-50 text-red-700' }
+};
+
+function OrderRow({
+                      order, busy, onUpdateTracking
+                  }: {
+    order: Order;
+    busy: boolean;
+    onUpdateTracking: (order: Order, patch: { trackingNumber?: string; carrier?: string }) => void;
+}) {
+    const [editing, setEditing] = useState(false);
+    const [trackingDraft, setTrackingDraft] = useState(order.trackingNumber || '');
+    const [carrierDraft, setCarrierDraft] = useState(order.carrier || '');
+
+    const hasTracking = !!order.trackingNumber;
+
+    const save = () => {
+        onUpdateTracking(order, { trackingNumber: trackingDraft.trim(), carrier: carrierDraft.trim() });
+        setEditing(false);
+    };
+
+    return (
+        <div className="p-4 flex flex-col md:flex-row md:items-center gap-4">
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+                {order.itemImage && <img src={order.itemImage} alt="" className="w-12 h-12 rounded-lg object-cover shrink-0" />}
+                <div className="min-w-0">
+                    <div className="font-medium text-plum truncate">{order.itemName}</div>
+                    <div className="text-xs text-plum/50 flex items-center gap-2 flex-wrap mt-0.5">
+                        <span className="capitalize px-1.5 py-0.5 bg-cream rounded text-plum/70">{order.orderType}</span>
+                        <span className="capitalize">{order.status}</span>
+                        {order.price != null && <span>{order.currency ?? ''} {order.price}</span>}
+                        {order.orderType === 'rent' && (order.pickupDay || order.returnDay) && (
+                            <span>{[order.pickupDay, order.returnDay].filter(Boolean).join(' → ')}</span>
+                        )}
+                    </div>
+                    {order.buyerName && (
+                        <div className="text-xs text-plum/50 mt-0.5">
+                            {order.buyerName} · {order.buyerEmail}
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+                {order.orderType === 'buy' && order.stripeProductId && (
+                    <a
+                        href={stripeProductUrl(order.stripeProductId)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-xs text-plum/60 hover:text-plum"
+                        title="Open this product in Stripe"
+                    >
+                        <ExternalLink size={12} /> Stripe
+                    </a>
+                )}
+
+                {editing ? (
+                    <div className="flex items-center gap-2 bg-cream/60 rounded-lg p-2">
+                        <input
+                            placeholder="Carrier (optional)"
+                            value={carrierDraft}
+                            onChange={(e) => setCarrierDraft(e.target.value)}
+                            className="w-28 border border-plum/20 rounded px-2 py-1 text-xs"
+                        />
+                        <input
+                            placeholder="Tracking number"
+                            value={trackingDraft}
+                            onChange={(e) => setTrackingDraft(e.target.value)}
+                            className="w-36 border border-plum/20 rounded px-2 py-1 text-xs"
+                            autoFocus
+                        />
+                        <button
+                            disabled={busy || !trackingDraft.trim()}
+                            onClick={save}
+                            className="inline-flex items-center gap-1 text-xs font-medium text-white bg-rose px-3 py-1.5 rounded disabled:opacity-40"
+                        >
+                            <Check size={12} /> Save
+                        </button>
+                        <button
+                            onClick={() => { setEditing(false); setTrackingDraft(order.trackingNumber || ''); setCarrierDraft(order.carrier || ''); }}
+                            className="text-plum/40 hover:text-plum/70"
+                        >
+                            <X size={14} />
+                        </button>
+                    </div>
+                ) : hasTracking ? (
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => setEditing(true)}
+                            className="inline-flex items-center gap-2 text-xs bg-emerald-50 text-emerald-800 px-3 py-1.5 rounded-full hover:bg-emerald-100 transition-colors"
+                        >
+                            <Truck size={13} />
+                            {order.carrier ? `${order.carrier}: ` : ''}{order.trackingNumber}
+                            <ChevronDown size={12} />
+                        </button>
+                        {order.trackingStatus && (
+                            <span
+                                className={`text-xs px-2 py-1 rounded-full ${TRACKING_STATUS_META[order.trackingStatus]?.className || 'bg-gray-100 text-gray-600'}`}
+                                title={order.trackingLastEvent || undefined}
+                            >
+                                {TRACKING_STATUS_META[order.trackingStatus]?.label || order.trackingStatus}
+                            </span>
+                        )}
+                    </div>
+                ) : (
+                    <button
+                        disabled={busy}
+                        onClick={() => setEditing(true)}
+                        className="inline-flex items-center gap-2 text-xs font-medium text-plum border border-plum/20 px-3 py-1.5 rounded-full hover:bg-cream transition-colors disabled:opacity-40"
+                    >
+                        <Truck size={13} /> Add tracking number
+                    </button>
+                )}
             </div>
         </div>
     );
