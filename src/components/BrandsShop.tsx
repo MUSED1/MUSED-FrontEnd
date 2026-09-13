@@ -7,12 +7,15 @@
 // hardcoded catalogue to every brand's live listings, with a Brand filter
 // added alongside Category and Size.
 //
-// Data source: GET /api/clothing/admin/all
-//   ?listingType=buy&status=available&approvalStatus=approved
-// (paginated; looped until hasNextPage is false — same pattern CollectionsHK
-// uses). The `brand` field on each item (set by the seller from the brand
-// dashboard) drives the Brand filter dropdown, built dynamically from
-// whichever brands currently have live stock so it's never stale or empty.
+// Data source: GET /api/clothing/shop
+// This endpoint (routes/clothing.js) only returns buy items belonging to
+// sellers whose Brand profile has been approved via AdminBrands.tsx — it
+// does NOT return every listing in the database. It's paginated; this
+// screen loops until hasNextPage is false, same pattern CollectionsHK uses.
+// The `brand` field on each returned item is the seller's canonical,
+// currently-approved brandName (the backend fills it in even if the
+// listing's own free-text `brand` field is blank), so the Brand filter
+// below always reflects real, approved brands.
 //
 // Purchase flow: posts to /api/create-buy-session, same endpoint the RIIDE
 // items in CollectionsHK use, generalized to send each item's own
@@ -144,16 +147,13 @@ export function BrandsShop() {
             let page = 1;
             let hasMore = true;
 
+            // ✅ /clothing/shop only returns items from sellers whose Brand
+            // profile is currently approved (see AdminBrands.tsx) — it does
+            // NOT return every listing in the DB the way /admin/all does.
             while (hasMore) {
-                const response = await axios.get(`${API_URL}/clothing/admin/all`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                    params: {
-                        listingType: 'buy',
-                        status: 'available',
-                        approvalStatus: 'approved',
-                        page,
-                        limit: 50
-                    }
+                const response = await axios.get(`${API_URL}${API_CONFIG.endpoints.clothingShop}`, {
+                    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+                    params: { page, limit: 50 }
                 });
 
                 if (response.data.success) {
