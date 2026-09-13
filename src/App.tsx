@@ -49,6 +49,9 @@ import { SellerLogin } from './components/SellerLogin.tsx';
 import { SellerSignup } from './components/SellerSignup.tsx';
 import { RequireSeller } from './components/RequireSeller';
 import { BrandDashboard } from './components/BrandDashboard';
+import { BrandsShop } from './components/BrandsShop';
+
+
 function HomePage() {
     return (
         <div className="font-sans">
@@ -128,7 +131,7 @@ export function App() {
                     <Route path="/seller/signup" element={<SellerSignup />} />
                     <Route path="/brand" element={<RequireSeller><MyBrand /></RequireSeller>} />
                     <Route path="/brand/dashboard" element={<RequireSeller><BrandDashboard /></RequireSeller>} />
-
+                    <Route path="/shop" element={<BrandsShop />} />
 
 
 
