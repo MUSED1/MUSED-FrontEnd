@@ -7,6 +7,7 @@ export const API_CONFIG = {
         clothingAdmin: '/admin/clothing',  // FIXED: matches backend route
         clothingAdminImages: '/admin/clothing',  // For image updates
         clothingMyItems: '/clothing/my-items',
+        clothingMyPurchases: '/clothing/my-purchases',
         clothingShop: '/clothing/shop',
         clothingImage: '/clothing/image',
         usersPicks: '/users/picks',

@@ -12,12 +12,20 @@ interface PaymentDetails {
     promoCode?: string;
 }
 
+interface ItemDetails {
+    productName?: string;
+    size?: string;
+    brand?: string;
+}
+
 export function Confirmation() {
     const navigate = useNavigate();
     const [reservationError, setReservationError] = useState<string | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const [paymentStatus, setPaymentStatus] = useState<'verifying' | 'success' | 'failed'>('verifying')
     const [paymentDetails, setPaymentDetails] = useState<PaymentDetails | null>(null)
+    const [orderType, setOrderType] = useState<'rent' | 'buy'>('rent')
+    const [itemDetails, setItemDetails] = useState<ItemDetails | null>(null)
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -61,6 +69,8 @@ export function Confirmation() {
 
                     if (verifyResponse.ok) {
                         const verifyResult = await verifyResponse.json();
+                        const isBuy = verifyResult.orderType === 'buy';
+                        setOrderType(isBuy ? 'buy' : 'rent');
 
                         // Store payment details from verification response
                         if (verifyResult.amountTotal) {
@@ -80,9 +90,21 @@ export function Confirmation() {
                             });
                         }
 
+                        if (verifyResult.itemDetails) {
+                            setItemDetails(verifyResult.itemDetails);
+                        }
+
                         if (!verifyResult.paid) {
                             setReservationError('Payment could not be verified. Please contact support with session ID: ' + sessionId);
                             setPaymentStatus('failed');
+                            return;
+                        }
+
+                        // Buy purchases don't create a Reservation doc — there's
+                        // no reservation to wait on. Payment success IS the
+                        // completed order, so show the confirmation right away.
+                        if (isBuy) {
+                            setPaymentStatus('success');
                             return;
                         }
 
@@ -200,17 +222,21 @@ export function Confirmation() {
                                 </div>
 
                                 <h1 className="text-4xl md:text-5xl font-bold text-red-600 mb-6">
-                                    Payment Successful, Reservation Issue
+                                    {orderType === 'buy' ? 'Payment Issue' : 'Payment Successful, Reservation Issue'}
                                 </h1>
 
                                 <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
                                     <div className="bg-red-50 border border-red-200 rounded-xl p-6 mb-6">
                                         <div className="flex items-center justify-center space-x-3 mb-4">
                                             <AlertCircle className="w-8 h-8 text-red-600" />
-                                            <h2 className="text-2xl font-bold text-red-600">Reservation Not Completed</h2>
+                                            <h2 className="text-2xl font-bold text-red-600">
+                                                {orderType === 'buy' ? 'Order Not Completed' : 'Reservation Not Completed'}
+                                            </h2>
                                         </div>
                                         <p className="text-red-700 text-lg mb-4">
-                                            Your payment was processed successfully, but we encountered an issue completing your reservation.
+                                            {orderType === 'buy'
+                                                ? 'We could not confirm your payment for this order.'
+                                                : 'Your payment was processed successfully, but we encountered an issue completing your reservation.'}
                                         </p>
                                         <p className="text-red-600">
                                             {reservationError}
@@ -242,8 +268,85 @@ export function Confirmation() {
                             </>
                         )}
 
-                        {/* Success State - UPDATED WITH PROFILE REDIRECTS */}
-                        {!reservationError && paymentStatus === 'success' && (
+                        {/* Success State — BUY purchase: no reservation, just a receipt */}
+                        {!reservationError && paymentStatus === 'success' && orderType === 'buy' && (
+                            <>
+                                <div className="w-24 h-24 mx-auto mb-6 bg-green-100 rounded-full flex items-center justify-center">
+                                    <CheckCircle className="w-12 h-12 text-green-600" />
+                                </div>
+
+                                <h1 className="text-4xl md:text-5xl font-bold text-plum mb-6">
+                                    Purchase Confirmed!
+                                </h1>
+
+                                <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
+                                    <p className="text-xl text-plum/80 mb-6 font-amandine">
+                                        Thank you for your order! Your payment has been processed successfully.
+                                    </p>
+
+                                    <div className="bg-cream rounded-xl p-6 mb-6 text-left">
+                                        <h2 className="text-2xl font-bold text-plum mb-4">Order Details</h2>
+                                        <div className="space-y-3 text-plum/80">
+                                            {itemDetails?.productName && (
+                                                <div className="flex justify-between">
+                                                    <span className="font-semibold">Item:</span>
+                                                    <span>{itemDetails.productName}</span>
+                                                </div>
+                                            )}
+                                            {itemDetails?.brand && (
+                                                <div className="flex justify-between">
+                                                    <span className="font-semibold">Brand:</span>
+                                                    <span>{itemDetails.brand}</span>
+                                                </div>
+                                            )}
+                                            {itemDetails?.size && (
+                                                <div className="flex justify-between">
+                                                    <span className="font-semibold">Size:</span>
+                                                    <span>{itemDetails.size}</span>
+                                                </div>
+                                            )}
+                                            <div className="flex justify-between text-lg font-bold text-gold mt-4 pt-4 border-t border-amber-200">
+                                                <span>Amount Paid:</span>
+                                                <span>{paymentDetails?.amount ?? '—'}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-6">
+                                        <div className="flex items-center space-x-3">
+                                            <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                                            <div>
+                                                <p className="text-green-800 font-semibold">Order Confirmed!</p>
+                                                <p className="text-green-700 text-sm mt-1">
+                                                    The brand has been notified and will get your piece ready to ship.
+                                                    A confirmation email has been sent to your email address.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                                    <Link
+                                        to="/my-uploads"
+                                        className="bg-gradient-to-r from-plum to-rose text-cream px-8 py-3 rounded-full hover:shadow-xl transition-all duration-300 font-semibold text-center flex items-center justify-center gap-2"
+                                    >
+                                        <CheckCircle size={20} />
+                                        View My Orders
+                                    </Link>
+                                    <Link
+                                        to="/shop"
+                                        className="bg-cream text-plum px-8 py-3 rounded-full hover:bg-amber-100 transition-all duration-300 font-semibold text-center flex items-center justify-center gap-2 border-2 border-plum/20"
+                                    >
+                                        <Heart size={20} />
+                                        Continue Shopping
+                                    </Link>
+                                </div>
+                            </>
+                        )}
+
+                        {/* Success State - UPDATED WITH PROFILE REDIRECTS (RENT reservation flow) */}
+                        {!reservationError && paymentStatus === 'success' && orderType === 'rent' && (
                             <>
                                 <div className="w-24 h-24 mx-auto mb-6 bg-green-100 rounded-full flex items-center justify-center">
                                     <CheckCircle className="w-12 h-12 text-green-600" />
