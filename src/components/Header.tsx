@@ -50,8 +50,8 @@ export function Header() {
                     {/* Desktop Navigation */}
                     <nav className="hidden md:block">
                         <ul className="flex space-x-8">
-                            {['/', '/events', '/about'].map((path, i) => {
-                                const labels = ['Home', 'Events', 'About']
+                            {['/', '/shop', '/events', '/about'].map((path, i) => {
+                                const labels = ['Home', 'Shop', 'Events', 'About']
                                 return (
                                     <li key={path}>
                                         <Link
@@ -69,6 +69,12 @@ export function Header() {
                     {/* Icons */}
                     <div className="flex items-center space-x-4">
                         <Link
+                            to="/brand"
+                            className="hidden sm:inline-block text-cream/90 hover:text-gold text-xs font-semibold tracking-widest uppercase border border-cream/30 hover:border-gold rounded-full px-4 py-1.5 transition-all duration-300"
+                        >
+                            Partner With Us
+                        </Link>
+                        <Link
                             to="/profile"
                             className="text-cream hover:text-gold transition-all duration-300 ease-in-out transform hover:scale-110"
                         >
@@ -81,7 +87,7 @@ export function Header() {
                 {isMenuOpen && (
                     <div className="md:hidden pt-4 pb-2 border-t mt-4 border-gold animate-slideDown">
                         <ul className="space-y-3">
-                            {[['/', 'Home'], ['/events', 'Events'], ['/about', 'About']].map(
+                            {[['/', 'Home'], ['/shop', 'Shop'], ['/events', 'Events'], ['/about', 'About']].map(
                                 ([path, label]) => (
                                     <li key={path}>
                                         <Link
@@ -94,6 +100,15 @@ export function Header() {
                                     </li>
                                 )
                             )}
+                            <li className="pt-3 mt-3 border-t border-gold/30">
+                                <Link
+                                    to="/brand"
+                                    className="block text-gold font-medium transition-all duration-300 ease-in-out transform hover:translate-x-2 font-kaldera"
+                                    onClick={() => setIsMenuOpen(false)}
+                                >
+                                    Partner With Us
+                                </Link>
+                            </li>
                         </ul>
                     </div>
                 )}
