@@ -156,9 +156,12 @@ export function MyBrand() {
                 setExisting(result.data);
                 setLogoDataUrl(null);
                 setLogoPreview(result.data.logoUrl);
-                // Take the seller straight to their management dashboard
-                // once their brand info is submitted/updated.
-                navigate('/brand/dashboard');
+                // Only approved brands manage things from the dashboard —
+                // a new or edited submission goes back under review, so stay
+                // here and show the pending/rejected badge instead.
+                if (result.data.approvalStatus === 'approved') {
+                    navigate('/brand/dashboard');
+                }
             } else {
                 throw new Error(result.message || 'Failed to save brand profile');
             }

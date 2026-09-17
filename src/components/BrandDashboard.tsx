@@ -38,6 +38,7 @@
 // utils/api.ts uses different keys, adjust `clothingBase` below.
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Header } from './Header'
 import { Footer } from './Footer'
 import {
@@ -149,6 +150,7 @@ function fileToDataUrl(file: File): Promise<string> {
 // Main component
 // ------------------------------------------------------------------
 export function BrandDashboard() {
+    const navigate = useNavigate();
     const [tab, setTab] = useState<'inventory' | 'orders'>('inventory');
     const [items, setItems] = useState<ClothingItem[]>([]);
     const [orders, setOrders] = useState<Order[]>([]);
@@ -193,11 +195,20 @@ export function BrandDashboard() {
             const res = await fetch(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.brandMe}`, { headers: getAuthHeaders() });
             if (!res.ok) return; // no profile yet, or not a seller — header just falls back
             const result = await res.json();
-            if (result.success) setBrandProfile(result.data);
+            if (result.success) {
+                // The dashboard is for approved brands only — anyone not yet
+                // approved (or rejected) belongs back on /brand, which shows
+                // their pending/rejected status instead of the live console.
+                if (result.data.approvalStatus !== 'approved') {
+                    navigate('/brand', { replace: true });
+                    return;
+                }
+                setBrandProfile(result.data);
+            }
         } catch {
             // Non-fatal — dashboard still works without the brand header.
         }
-    }, []);
+    }, [navigate]);
 
     // Tracking status arrives asynchronously via the 17TRACK webhook
     // (POST /webhooks/17track), not the request that saved the tracking

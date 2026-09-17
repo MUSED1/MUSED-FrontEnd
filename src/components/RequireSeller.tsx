@@ -20,7 +20,10 @@ import type { ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 
-const SELLER_ROLES = ['seller', 'admin'];
+// Brand management is its own account type — admins approve brands via
+// /admin/brands but don't manage a storefront themselves, so 'admin' is
+// deliberately excluded here.
+const SELLER_ROLES = ['seller'];
 
 interface RequireSellerProps {
     children: ReactNode;

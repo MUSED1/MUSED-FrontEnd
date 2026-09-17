@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react'
-import { User, Menu, X } from 'lucide-react'
+import { User, Menu, X, ShieldCheck } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { useAuth } from '../hooks/useAuth'
 
 export function Header() {
+    const { user } = useAuth() as { user: { role?: string } | null }
+    const isAdmin = user?.role === 'admin'
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const [isScrolled, setIsScrolled] = useState(false)
 
@@ -68,6 +71,15 @@ export function Header() {
 
                     {/* Icons */}
                     <div className="flex items-center space-x-4">
+                        {isAdmin && (
+                            <Link
+                                to="/admin/brands"
+                                className="hidden sm:inline-flex items-center gap-1.5 text-gold hover:text-cream text-xs font-semibold tracking-widest uppercase border border-gold/50 hover:border-gold rounded-full px-4 py-1.5 transition-all duration-300"
+                            >
+                                <ShieldCheck size={14} />
+                                Brand Approvals
+                            </Link>
+                        )}
                         <Link
                             to="/brand"
                             className="hidden sm:inline-block text-cream/90 hover:text-gold text-xs font-semibold tracking-widest uppercase border border-cream/30 hover:border-gold rounded-full px-4 py-1.5 transition-all duration-300"
@@ -109,6 +121,17 @@ export function Header() {
                                     Partner With Us
                                 </Link>
                             </li>
+                            {isAdmin && (
+                                <li>
+                                    <Link
+                                        to="/admin/brands"
+                                        className="block text-gold font-medium transition-all duration-300 ease-in-out transform hover:translate-x-2 font-kaldera"
+                                        onClick={() => setIsMenuOpen(false)}
+                                    >
+                                        Brand Approvals
+                                    </Link>
+                                </li>
+                            )}
                         </ul>
                     </div>
                 )}
