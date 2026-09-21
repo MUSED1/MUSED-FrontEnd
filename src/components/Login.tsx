@@ -111,6 +111,12 @@ export const Login: React.FC = () => {
                 />
                 <div className="absolute inset-x-0 top-0 h-24 sm:h-32 md:h-56 bg-gradient-to-b from-plum-dark/65 to-transparent" />
                 <div className="absolute inset-x-0 bottom-0 h-full sm:h-2/3 bg-gradient-to-t from-plum-dark/90 via-plum-dark/55 sm:via-plum-dark/60 to-transparent" />
+                <Link
+                    to="/"
+                    className="absolute left-5 top-5 z-20 inline-flex items-center gap-1 font-inter text-sm font-medium text-cream/80 transition-colors hover:text-gold sm:left-8 sm:top-8"
+                >
+                    ← Back to MUSED
+                </Link>
 
                 <div className="relative z-10 flex h-full flex-col justify-end p-6 sm:p-10 lg:p-14">
                     <span className="mb-3 sm:mb-5 text-xs uppercase tracking-label text-cream/70 font-inter">

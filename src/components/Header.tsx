@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
-import { Menu, X, User, LogOut, Package, Heart, CheckCircle, Settings } from 'lucide-react'
+import { Menu, X, User, LogOut, Package, Heart, CheckCircle, Settings, ShieldCheck, Truck } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 
 const NAV_LINKS = [
     { path: '/', label: 'Home' },
+    { path: '/shop', label: 'Shop' },
     { path: '/events', label: 'Events' },
     { path: '/about', label: 'About' },
 ]
@@ -13,6 +14,7 @@ export function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const [isScrolled, setIsScrolled] = useState(false)
     const { user, isAuthenticated, logout } = useAuth()
+    const isAdmin = (user as { role?: string } | null)?.role === 'admin'
     const navigate = useNavigate()
 
     useEffect(() => {
@@ -111,6 +113,24 @@ export function Header() {
                         </Link>
                     ))}
 
+                    <Link
+                        to="/brand"
+                        onClick={closeMenu}
+                        className="py-2 font-kaldera text-2xl text-gold transition-colors hover:text-cream sm:text-3xl"
+                    >
+                        Partner With Us
+                    </Link>
+                    {isAdmin && (
+                        <Link
+                            to="/admin/brands"
+                            onClick={closeMenu}
+                            className="flex items-center gap-2 py-2 font-kaldera text-2xl text-gold transition-colors hover:text-cream sm:text-3xl"
+                        >
+                            <ShieldCheck size={22} />
+                            Brand Approvals
+                        </Link>
+                    )}
+
                     <div className="my-5 h-px w-9 bg-[#C9A96E]" />
 
                     <div className="flex flex-col items-start gap-0.5 font-inter">
@@ -148,6 +168,14 @@ export function Header() {
                         >
                             <CheckCircle size={15} />
                             My Reservations
+                        </Link>
+                        <Link
+                            to="/my-orders"
+                            onClick={closeMenu}
+                            className="flex items-center gap-2 rounded-full px-2 py-1.5 text-sm text-cream/80 transition-colors hover:text-gold"
+                        >
+                            <Truck size={15} />
+                            My Orders
                         </Link>
                         <Link
                             to="/settings"
@@ -206,8 +234,8 @@ export function Header() {
                     {/* Desktop Navigation */}
                     <nav className="hidden md:block">
                         <ul className="flex space-x-8">
-                            {['/', '/events', '/about'].map((path, i) => {
-                                const labels = ['Home', 'Events', 'About']
+                            {['/', '/shop', '/events', '/about'].map((path, i) => {
+                                const labels = ['Home', 'Shop', 'Events', 'About']
                                 return (
                                     <li key={path}>
                                         <Link
@@ -224,6 +252,21 @@ export function Header() {
 
                     {/* Icons */}
                     <div className="flex items-center space-x-4">
+                        {isAdmin && (
+                            <Link
+                                to="/admin/brands"
+                                className="hidden sm:inline-flex items-center gap-1.5 text-gold hover:text-cream text-xs font-semibold tracking-widest uppercase border border-gold/50 hover:border-gold rounded-full px-4 py-1.5 transition-all duration-300"
+                            >
+                                <ShieldCheck size={14} />
+                                Brand Approvals
+                            </Link>
+                        )}
+                        <Link
+                            to="/brand"
+                            className="hidden sm:inline-block text-cream/90 hover:text-gold text-xs font-semibold tracking-widest uppercase border border-cream/30 hover:border-gold rounded-full px-4 py-1.5 transition-all duration-300"
+                        >
+                            Partner With Us
+                        </Link>
                         <Link
                             to="/profile"
                             className="text-cream hover:text-gold transition-all duration-300 ease-in-out transform hover:scale-110"
@@ -237,7 +280,7 @@ export function Header() {
                 {isMenuOpen && (
                     <div className="md:hidden pt-4 pb-2 border-t mt-4 border-gold animate-slideDown">
                         <ul className="space-y-3">
-                            {[['/', 'Home'], ['/events', 'Events'], ['/about', 'About']].map(
+                            {[['/', 'Home'], ['/shop', 'Shop'], ['/events', 'Events'], ['/about', 'About']].map(
                                 ([path, label]) => (
                                     <li key={path}>
                                         <Link
@@ -249,6 +292,26 @@ export function Header() {
                                         </Link>
                                     </li>
                                 )
+                            )}
+                            <li className="pt-3 mt-3 border-t border-gold/30">
+                                <Link
+                                    to="/brand"
+                                    className="block text-gold font-medium transition-all duration-300 ease-in-out transform hover:translate-x-2 font-kaldera"
+                                    onClick={() => setIsMenuOpen(false)}
+                                >
+                                    Partner With Us
+                                </Link>
+                            </li>
+                            {isAdmin && (
+                                <li>
+                                    <Link
+                                        to="/admin/brands"
+                                        className="block text-gold font-medium transition-all duration-300 ease-in-out transform hover:translate-x-2 font-kaldera"
+                                        onClick={() => setIsMenuOpen(false)}
+                                    >
+                                        Brand Approvals
+                                    </Link>
+                                </li>
                             )}
                         </ul>
                     </div>

@@ -5,7 +5,7 @@ import { Header } from './Header';
 import { Footer } from './Footer';
 import { PhoneEdit } from './PhoneEdit';
 import { useAuth } from '../hooks/useAuth';
-import { User, Package, LogOut, Star, CheckCircle, AlertCircle, Camera, X, MoreHorizontal, Settings, ArrowUpRight, ArrowLeft } from 'lucide-react';
+import { User, Package, LogOut, Star, CheckCircle, AlertCircle, Camera, X, MoreHorizontal, Settings, ArrowUpRight, ArrowLeft, Truck } from 'lucide-react';
 import axios from 'axios';
 
 interface UploadPreview {
@@ -623,6 +623,13 @@ export function Profile() {
                                 >
                                     <CheckCircle size={16} />
                                     My reservations
+                                </button>
+                                <button
+                                    onClick={() => navigate('/my-orders')}
+                                    className="flex items-center gap-2 rounded-full border border-plum-dark/15 px-6 py-3 text-sm text-plum-dark transition-colors hover:bg-plum-dark/5"
+                                >
+                                    <Truck size={16} />
+                                    My orders
                                 </button>
                             </div>
                             {!hasPhoneNumber() && (

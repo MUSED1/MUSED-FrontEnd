@@ -62,6 +62,9 @@ export const SellerLogin: React.FC = () => {
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-cream via-cream to-rose/30 py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-md w-full">
+                <Link to="/" className="inline-flex items-center gap-1 text-plum/60 hover:text-burgundy text-sm font-medium mb-6 transition-colors">
+                    ← Back to MUSED
+                </Link>
                 <div className="absolute top-0 left-0 w-full h-64 bg-burgundy/5 -z-10" />
 
                 <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-8 md:p-10 border border-gold/20">

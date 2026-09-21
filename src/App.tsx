@@ -29,6 +29,7 @@ import { Signup } from './components/Signup'
 import { MyUploads } from './components/MyUploads'
 import { MyPicks } from './components/MyPicks'
 import { MyReservations } from './components/MyReservations'
+import { MyOrders } from './components/MyOrders'
 import { AccountSettings } from './components/AccountSettings'
 import { Profile } from './components/Profile'
 import { OAuthSuccess } from './components/OAuthSuccess'
@@ -55,6 +56,8 @@ import { RequireSeller } from './components/RequireSeller';
 import { BrandDashboard } from './components/BrandDashboard';
 import { Feed } from './components/Feed';
 import { useAuth } from './hooks/useAuth';
+import { BrandsShop } from './components/BrandsShop';
+import { ShippingEstimate } from './components/ShippingEstimate';
 
 function ScrollToTop() {
     const { pathname } = useLocation();
@@ -129,6 +132,7 @@ export function App() {
                     <Route path="/my-uploads" element={<MyUploads />} />
                     <Route path="/my-picks" element={<MyPicks />} />
                     <Route path="/my-reservations" element={<MyReservations />} />
+                    <Route path="/my-orders" element={<MyOrders />} />
                     <Route path="/settings" element={<AccountSettings />} />
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/oauth-success" element={<OAuthSuccess />} />
@@ -156,8 +160,8 @@ export function App() {
                     <Route path="/seller/signup" element={<SellerSignup />} />
                     <Route path="/brand" element={<RequireSeller><MyBrand /></RequireSeller>} />
                     <Route path="/brand/dashboard" element={<RequireSeller><BrandDashboard /></RequireSeller>} />
-
-
+                    <Route path="/shop" element={<BrandsShop />} />
+                    <Route path="/shipping-estimate" element={<ShippingEstimate />} />
 
 
                 </Routes>
