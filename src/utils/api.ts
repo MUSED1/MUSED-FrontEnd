@@ -18,7 +18,8 @@ export const API_CONFIG = {
         uploadImage: '/images/upload',  // FIXED: correct path
         brand: '/brand',
         brandMe: '/brand/me',
-        brandAdminAll: '/brand/admin/all'
+        brandAdminAll: '/brand/admin/all',
+        shippingEstimate: '/shipping/estimate'
     },
     pagination: {
         defaultLimit: 20,

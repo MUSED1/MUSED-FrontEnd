@@ -52,6 +52,7 @@ import { SellerSignup } from './components/SellerSignup.tsx';
 import { RequireSeller } from './components/RequireSeller';
 import { BrandDashboard } from './components/BrandDashboard';
 import { BrandsShop } from './components/BrandsShop';
+import { ShippingEstimate } from './components/ShippingEstimate';
 
 
 function HomePage() {
@@ -136,7 +137,7 @@ export function App() {
                     <Route path="/brand" element={<RequireSeller><MyBrand /></RequireSeller>} />
                     <Route path="/brand/dashboard" element={<RequireSeller><BrandDashboard /></RequireSeller>} />
                     <Route path="/shop" element={<BrandsShop />} />
-
+                    <Route path="/shipping-estimate" element={<ShippingEstimate />} />
 
 
                 </Routes>
