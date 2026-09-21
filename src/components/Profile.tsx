@@ -5,7 +5,7 @@ import { Header } from './Header';
 import { Footer } from './Footer';
 import { PhoneEdit } from './PhoneEdit';
 import { useAuth } from '../hooks/useAuth';
-import { User, Package, Heart, LogOut, Star, CheckCircle, AlertCircle, Camera, X } from 'lucide-react';
+import { User, Package, Heart, LogOut, Star, CheckCircle, AlertCircle, Camera, X, Truck, PackageCheck, Clock, MapPin } from 'lucide-react';
 import axios from 'axios';
 
 interface ClothingItem {
@@ -37,6 +37,47 @@ interface Reservation {
     createdAt: string;
 }
 
+interface Purchase {
+    orderId: string;
+    itemName: string;
+    brand: string;
+    size: string;
+    itemImage: string | null;
+    price: number | null;
+    currency: string | null;
+    trackingNumber: string;
+    carrier: string;
+    trackingStatus: string;
+    trackingLastEvent: string;
+    trackingLastEventTime: string | null;
+    shippedAt: string | null;
+    purchasedAt: string | null;
+    deliveryAddress: string;
+}
+
+// Maps the backend's raw 17TRACK-style trackingStatus onto a simple 4-stage
+// timeline for the buyer: Order Placed -> Preparing -> Shipped -> Delivered.
+// "In transit"-ish statuses are folded into 'shipped' since from the
+// buyer's perspective the meaningful line is just "it's on the way".
+const DELIVERY_STAGES = ['Order Placed', 'Preparing', 'Shipped', 'Delivered'] as const;
+
+function getDeliveryStageIndex(purchase: Purchase): number {
+    if (purchase.trackingStatus === 'delivered') return 3;
+    if (purchase.trackingNumber || purchase.shippedAt) return 2; // shipped / in transit
+    return 1; // paid, brand is preparing the package
+}
+
+function hasDeliveryIssue(purchase: Purchase): boolean {
+    return purchase.trackingStatus === 'exception' || purchase.trackingStatus === 'delivery_failure';
+}
+
+function formatOrderDate(dateString: string | null): string {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric', month: 'short', day: 'numeric'
+    });
+}
+
 export function Profile() {
     const { user, isAuthenticated, loading, logout, updateUser } = useAuth();
     const navigate = useNavigate();
@@ -44,13 +85,15 @@ export function Profile() {
     const [showUploadSuccess, setShowUploadSuccess] = useState(
         (location.state as { uploadSuccess?: boolean })?.uploadSuccess === true
     );
-    const [activeTab, setActiveTab] = useState<'profile' | 'uploads' | 'picks' | 'reservations' | 'settings'>('profile');
+    const [activeTab, setActiveTab] = useState<'profile' | 'uploads' | 'picks' | 'reservations' | 'orders' | 'settings'>('profile');
     const [uploads, setUploads] = useState<ClothingItem[]>([]);
     const [picks, setPicks] = useState<ClothingItem[]>([]);
     const [reservations, setReservations] = useState<Reservation[]>([]);
+    const [purchases, setPurchases] = useState<Purchase[]>([]);
     const [isLoadingUploads, setIsLoadingUploads] = useState(false);
     const [isLoadingPicks, setIsLoadingPicks] = useState(false);
     const [isLoadingReservations, setIsLoadingReservations] = useState(false);
+    const [isLoadingPurchases, setIsLoadingPurchases] = useState(false);
     const [showPhoneRequiredWarning, setShowPhoneRequiredWarning] = useState(false);
 
     // Avatar states
@@ -63,7 +106,8 @@ export function Profile() {
     const [activityCounts, setActivityCounts] = useState({
         uploads: 0,
         picks: 0,
-        reservations: 0
+        reservations: 0,
+        purchases: 0
     });
 
     useEffect(() => {
@@ -235,6 +279,15 @@ export function Profile() {
                 setReservations(reservationsResponse.data.data);
                 setActivityCounts(prev => ({ ...prev, reservations: reservationsResponse.data.data.length }));
             }
+
+            // Fetch purchases (buy orders, with shipment tracking)
+            const purchasesResponse = await axios.get(`${API_URL}/clothing/my-purchases`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (purchasesResponse.data.success) {
+                setPurchases(purchasesResponse.data.data);
+                setActivityCounts(prev => ({ ...prev, purchases: purchasesResponse.data.data.length }));
+            }
         } catch (error) {
             console.error('Error fetching activity data:', error);
         }
@@ -299,6 +352,28 @@ export function Profile() {
             setReservations([]);
         } finally {
             setIsLoadingReservations(false);
+        }
+    };
+
+    const fetchUserPurchases = async () => {
+        setIsLoadingPurchases(true);
+        try {
+            const token = localStorage.getItem('token');
+            const API_URL = import.meta.env.VITE_API_URL?.replace('/auth', '') || 'https://mused-backend.onrender.com/api';
+
+            const response = await axios.get(`${API_URL}/clothing/my-purchases`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            if (response.data.success) {
+                setPurchases(response.data.data);
+                setActivityCounts(prev => ({ ...prev, purchases: response.data.data.length }));
+            }
+        } catch (error) {
+            console.error('Error fetching purchases:', error);
+            setPurchases([]);
+        } finally {
+            setIsLoadingPurchases(false);
         }
     };
 
@@ -570,6 +645,24 @@ export function Profile() {
                             </span>
                         </button>
                         <button
+                            onClick={() => setActiveTab('orders')}
+                            className={`px-6 py-3 font-medium transition-all relative whitespace-nowrap ${
+                                activeTab === 'orders'
+                                    ? 'text-rose after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-rose'
+                                    : 'text-plum/60 hover:text-plum'
+                            }`}
+                        >
+                            <span className="flex items-center gap-2">
+                                <Package size={16} />
+                                My Orders
+                                {activityCounts.purchases > 0 && (
+                                    <span className="bg-plum text-white text-xs px-2 py-0.5 rounded-full">
+                                        {activityCounts.purchases}
+                                    </span>
+                                )}
+                            </span>
+                        </button>
+                        <button
                             onClick={() => setActiveTab('settings')}
                             className={`px-6 py-3 font-medium transition-all relative whitespace-nowrap ${
                                 activeTab === 'settings'
@@ -623,7 +716,7 @@ export function Profile() {
                                 {/* Activity Summary - Now using real data */}
                                 <div className="border-t border-cream pt-6 mt-6">
                                     <h3 className="text-lg font-kaldera text-plum mb-4">Activity Summary</h3>
-                                    <div className="grid grid-cols-3 gap-4">
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                         <div className="bg-cream/30 rounded-xl p-4 text-center">
                                             <Package className="mx-auto text-rose mb-2" size={24} />
                                             <div className="text-2xl font-bold text-plum">{activityCounts.uploads}</div>
@@ -638,6 +731,11 @@ export function Profile() {
                                             <CheckCircle className="mx-auto text-green-600 mb-2" size={24} />
                                             <div className="text-2xl font-bold text-plum">{activityCounts.reservations}</div>
                                             <div className="text-sm text-plum/60">Reservations</div>
+                                        </div>
+                                        <div className="bg-cream/30 rounded-xl p-4 text-center">
+                                            <Truck className="mx-auto text-plum mb-2" size={24} />
+                                            <div className="text-2xl font-bold text-plum">{activityCounts.purchases}</div>
+                                            <div className="text-sm text-plum/60">Orders</div>
                                         </div>
                                     </div>
                                 </div>
@@ -704,6 +802,17 @@ export function Profile() {
                                         >
                                             <CheckCircle size={18} />
                                             VIEW MY RESERVATION
+                                        </button>
+                                        {/* 6. View My Orders */}
+                                        <button
+                                            onClick={() => {
+                                                setActiveTab('orders');
+                                                fetchUserPurchases();
+                                            }}
+                                            className="flex items-center gap-2 px-6 py-3 border-2 border-plum/20 text-plum rounded-lg hover:bg-plum/5 transition-all"
+                                        >
+                                            <Truck size={18} />
+                                            VIEW MY ORDERS
                                         </button>
                                     </div>
                                     {!hasPhoneNumber() && (
@@ -962,6 +1071,153 @@ export function Profile() {
                                                 </div>
                                             </div>
                                         ))}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {activeTab === 'orders' && (
+                            <div>
+                                <div className="flex justify-between items-center mb-6">
+                                    <h2 className="text-2xl font-kaldera text-plum flex items-center gap-2">
+                                        <Package className="text-plum" size={24} />
+                                        My Orders
+                                    </h2>
+                                    <span className="text-sm text-plum/60 bg-cream/50 px-3 py-1 rounded-full">
+                                        {activityCounts.purchases} purchased
+                                    </span>
+                                </div>
+
+                                {isLoadingPurchases ? (
+                                    <div className="text-center py-12">
+                                        <div className="w-12 h-12 border-4 border-plum border-t-transparent rounded-full animate-spin mx-auto"></div>
+                                    </div>
+                                ) : purchases.length === 0 ? (
+                                    <div className="text-center py-12 bg-cream/30 rounded-xl">
+                                        <Package size={48} className="text-plum/20 mx-auto mb-4" />
+                                        <p className="text-plum/60 mb-2">No orders yet</p>
+                                        <p className="text-sm text-plum/40 mb-6">
+                                            Items you buy from brand shops will appear here with shipping updates
+                                        </p>
+                                        <button
+                                            onClick={() => navigate('/shop')}
+                                            className="inline-flex items-center gap-2 px-6 py-3 bg-plum text-cream rounded-lg hover:bg-plum/90 hover:shadow-lg transition-all"
+                                        >
+                                            Browse Shop
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-6">
+                                        {purchases.map((purchase) => {
+                                            const stageIndex = getDeliveryStageIndex(purchase);
+                                            const issue = hasDeliveryIssue(purchase);
+
+                                            return (
+                                                <div key={purchase.orderId} className="bg-white rounded-xl overflow-hidden border border-cream shadow-md hover:shadow-lg transition-all">
+                                                    <div className="flex flex-col md:flex-row">
+                                                        {purchase.itemImage && (
+                                                            <div className="md:w-40 h-40 md:h-auto shrink-0">
+                                                                <img
+                                                                    src={purchase.itemImage}
+                                                                    alt={purchase.itemName}
+                                                                    className="w-full h-full object-cover"
+                                                                    onError={(e) => {
+                                                                        e.currentTarget.src = 'https://via.placeholder.com/400x400?text=Image+Not+Found';
+                                                                    }}
+                                                                />
+                                                            </div>
+                                                        )}
+                                                        <div className="flex-1 p-6">
+                                                            <div className="flex justify-between items-start mb-1">
+                                                                <div>
+                                                                    <h3 className="text-lg font-bold text-plum">{purchase.itemName}</h3>
+                                                                    <p className="text-sm text-plum/60">
+                                                                        {purchase.brand ? `${purchase.brand} · ` : ''}Size: {purchase.size}
+                                                                    </p>
+                                                                </div>
+                                                                {purchase.price != null && (
+                                                                    <span className="text-sm font-semibold text-gold whitespace-nowrap">
+                                                                        {(purchase.currency || '').toUpperCase()} {Number(purchase.price).toLocaleString()}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <p className="text-xs text-plum/40 mb-5">
+                                                                Ordered on {formatOrderDate(purchase.purchasedAt)}
+                                                            </p>
+
+                                                            {/* Delivery Stepper */}
+                                                            {issue ? (
+                                                                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4 flex items-start gap-3">
+                                                                    <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+                                                                    <div>
+                                                                        <p className="text-red-800 font-semibold text-sm">Delivery issue</p>
+                                                                        <p className="text-red-700 text-xs mt-1">
+                                                                            {purchase.trackingLastEvent || 'There was a problem with this shipment. We\'ll follow up with you shortly.'}
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+                                                            ) : (
+                                                                <div className="flex items-center mb-5">
+                                                                    {DELIVERY_STAGES.map((label, i) => {
+                                                                        const complete = i <= stageIndex;
+                                                                        const icons = [Package, Clock, Truck, PackageCheck];
+                                                                        const StageIcon = icons[i];
+                                                                        return (
+                                                                            <div key={label} className="flex items-center flex-1 last:flex-none">
+                                                                                <div className="flex flex-col items-center">
+                                                                                    <div className={`w-9 h-9 rounded-full flex items-center justify-center border-2 transition-colors ${
+                                                                                        complete
+                                                                                            ? 'bg-green-600 border-green-600 text-white'
+                                                                                            : 'bg-white border-cream text-plum/30'
+                                                                                    }`}>
+                                                                                        <StageIcon size={16} />
+                                                                                    </div>
+                                                                                    <span className={`mt-2 text-[11px] font-medium text-center leading-tight max-w-[70px] ${
+                                                                                        complete ? 'text-plum' : 'text-plum/40'
+                                                                                    }`}>
+                                                                                        {label}
+                                                                                    </span>
+                                                                                </div>
+                                                                                {i < DELIVERY_STAGES.length - 1 && (
+                                                                                    <div className={`flex-1 h-0.5 mx-1 mb-5 ${
+                                                                                        i < stageIndex ? 'bg-green-600' : 'bg-cream'
+                                                                                    }`}></div>
+                                                                                )}
+                                                                            </div>
+                                                                        );
+                                                                    })}
+                                                                </div>
+                                                            )}
+
+                                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                                                                <div className="bg-cream/40 rounded-lg p-3">
+                                                                    <p className="text-xs text-plum/40 mb-1">Tracking Number</p>
+                                                                    <p className="font-medium text-plum">
+                                                                        {purchase.trackingNumber || 'Not shipped yet'}
+                                                                    </p>
+                                                                    {purchase.carrier && (
+                                                                        <p className="text-xs text-plum/60 mt-0.5">{purchase.carrier}</p>
+                                                                    )}
+                                                                </div>
+                                                                <div className="bg-cream/40 rounded-lg p-3">
+                                                                    <p className="text-xs text-plum/40 mb-1 flex items-center gap-1">
+                                                                        <MapPin size={12} /> Latest Update
+                                                                    </p>
+                                                                    <p className="font-medium text-plum">
+                                                                        {purchase.trackingLastEvent || 'Waiting for shipment'}
+                                                                    </p>
+                                                                    {purchase.trackingLastEventTime && (
+                                                                        <p className="text-xs text-plum/60 mt-0.5">
+                                                                            {formatOrderDate(purchase.trackingLastEventTime)}
+                                                                        </p>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 )}
                             </div>
