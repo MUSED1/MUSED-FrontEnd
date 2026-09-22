@@ -458,10 +458,12 @@ export function Profile() {
                             </h1>
                             <p className="mt-1 text-sm text-cream/50">@{user.email.split('@')[0]}</p>
                             {user.role === 'admin' && (
-                                <span className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-[#C9A96E]/40 bg-[#C9A96E]/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-[#C9A96E]">
-                                    <ShieldCheck size={12} />
-                                    Admin
-                                </span>
+                                <div className="mt-3 flex justify-center">
+                                    <span className="inline-flex items-center gap-1.5 rounded-full border border-[#C9A96E]/40 bg-[#C9A96E]/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-[#C9A96E]">
+                                        <ShieldCheck size={12} />
+                                        Admin
+                                    </span>
+                                </div>
                             )}
 
                             <div className="mt-6 inline-flex items-center justify-center gap-10 rounded-2xl bg-black/20 px-8 py-3 backdrop-blur-xl">
