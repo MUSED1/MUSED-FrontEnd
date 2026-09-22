@@ -2,8 +2,24 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-// Editorial photo panel shared by the Sign in and Create account pages
-export const AuthImagePanel: React.FC = () => (
+interface AuthImagePanelProps {
+    heading?: React.ReactNode;
+    subtext?: string;
+}
+
+// Editorial photo panel shared by every auth page (buyer and seller alike) —
+// `heading`/`subtext` let a page swap the tagline without duplicating the
+// whole panel.
+export const AuthImagePanel: React.FC<AuthImagePanelProps> = ({
+    heading = (
+        <>
+            Fashion, borrowed
+            <br />
+            beautifully.
+        </>
+    ),
+    subtext = 'Rent, wear and return standout pieces from a curated community of muses.',
+}) => (
     <div className="relative w-full h-64 sm:h-80 overflow-hidden md:h-screen md:w-1/2 md:sticky md:top-0 lg:w-[45%]">
         <img
             src="/main1-hero.jpg"
@@ -33,12 +49,10 @@ export const AuthImagePanel: React.FC = () => (
             </span>
             <div className="mb-3 sm:mb-5 h-px w-9 bg-[#C9A96E]" />
             <h1 className="font-amandine font-normal text-2xl sm:text-4xl leading-[1.1] text-cream lg:text-5xl">
-                Fashion, borrowed
-                <br />
-                beautifully.
+                {heading}
             </h1>
             <p className="mt-4 hidden max-w-xs font-sans italic text-cream/70 text-base sm:block">
-                Rent, wear and return standout pieces from a curated community of muses.
+                {subtext}
             </p>
         </div>
     </div>
