@@ -5,8 +5,16 @@ import { Header } from './Header';
 import { Footer } from './Footer';
 import { PhoneEdit } from './PhoneEdit';
 import { useAuth } from '../hooks/useAuth';
-import { User, Package, LogOut, Star, CheckCircle, AlertCircle, Camera, X, MoreHorizontal, Settings, ArrowUpRight, ArrowLeft, Truck } from 'lucide-react';
+import { User, LogOut, Star, CheckCircle, AlertCircle, Camera, X, MoreHorizontal, Settings, ArrowUpRight, ArrowLeft, Truck, ShoppingBag, MessageCircle, Heart, Compass } from 'lucide-react';
 import axios from 'axios';
+import {
+    type Purchase,
+    DELIVERY_STAGES,
+    STAGE_ICONS,
+    getDeliveryStageIndex,
+    hasDeliveryIssue,
+    formatOrderDate,
+} from '../utils/orderTracking';
 
 interface UploadPreview {
     _id: string;
@@ -35,10 +43,11 @@ export function Profile() {
     const coverStorageKey = user?.email ? `mused_cover_photo_${user.email}` : null;
 
     const [activityCounts, setActivityCounts] = useState({
-        uploads: 0,
+        orders: 0,
         picks: 0,
-        reservations: 0
+        events: 0
     });
+    const [latestOrder, setLatestOrder] = useState<Purchase | null>(null);
     const [menuOpen, setMenuOpen] = useState(false);
     const [uploadPreviews, setUploadPreviews] = useState<UploadPreview[]>([]);
 
@@ -71,17 +80,25 @@ export function Profile() {
                 const token = localStorage.getItem('token');
                 const API_URL = import.meta.env.VITE_API_URL?.replace('/auth', '') || 'https://mused-backend.onrender.com/api';
 
-                const [uploadsRes, picksRes, reservationsRes] = await Promise.all([
+                const [uploadsRes, picksRes, reservationsRes, purchasesRes] = await Promise.all([
                     axios.get(`${API_URL}/clothing/my-items`, { headers: { Authorization: `Bearer ${token}` } }),
                     axios.get(`${API_URL}/users/picks`, { headers: { Authorization: `Bearer ${token}` } }),
                     axios.get(`${API_URL}/users/reservations`, { headers: { Authorization: `Bearer ${token}` } }),
+                    // Orders are optional here — don't let a failure blank out the other counts
+                    axios.get(`${API_URL}/clothing/my-purchases`, { headers: { Authorization: `Bearer ${token}` } })
+                        .catch(() => ({ data: { success: false, data: [] } })),
                 ]);
 
+                const purchases: Purchase[] = purchasesRes.data.success ? purchasesRes.data.data : [];
+
                 setActivityCounts({
-                    uploads: uploadsRes.data.success ? uploadsRes.data.data.length : 0,
+                    orders: purchases.length,
                     picks: picksRes.data.success ? picksRes.data.data.length : 0,
-                    reservations: reservationsRes.data.success ? reservationsRes.data.data.length : 0,
+                    events: reservationsRes.data.success ? reservationsRes.data.data.length : 0,
                 });
+
+                // Track the most recent order that hasn't arrived yet, else the most recent one
+                setLatestOrder(purchases.find((p) => p.trackingStatus !== 'delivered') || purchases[0] || null);
 
                 if (uploadsRes.data.success) {
                     setUploadPreviews(uploadsRes.data.data.slice(0, 6));
@@ -442,17 +459,17 @@ export function Profile() {
                             <p className="mt-1 text-sm text-cream/50">@{user.email.split('@')[0]}</p>
 
                             <div className="mt-6 inline-flex items-center justify-center gap-10 rounded-2xl bg-black/20 px-8 py-3 backdrop-blur-xl">
-                                <Link to="/my-uploads" className="text-center transition-opacity hover:opacity-80">
-                                    <div className="font-kaldera text-xl text-cream">{activityCounts.uploads}</div>
-                                    <div className="text-xs text-cream/50">Uploads</div>
+                                <Link to="/my-orders" className="text-center transition-opacity hover:opacity-80">
+                                    <div className="font-kaldera text-xl text-cream">{activityCounts.orders}</div>
+                                    <div className="text-xs text-cream/50">Orders</div>
                                 </Link>
                                 <Link to="/my-picks" className="text-center transition-opacity hover:opacity-80">
                                     <div className="font-kaldera text-xl text-cream">{activityCounts.picks}</div>
-                                    <div className="text-xs text-cream/50">Picks</div>
+                                    <div className="text-xs text-cream/50">Favs</div>
                                 </Link>
                                 <Link to="/my-reservations" className="text-center transition-opacity hover:opacity-80">
-                                    <div className="font-kaldera text-xl text-cream">{activityCounts.reservations}</div>
-                                    <div className="text-xs text-cream/50">Reservations</div>
+                                    <div className="font-kaldera text-xl text-cream">{activityCounts.events}</div>
+                                    <div className="text-xs text-cream/50">Events</div>
                                 </Link>
                             </div>
                         </div>
@@ -497,6 +514,133 @@ export function Profile() {
                             >
                                 ✕
                             </button>
+                        </div>
+                    )}
+
+                    {/* Quick actions */}
+                    <div className="mb-10">
+                        <h2 className="mb-4 font-kaldera text-lg text-plum-dark">Quick Actions</h2>
+                        <div className="flex gap-6 overflow-x-auto pb-2">
+                            {[
+                                { label: 'Collection', icon: ShoppingBag, onClick: () => navigate('/collections-hk') },
+                                { label: 'Chat', icon: MessageCircle, onClick: null },
+                                { label: 'Favs', icon: Heart, onClick: () => requirePhoneNumber(() => navigate('/my-picks')), needsPhone: true },
+                                { label: 'Events', icon: Compass, onClick: () => requirePhoneNumber(() => navigate('/my-reservations')), needsPhone: true },
+                                { label: 'Orders', icon: Truck, onClick: () => navigate('/my-orders') },
+                            ].map(({ label, icon: Icon, onClick, needsPhone }) =>
+                                onClick ? (
+                                    <button
+                                        key={label}
+                                        onClick={onClick}
+                                        title={needsPhone && !hasPhoneNumber() ? 'Phone number required' : undefined}
+                                        className={`group flex shrink-0 flex-col items-center gap-2 ${
+                                            needsPhone && !hasPhoneNumber() ? 'cursor-not-allowed opacity-50' : ''
+                                        }`}
+                                    >
+                                        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-plum-dark/6 text-plum-dark transition-colors group-hover:bg-plum-dark group-hover:text-cream">
+                                            <Icon size={20} />
+                                        </div>
+                                        <span className="text-xs text-plum/60">{label}</span>
+                                    </button>
+                                ) : (
+                                    <div
+                                        key={label}
+                                        className="flex shrink-0 cursor-default flex-col items-center gap-2"
+                                        aria-disabled="true"
+                                    >
+                                        <div className="relative flex h-14 w-14 items-center justify-center rounded-full bg-plum-dark/6 text-plum-dark/40">
+                                            <Icon size={20} />
+                                            <span className="absolute -right-1 -top-1 rounded-full bg-[#C9A96E] px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wide text-white">
+                                                Soon
+                                            </span>
+                                        </div>
+                                        <span className="text-xs text-plum/40">{label}</span>
+                                    </div>
+                                )
+                            )}
+                        </div>
+                        {!hasPhoneNumber() && (
+                            <p className="mt-3 flex items-center gap-2 text-sm text-[#C9614E]">
+                                <AlertCircle size={16} />
+                                Add your phone number below to access Favs and Events.
+                            </p>
+                        )}
+                    </div>
+
+                    {/* Order tracking — latest order at a glance */}
+                    {latestOrder && (
+                        <div className="mb-10">
+                            <div className="mb-4 flex items-center justify-between">
+                                <h2 className="font-kaldera text-lg text-plum-dark">Track your order</h2>
+                                <Link
+                                    to="/my-orders"
+                                    className="flex items-center gap-1 text-sm text-plum/50 transition-colors hover:text-plum-dark"
+                                >
+                                    See all
+                                    <ArrowUpRight size={14} />
+                                </Link>
+                            </div>
+
+                            <Link
+                                to="/my-orders"
+                                className="block rounded-[1.75rem] border border-plum-dark/8 bg-white p-5 shadow-[0_8px_24px_rgba(61,16,40,0.06)] transition-shadow hover:shadow-[0_12px_28px_rgba(61,16,40,0.1)]"
+                            >
+                                <div className="mb-5 flex items-center gap-4">
+                                    {latestOrder.itemImage && (
+                                        <img
+                                            src={latestOrder.itemImage}
+                                            alt=""
+                                            className="h-14 w-14 shrink-0 rounded-xl object-cover"
+                                        />
+                                    )}
+                                    <div className="min-w-0">
+                                        <h3 className="truncate font-kaldera text-base text-plum-dark">{latestOrder.itemName}</h3>
+                                        <p className="text-xs text-plum/50">
+                                            {latestOrder.brand ? `${latestOrder.brand} · ` : ''}Ordered {formatOrderDate(latestOrder.purchasedAt)}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {hasDeliveryIssue(latestOrder) ? (
+                                    <div className="flex items-start gap-3 rounded-2xl border border-[#C9614E]/20 bg-[#C9614E]/5 p-4">
+                                        <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-[#C9614E]" />
+                                        <p className="text-sm text-[#C9614E]">
+                                            {latestOrder.trackingLastEvent || 'There was a problem with this shipment.'}
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center">
+                                        {DELIVERY_STAGES.map((label, i) => {
+                                            const stageIndex = getDeliveryStageIndex(latestOrder);
+                                            const complete = i <= stageIndex;
+                                            const StageIcon = STAGE_ICONS[i];
+                                            return (
+                                                <div key={label} className="flex flex-1 items-center last:flex-none">
+                                                    <div className="flex flex-col items-center">
+                                                        <div className={`flex h-8 w-8 items-center justify-center rounded-full border ${
+                                                            complete
+                                                                ? 'border-plum-dark bg-plum-dark text-cream'
+                                                                : 'border-plum-dark/15 bg-white text-plum/30'
+                                                        }`}>
+                                                            <StageIcon size={14} />
+                                                        </div>
+                                                        <span className={`mt-2 max-w-[64px] text-center text-[10px] font-medium leading-tight ${
+                                                            complete ? 'text-plum-dark' : 'text-plum/40'
+                                                        }`}>
+                                                            {label}
+                                                        </span>
+                                                    </div>
+                                                    {i < DELIVERY_STAGES.length - 1 && (
+                                                        <div className={`mx-1 mb-5 h-px flex-1 ${
+                                                            i < stageIndex ? 'bg-plum-dark' : 'bg-plum-dark/10'
+                                                        }`} />
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </Link>
                         </div>
                     )}
 
@@ -572,73 +716,6 @@ export function Profile() {
                             </div>
                         </div>
 
-                        {/* Navigate to the dedicated app screens */}
-                        <div className="mt-8 border-t border-cream pt-6">
-                            <h3 className="mb-4 font-kaldera text-lg text-plum-dark">Quick Actions</h3>
-                            <div className="flex flex-wrap gap-3">
-                                <div className="rounded-full shadow-[0_8px_16px_rgba(61,16,40,0.18)]">
-                                    <button
-                                        onClick={() => requirePhoneNumber(() => navigate('/upload'))}
-                                        className={`relative flex items-center gap-2 overflow-hidden rounded-full border border-white/15 bg-gradient-to-b from-plum-dark to-plum px-6 py-3 text-sm font-normal text-cream transition-all hover:brightness-110 ${
-                                            !hasPhoneNumber() ? 'cursor-not-allowed opacity-50' : ''
-                                        }`}
-                                        title={!hasPhoneNumber() ? 'Phone number required' : 'Upload a clothing item'}
-                                    >
-                                        <Package size={16} />
-                                        Start uploading
-                                    </button>
-                                </div>
-                                <button
-                                    onClick={() => navigate('/collections-hk')}
-                                    className="rounded-full border border-plum-dark/15 px-6 py-3 text-sm text-plum-dark transition-colors hover:bg-plum-dark/5"
-                                >
-                                    Browse collection
-                                </button>
-                                <button
-                                    onClick={() => requirePhoneNumber(() => navigate('/my-uploads'))}
-                                    className={`flex items-center gap-2 rounded-full border border-plum-dark/15 px-6 py-3 text-sm text-plum-dark transition-colors hover:bg-plum-dark/5 ${
-                                        !hasPhoneNumber() ? 'cursor-not-allowed opacity-50' : ''
-                                    }`}
-                                    title={!hasPhoneNumber() ? 'Phone number required' : ''}
-                                >
-                                    <Package size={16} />
-                                    My uploads
-                                </button>
-                                <button
-                                    onClick={() => requirePhoneNumber(() => navigate('/my-picks'))}
-                                    className={`flex items-center gap-2 rounded-full border border-plum-dark/15 px-6 py-3 text-sm text-plum-dark transition-colors hover:bg-plum-dark/5 ${
-                                        !hasPhoneNumber() ? 'cursor-not-allowed opacity-50' : ''
-                                    }`}
-                                    title={!hasPhoneNumber() ? 'Phone number required' : ''}
-                                >
-                                    <Star size={16} />
-                                    My picks
-                                </button>
-                                <button
-                                    onClick={() => requirePhoneNumber(() => navigate('/my-reservations'))}
-                                    className={`flex items-center gap-2 rounded-full border border-plum-dark/15 px-6 py-3 text-sm text-plum-dark transition-colors hover:bg-plum-dark/5 ${
-                                        !hasPhoneNumber() ? 'cursor-not-allowed opacity-50' : ''
-                                    }`}
-                                    title={!hasPhoneNumber() ? 'Phone number required' : ''}
-                                >
-                                    <CheckCircle size={16} />
-                                    My reservations
-                                </button>
-                                <button
-                                    onClick={() => navigate('/my-orders')}
-                                    className="flex items-center gap-2 rounded-full border border-plum-dark/15 px-6 py-3 text-sm text-plum-dark transition-colors hover:bg-plum-dark/5"
-                                >
-                                    <Truck size={16} />
-                                    My orders
-                                </button>
-                            </div>
-                            {!hasPhoneNumber() && (
-                                <p className="mt-4 flex items-center gap-2 text-sm text-[#C9614E]">
-                                    <AlertCircle size={16} />
-                                    Please add your phone number above to access these features.
-                                </p>
-                            )}
-                        </div>
                     </div>
                 </div>
             </main>

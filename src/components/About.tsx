@@ -6,7 +6,7 @@ import { Footer } from './Footer'
 
 const STATS = [
     { value: '500+', label: 'Community members' },
-    { value: '3', label: 'Cities — HK, NY, Geneva' },
+    { value: '3', label: 'Cities — HK, NY, London' },
     { value: '1', label: 'Suitcase each, to start' },
 ]
 
@@ -82,7 +82,7 @@ export function About() {
 
                             <div className="mt-10 space-y-6 border-t border-plum-dark/10 pt-6">
                                 {[
-                                    { title: 'She hosts', body: 'Dinners and community events across Hong Kong, New York, London and Geneva.' },
+                                    { title: 'She hosts', body: 'Dinners and community events across Hong Kong, New York and London.' },
                                     { title: 'She styles', body: 'Personalised outfit inspiration that feels more like advice from a friend than an algorithm.' },
                                     { title: 'She sources', body: "The best rising brands and pieces, hand-picked so you don't have to search for them." },
                                 ].map((item, i) => (
@@ -135,7 +135,7 @@ export function About() {
                                 </p>
                                 <p className="leading-relaxed text-plum/70">
                                     From there, a community of 500+ grew across Hong Kong, New York
-                                    and Geneva. And we learned something: people weren't just looking
+                                    and London. And we learned something: people weren't just looking
                                     for clothes. They were looking for connection, uniqueness and
                                     meaning.
                                 </p>

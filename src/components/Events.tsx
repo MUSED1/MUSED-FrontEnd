@@ -194,11 +194,11 @@ export function Events() {
             <section className="w-full px-4 pb-6 pt-28 md:pt-32">
                 <div className="container mx-auto max-w-5xl">
                     <span className="text-xs uppercase tracking-label text-plum/40">MUSED 852</span>
-                    <h1 className="mt-1 font-amandine font-normal text-3xl text-plum-dark sm:text-4xl">
+                    <h1 className="mt-1 font-kaldera font-normal text-3xl text-plum-dark sm:text-4xl">
                         Events
                     </h1>
                     <p className="mt-2 max-w-md text-sm text-plum/50">
-                        Dinners, drops and MUSED moments across Hong Kong, New York and Geneva.
+                        Dinners, drops and MUSED moments across Hong Kong, New York and London.
                     </p>
                 </div>
             </section>
@@ -243,7 +243,7 @@ export function Events() {
                             <div className="mt-5 flex items-center justify-between">
                                 <span className="font-kaldera text-xl text-cream">HK$ 290</span>
                                 <span className="flex items-center gap-1.5 text-sm text-cream/80 transition-colors group-hover:text-gold">
-                                    View details
+                                    RSVP
                                     <ArrowUpRight size={15} />
                                 </span>
                             </div>
@@ -328,7 +328,7 @@ export function Events() {
                                     to { transform: translateX(-50%); }
                                 }
                                 .gallery-marquee-track {
-                                    animation: gallery-marquee 260s linear infinite;
+                                    animation: gallery-marquee 420s linear infinite;
                                 }
                                 .gallery-marquee-track:hover {
                                     animation-play-state: paused;
