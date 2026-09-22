@@ -4,10 +4,10 @@ import { useState } from 'react';
 import {
     Search,
     ShoppingBag,
-    Compass,
+    MessageCircle,
     Heart,
+    Compass,
     Package,
-    CheckCircle,
     ArrowUpRight,
     User,
 } from 'lucide-react';
@@ -15,12 +15,13 @@ import { Header } from './Header';
 import { Footer } from './Footer';
 import { useAuth } from '../hooks/useAuth';
 
+// `to: null` marks a feature that isn't live yet — rendered as a "Soon" tile
 const CATEGORIES = [
-    { to: '/collections-hk', icon: ShoppingBag, label: 'Closet' },
+    { to: '/collections-hk', icon: ShoppingBag, label: 'Collection' },
+    { to: null, icon: MessageCircle, label: 'Chat' },
+    { to: '/my-picks', icon: Heart, label: 'Favs' },
     { to: '/events', icon: Compass, label: 'Events' },
-    { to: '/my-picks', icon: Heart, label: 'Picks' },
-    { to: '/my-uploads', icon: Package, label: 'Uploads' },
-    { to: '/my-reservations', icon: CheckCircle, label: 'Reserved' },
+    { to: '/my-orders', icon: Package, label: 'Orders' },
 ];
 
 const EDITS = [
@@ -59,7 +60,7 @@ export function Feed() {
                             <span className="text-xs uppercase tracking-label text-plum/40">
                                 MUSED 852
                             </span>
-                            <h1 className="mt-1 font-amandine font-normal text-3xl text-plum-dark sm:text-4xl">
+                            <h1 className="mt-1 font-kaldera font-normal text-3xl text-plum-dark sm:text-4xl">
                                 {getGreeting()}{firstName ? `, ${firstName}` : ''}.
                             </h1>
                         </div>
@@ -89,18 +90,34 @@ export function Feed() {
 
                     {/* Categories */}
                     <div className="mt-8 flex gap-6 overflow-x-auto pb-2">
-                        {CATEGORIES.map(({ to, icon: Icon, label }) => (
-                            <Link
-                                key={label}
-                                to={to}
-                                className="group flex shrink-0 flex-col items-center gap-2"
-                            >
-                                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-plum-dark/6 text-plum-dark transition-colors group-hover:bg-plum-dark group-hover:text-cream">
-                                    <Icon size={20} />
+                        {CATEGORIES.map(({ to, icon: Icon, label }) =>
+                            to ? (
+                                <Link
+                                    key={label}
+                                    to={to}
+                                    className="group flex shrink-0 flex-col items-center gap-2"
+                                >
+                                    <div className="flex h-14 w-14 items-center justify-center rounded-full bg-plum-dark/6 text-plum-dark transition-colors group-hover:bg-plum-dark group-hover:text-cream">
+                                        <Icon size={20} />
+                                    </div>
+                                    <span className="text-xs text-plum/60">{label}</span>
+                                </Link>
+                            ) : (
+                                <div
+                                    key={label}
+                                    className="flex shrink-0 cursor-default flex-col items-center gap-2"
+                                    aria-disabled="true"
+                                >
+                                    <div className="relative flex h-14 w-14 items-center justify-center rounded-full bg-plum-dark/6 text-plum-dark/40">
+                                        <Icon size={20} />
+                                        <span className="absolute -right-1 -top-1 rounded-full bg-[#C9A96E] px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wide text-white">
+                                            Soon
+                                        </span>
+                                    </div>
+                                    <span className="text-xs text-plum/40">{label}</span>
                                 </div>
-                                <span className="text-xs text-plum/60">{label}</span>
-                            </Link>
-                        ))}
+                            )
+                        )}
                     </div>
 
                     {/* Featured card */}
@@ -117,12 +134,12 @@ export function Feed() {
                         <div className="absolute inset-x-6 bottom-6 sm:inset-x-8 sm:bottom-8">
                             <div className="mb-3 h-px w-9 bg-[#C9A96E]" />
                             <h2 className="font-amandine font-normal text-3xl text-cream sm:text-4xl">
-                                Fashion, borrowed
+                                Find your next
                                 <br />
-                                beautifully.
+                                obsession.
                             </h2>
                             <p className="mt-2 max-w-sm font-sans italic text-cream/70">
-                                Rent standout pieces from a curated community of muses.
+                                Discover up &amp; rising designers, curated just for you.
                             </p>
                         </div>
                         <div className="absolute bottom-6 right-6 flex h-11 w-11 items-center justify-center rounded-full bg-white text-plum-dark transition-transform group-hover:scale-110 sm:bottom-8 sm:right-8">
