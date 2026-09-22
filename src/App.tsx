@@ -59,6 +59,10 @@ const BrandDashboard = lazy(() => import('./components/BrandDashboard').then(m =
 const BrandsShop = lazy(() => import('./components/BrandsShop').then(m => ({ default: m.BrandsShop })))
 const ShippingEstimate = lazy(() => import('./components/ShippingEstimate').then(m => ({ default: m.ShippingEstimate })))
 const Feed = lazy(() => import('./components/Feed').then(m => ({ default: m.Feed })))
+const Closet = lazy(() => import('./components/Closet').then(m => ({ default: m.Closet })))
+const ClosetAddItem = lazy(() => import('./components/ClosetAddItem').then(m => ({ default: m.ClosetAddItem })))
+const ClosetItemDetail = lazy(() => import('./components/ClosetItemDetail').then(m => ({ default: m.ClosetItemDetail })))
+const StyleCheck = lazy(() => import('./components/StyleCheck').then(m => ({ default: m.StyleCheck })))
 import { useAuth } from './hooks/useAuth';
 
 function ScrollToTop() {
@@ -133,6 +137,10 @@ export function App() {
                     {/* <Route path="/the-pics" element={<ThePics />} /> */}
                     {/* <Route path="/faq" element={<FAQ />} /> */}
                     {/* <Route path="/reachout" element={<Reachout />} /> */}
+                    <Route path="/closet" element={<Closet />} />
+                    <Route path="/closet/add" element={<ClosetAddItem />} />
+                    <Route path="/closet/:id" element={<ClosetItemDetail />} />
+                    <Route path="/style-check" element={<StyleCheck />} />
                     <Route path="/my-uploads" element={<MyUploads />} />
                     <Route path="/my-picks" element={<MyPicks />} />
                     <Route path="/my-reservations" element={<MyReservations />} />

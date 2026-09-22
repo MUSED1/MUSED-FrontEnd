@@ -10,6 +10,7 @@ import {
     Package,
     ArrowUpRight,
     User,
+    Shirt,
 } from 'lucide-react';
 import { Header } from './Header';
 import { Footer } from './Footer';
@@ -17,8 +18,9 @@ import { useAuth } from '../hooks/useAuth';
 
 // `to: null` marks a feature that isn't live yet — rendered as a "Soon" tile
 const CATEGORIES = [
+    { to: '/closet', icon: Shirt, label: 'Closet' },
     { to: '/collections-hk', icon: ShoppingBag, label: 'Collection' },
-    { to: null, icon: MessageCircle, label: 'Chat' },
+    { to: '/style-check', icon: MessageCircle, label: 'Chat' },
     { to: '/my-picks', icon: Heart, label: 'Favs' },
     { to: '/events', icon: Compass, label: 'Events' },
     { to: '/my-orders', icon: Package, label: 'Orders' },
@@ -89,7 +91,7 @@ export function Feed() {
                     </form>
 
                     {/* Categories */}
-                    <div className="mt-8 grid grid-cols-5 gap-1 pt-2 sm:gap-4">
+                    <div className="mt-8 grid grid-cols-6 gap-1 pt-2 sm:gap-4">
                         {CATEGORIES.map(({ to, icon: Icon, label }) =>
                             to ? (
                                 <Link

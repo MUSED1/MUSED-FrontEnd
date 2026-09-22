@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Menu, X, User, LogOut, ShoppingBag, MessageCircle, Heart, Compass, Settings, ShieldCheck, Truck } from 'lucide-react'
+import { Menu, X, User, LogOut, ShoppingBag, MessageCircle, Heart, Compass, Settings, ShieldCheck, Truck, Shirt } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 
@@ -12,8 +12,9 @@ const NAV_LINKS = [
 // Account section of the logged-in drawer. `path: null` = not live yet ("Soon")
 const ACCOUNT_LINKS = [
     { path: '/profile', label: 'Profile', icon: User },
+    { path: '/closet', label: 'Closet', icon: Shirt },
     { path: '/collections-hk', label: 'Collection', icon: ShoppingBag },
-    { path: null, label: 'Chat', icon: MessageCircle },
+    { path: '/style-check', label: 'Chat', icon: MessageCircle },
     { path: '/my-picks', label: 'Favs', icon: Heart },
     { path: '/my-reservations', label: 'My Events', icon: Compass },
     { path: '/my-orders', label: 'Orders', icon: Truck },

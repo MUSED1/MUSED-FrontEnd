@@ -5,7 +5,7 @@ import { Header } from './Header';
 import { Footer } from './Footer';
 import { PhoneEdit } from './PhoneEdit';
 import { useAuth } from '../hooks/useAuth';
-import { User, LogOut, Star, CheckCircle, AlertCircle, Camera, X, MoreHorizontal, Settings, ArrowUpRight, ArrowLeft, Truck, ShoppingBag, MessageCircle, Heart, Compass } from 'lucide-react';
+import { User, LogOut, Star, CheckCircle, AlertCircle, Camera, X, MoreHorizontal, Settings, ArrowUpRight, ArrowLeft, Truck, ShoppingBag, MessageCircle, Heart, Compass, Shirt, ShieldCheck } from 'lucide-react';
 import axios from 'axios';
 import {
     type Purchase,
@@ -457,6 +457,12 @@ export function Profile() {
                                 <Star size={16} className={user.role === 'admin' ? 'text-[#C9A96E]' : 'text-cream/30'} />
                             </h1>
                             <p className="mt-1 text-sm text-cream/50">@{user.email.split('@')[0]}</p>
+                            {user.role === 'admin' && (
+                                <span className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-[#C9A96E]/40 bg-[#C9A96E]/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-[#C9A96E]">
+                                    <ShieldCheck size={12} />
+                                    Admin
+                                </span>
+                            )}
 
                             <div className="mt-6 inline-flex items-center justify-center gap-10 rounded-2xl bg-black/20 px-8 py-3 backdrop-blur-xl">
                                 <Link to="/my-orders" className="text-center transition-opacity hover:opacity-80">
@@ -520,13 +526,19 @@ export function Profile() {
                     {/* Quick actions */}
                     <div className="mb-10">
                         <h2 className="mb-4 font-kaldera text-lg text-plum-dark">Quick Actions</h2>
-                        <div className="grid grid-cols-5 gap-1 pt-2 sm:gap-4">
+                        <div className={`grid gap-1 pt-2 sm:gap-4 ${user?.role === 'admin' ? 'grid-cols-7' : 'grid-cols-6'}`}>
                             {[
+                                { label: 'Closet', icon: Shirt, onClick: () => navigate('/closet') },
                                 { label: 'Collection', icon: ShoppingBag, onClick: () => navigate('/collections-hk') },
-                                { label: 'Chat', icon: MessageCircle, onClick: null },
+                                { label: 'Chat', icon: MessageCircle, onClick: () => navigate('/style-check') },
                                 { label: 'Favs', icon: Heart, onClick: () => requirePhoneNumber(() => navigate('/my-picks')), needsPhone: true },
                                 { label: 'Events', icon: Compass, onClick: () => requirePhoneNumber(() => navigate('/my-reservations')), needsPhone: true },
                                 { label: 'Orders', icon: Truck, onClick: () => navigate('/my-orders') },
+                                // Same profile everyone else gets, plus this one admin-only action —
+                                // no separate admin dashboard/profile for now.
+                                ...(user?.role === 'admin'
+                                    ? [{ label: 'Approvals', icon: ShieldCheck, onClick: () => navigate('/admin/brands') }]
+                                    : []),
                             ].map(({ label, icon: Icon, onClick, needsPhone }) =>
                                 onClick ? (
                                     <button

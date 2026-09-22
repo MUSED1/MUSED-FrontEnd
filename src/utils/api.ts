@@ -10,6 +10,8 @@ export const API_CONFIG = {
         clothingMyPurchases: '/clothing/my-purchases',
         clothingShop: '/clothing/shop',
         clothingImage: '/clothing/image',
+        clothingAnalyze: '/clothing/analyze-photo',
+        styleCheck: '/style-check',
         usersPicks: '/users/picks',
         usersReservations: '/users/reservations',
         auth: '/auth',
