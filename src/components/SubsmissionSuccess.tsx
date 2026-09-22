@@ -92,7 +92,7 @@ export function SubmissionSuccess() {
         return (
             <div className="font-sans">
                 <Header />
-                <main className="min-h-screen bg-gradient-to-br from-cream to-amber-50 flex items-center justify-center">
+                <main className="min-h-screen bg-gradient-to-br from-cream to-amber-50 flex items-center justify-center pt-20">
                     <div className="w-12 h-12 border-4 border-rose border-t-transparent rounded-full animate-spin" />
                 </main>
                 <Footer />
@@ -106,7 +106,7 @@ export function SubmissionSuccess() {
         <div className="font-sans">
             <Header />
 
-            <main className="min-h-screen bg-gradient-to-br from-cream via-amber-50 to-rose/20 py-16 px-4">
+            <main className="min-h-screen bg-gradient-to-br from-cream via-amber-50 to-rose/20 pt-28 pb-16 px-4 md:pt-32">
                 <div className="max-w-2xl mx-auto space-y-10">
 
                     {/* Confirmation card */}

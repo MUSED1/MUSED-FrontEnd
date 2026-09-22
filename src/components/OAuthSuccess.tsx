@@ -55,7 +55,7 @@ export function OAuthSuccess() {
     return (
         <div className="font-sans">
             <Header />
-            <main className="min-h-screen bg-gradient-to-br from-cream to-amber-50 py-12">
+            <main className="min-h-screen bg-gradient-to-br from-cream to-amber-50 pt-28 md:pt-32 pb-12">
                 <div className="container mx-auto px-4 max-w-md">
                     <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
                         {status === 'loading' && (

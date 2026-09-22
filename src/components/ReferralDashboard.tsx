@@ -85,7 +85,7 @@ export function ReferralDashboard() {
         return (
             <div className="font-sans">
                 <Header />
-                <main className="min-h-screen bg-gradient-to-br from-cream to-amber-50 py-8">
+                <main className="min-h-screen bg-gradient-to-br from-cream to-amber-50 pt-28 md:pt-32 pb-8">
                     <div className="container mx-auto px-4 max-w-4xl text-center">
                         <div className="bg-white rounded-2xl shadow-lg p-12">
                             <div className="w-16 h-16 border-4 border-rose border-t-transparent rounded-full animate-spin mx-auto" />
@@ -102,7 +102,7 @@ export function ReferralDashboard() {
         // ... rest of your JSX remains the same
         <div className="font-sans">
             <Header />
-            <main className="min-h-screen bg-gradient-to-br from-cream to-amber-50 py-8">
+            <main className="min-h-screen bg-gradient-to-br from-cream to-amber-50 pt-28 md:pt-32 pb-8">
                 <div className="container mx-auto px-4 max-w-4xl">
                     {/* Header */}
                     <div className="text-center mb-8">

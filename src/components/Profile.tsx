@@ -1,81 +1,16 @@
 // components/Profile.tsx
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { Header } from './Header';
 import { Footer } from './Footer';
 import { PhoneEdit } from './PhoneEdit';
 import { useAuth } from '../hooks/useAuth';
-import { User, Package, Heart, LogOut, Star, CheckCircle, AlertCircle, Camera, X, Truck, PackageCheck, Clock, MapPin } from 'lucide-react';
+import { User, Package, LogOut, Star, CheckCircle, AlertCircle, Camera, X, MoreHorizontal, Settings, ArrowUpRight, ArrowLeft, Truck } from 'lucide-react';
 import axios from 'axios';
 
-interface ClothingItem {
+interface UploadPreview {
     _id: string;
     images: string[];
-    category: string;
-    size: string;
-    status: string;
-    createdAt: string;
-    aiProcessed?: boolean;
-    university?: string;
-    address?: string;
-    pickupMethod?: string;
-    fullName?: string;
-}
-
-interface Reservation {
-    _id: string;
-    clothingId: ClothingItem;
-    fullName: string;
-    email: string;
-    phoneNumber: string;
-    pickupMethod: string;
-    pickupTime: string;
-    pickupDay: string;
-    returnDay: string;
-    returnTime: string;
-    status: 'active' | 'completed' | 'cancelled';
-    createdAt: string;
-}
-
-interface Purchase {
-    orderId: string;
-    itemName: string;
-    brand: string;
-    size: string;
-    itemImage: string | null;
-    price: number | null;
-    currency: string | null;
-    trackingNumber: string;
-    carrier: string;
-    trackingStatus: string;
-    trackingLastEvent: string;
-    trackingLastEventTime: string | null;
-    shippedAt: string | null;
-    purchasedAt: string | null;
-    deliveryAddress: string;
-}
-
-// Maps the backend's raw 17TRACK-style trackingStatus onto a simple 4-stage
-// timeline for the buyer: Order Placed -> Preparing -> Shipped -> Delivered.
-// "In transit"-ish statuses are folded into 'shipped' since from the
-// buyer's perspective the meaningful line is just "it's on the way".
-const DELIVERY_STAGES = ['Order Placed', 'Preparing', 'Shipped', 'Delivered'] as const;
-
-function getDeliveryStageIndex(purchase: Purchase): number {
-    if (purchase.trackingStatus === 'delivered') return 3;
-    if (purchase.trackingNumber || purchase.shippedAt) return 2; // shipped / in transit
-    return 1; // paid, brand is preparing the package
-}
-
-function hasDeliveryIssue(purchase: Purchase): boolean {
-    return purchase.trackingStatus === 'exception' || purchase.trackingStatus === 'delivery_failure';
-}
-
-function formatOrderDate(dateString: string | null): string {
-    if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString('en-US', {
-        year: 'numeric', month: 'short', day: 'numeric'
-    });
 }
 
 export function Profile() {
@@ -85,15 +20,6 @@ export function Profile() {
     const [showUploadSuccess, setShowUploadSuccess] = useState(
         (location.state as { uploadSuccess?: boolean })?.uploadSuccess === true
     );
-    const [activeTab, setActiveTab] = useState<'profile' | 'uploads' | 'picks' | 'reservations' | 'orders' | 'settings'>('profile');
-    const [uploads, setUploads] = useState<ClothingItem[]>([]);
-    const [picks, setPicks] = useState<ClothingItem[]>([]);
-    const [reservations, setReservations] = useState<Reservation[]>([]);
-    const [purchases, setPurchases] = useState<Purchase[]>([]);
-    const [isLoadingUploads, setIsLoadingUploads] = useState(false);
-    const [isLoadingPicks, setIsLoadingPicks] = useState(false);
-    const [isLoadingReservations, setIsLoadingReservations] = useState(false);
-    const [isLoadingPurchases, setIsLoadingPurchases] = useState(false);
     const [showPhoneRequiredWarning, setShowPhoneRequiredWarning] = useState(false);
 
     // Avatar states
@@ -102,13 +28,19 @@ export function Profile() {
     const [avatarError, setAvatarError] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // Add state for activity counts
+    // Cover photo — stored locally per device (no backend field for this yet)
+    const [coverPhoto, setCoverPhoto] = useState<string | null>(null);
+    const [coverError, setCoverError] = useState<string | null>(null);
+    const coverInputRef = useRef<HTMLInputElement>(null);
+    const coverStorageKey = user?.email ? `mused_cover_photo_${user.email}` : null;
+
     const [activityCounts, setActivityCounts] = useState({
         uploads: 0,
         picks: 0,
-        reservations: 0,
-        purchases: 0
+        reservations: 0
     });
+    const [menuOpen, setMenuOpen] = useState(false);
+    const [uploadPreviews, setUploadPreviews] = useState<UploadPreview[]>([]);
 
     useEffect(() => {
         if (!loading && !isAuthenticated) {
@@ -130,12 +62,48 @@ export function Profile() {
         return () => clearTimeout(timer);
     }, [showPhoneRequiredWarning]);
 
-    // Fetch all activity data when component mounts
+    // Fetch activity counts for the summary tiles
     useEffect(() => {
-        if (isAuthenticated) {
-            fetchAllActivityData();
-        }
+        if (!isAuthenticated) return;
+
+        const fetchActivityCounts = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                const API_URL = import.meta.env.VITE_API_URL?.replace('/auth', '') || 'https://mused-backend.onrender.com/api';
+
+                const [uploadsRes, picksRes, reservationsRes] = await Promise.all([
+                    axios.get(`${API_URL}/clothing/my-items`, { headers: { Authorization: `Bearer ${token}` } }),
+                    axios.get(`${API_URL}/users/picks`, { headers: { Authorization: `Bearer ${token}` } }),
+                    axios.get(`${API_URL}/users/reservations`, { headers: { Authorization: `Bearer ${token}` } }),
+                ]);
+
+                setActivityCounts({
+                    uploads: uploadsRes.data.success ? uploadsRes.data.data.length : 0,
+                    picks: picksRes.data.success ? picksRes.data.data.length : 0,
+                    reservations: reservationsRes.data.success ? reservationsRes.data.data.length : 0,
+                });
+
+                if (uploadsRes.data.success) {
+                    setUploadPreviews(uploadsRes.data.data.slice(0, 6));
+                }
+            } catch (error) {
+                console.error('Error fetching activity counts:', error);
+            }
+        };
+
+        fetchActivityCounts();
     }, [isAuthenticated]);
+
+    // Load a saved cover photo for this device, if any
+    useEffect(() => {
+        if (!coverStorageKey) return;
+        try {
+            const saved = localStorage.getItem(coverStorageKey);
+            if (saved) setCoverPhoto(saved);
+        } catch {
+            // localStorage unavailable — fall back to the default cover
+        }
+    }, [coverStorageKey]);
 
     // Sync avatar when user changes
     useEffect(() => {
@@ -144,34 +112,29 @@ export function Profile() {
         }
     }, [user?.avatar]);
 
-    // Check if user has phone number
     const hasPhoneNumber = () => {
-        return user?.phone && user.phone.trim().length > 0;
+        return !!(user?.phone && user.phone.trim().length > 0);
     };
 
-    // Wrapper function for actions that require phone number
+    // Wrapper for actions that require a phone number on file
     const requirePhoneNumber = (action: () => void) => {
         if (hasPhoneNumber()) {
             action();
         } else {
             setShowPhoneRequiredWarning(true);
-            // Scroll to the warning
             setTimeout(() => {
                 document.getElementById('phone-required-warning')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }, 100);
         }
     };
 
-    // Avatar upload handler
     const handleAvatarUpload = async (file: File) => {
-        // Validate file type
         if (!file.type.startsWith('image/')) {
             setAvatarError('Please select an image file');
             setTimeout(() => setAvatarError(null), 3000);
             return;
         }
 
-        // Validate file size (max 5MB)
         if (file.size > 5 * 1024 * 1024) {
             setAvatarError('Image must be less than 5MB');
             setTimeout(() => setAvatarError(null), 3000);
@@ -197,7 +160,6 @@ export function Profile() {
 
             if (response.data.success) {
                 setAvatar(response.data.avatar);
-                // Update user context with new avatar
                 updateUser({ avatar: response.data.avatar });
             }
         } catch (error) {
@@ -209,7 +171,6 @@ export function Profile() {
         }
     };
 
-    // Avatar removal handler
     const handleRemoveAvatar = async () => {
         if (!avatar) return;
 
@@ -235,146 +196,63 @@ export function Profile() {
         }
     };
 
-    // File selection handler
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
             handleAvatarUpload(file);
         }
-        // Reset input so same file can be selected again
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
         }
     };
 
-    const fetchAllActivityData = async () => {
-        // Fetch uploads
-        try {
-            const token = localStorage.getItem('token');
-            const API_URL = import.meta.env.VITE_API_URL?.replace('/auth', '') || 'https://mused-backend.onrender.com/api';
+    // Resize a chosen cover photo down to a reasonable size before storing it,
+    // so it stays well under the browser's localStorage quota.
+    const handleCoverPhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (e.target) e.target.value = '';
+        if (!file) return;
 
-            // Fetch uploads
-            const uploadsResponse = await axios.get(`${API_URL}/clothing/my-items`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            if (uploadsResponse.data.success) {
-                setUploads(uploadsResponse.data.data);
-                setActivityCounts(prev => ({ ...prev, uploads: uploadsResponse.data.data.length }));
-            }
-
-            // Fetch picks
-            const picksResponse = await axios.get(`${API_URL}/users/picks`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            if (picksResponse.data.success) {
-                setPicks(picksResponse.data.data);
-                setActivityCounts(prev => ({ ...prev, picks: picksResponse.data.data.length }));
-            }
-
-            // Fetch reservations
-            const reservationsResponse = await axios.get(`${API_URL}/users/reservations`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            if (reservationsResponse.data.success) {
-                setReservations(reservationsResponse.data.data);
-                setActivityCounts(prev => ({ ...prev, reservations: reservationsResponse.data.data.length }));
-            }
-
-            // Fetch purchases (buy orders, with shipment tracking)
-            const purchasesResponse = await axios.get(`${API_URL}/clothing/my-purchases`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            if (purchasesResponse.data.success) {
-                setPurchases(purchasesResponse.data.data);
-                setActivityCounts(prev => ({ ...prev, purchases: purchasesResponse.data.data.length }));
-            }
-        } catch (error) {
-            console.error('Error fetching activity data:', error);
+        if (!file.type.startsWith('image/')) {
+            setCoverError('Please select an image file');
+            setTimeout(() => setCoverError(null), 3000);
+            return;
         }
-    };
 
-    const fetchUserUploads = async () => {
-        setIsLoadingUploads(true);
-        try {
-            const token = localStorage.getItem('token');
-            const API_URL = import.meta.env.VITE_API_URL?.replace('/auth', '') || 'https://mused-backend.onrender.com/api';
-
-            const response = await axios.get(`${API_URL}/clothing/my-items`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            setUploads(response.data.data);
-            setActivityCounts(prev => ({ ...prev, uploads: response.data.data.length }));
-        } catch (error) {
-            console.error('Error fetching uploads:', error);
-        } finally {
-            setIsLoadingUploads(false);
+        if (file.size > 10 * 1024 * 1024) {
+            setCoverError('Image must be less than 10MB');
+            setTimeout(() => setCoverError(null), 3000);
+            return;
         }
-    };
 
-    const fetchUserPicks = async () => {
-        setIsLoadingPicks(true);
-        try {
-            const token = localStorage.getItem('token');
-            const API_URL = import.meta.env.VITE_API_URL?.replace('/auth', '') || 'https://mused-backend.onrender.com/api';
+        const reader = new FileReader();
+        reader.onload = () => {
+            const img = new Image();
+            img.onload = () => {
+                const maxWidth = 1600;
+                const scale = Math.min(1, maxWidth / img.width);
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width * scale;
+                canvas.height = img.height * scale;
+                const ctx = canvas.getContext('2d');
+                if (!ctx) return;
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-            const response = await axios.get(`${API_URL}/users/picks`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+                setCoverPhoto(dataUrl);
 
-            if (response.data.success) {
-                setPicks(response.data.data);
-                setActivityCounts(prev => ({ ...prev, picks: response.data.data.length }));
-            }
-        } catch (error) {
-            console.error('Error fetching picks:', error);
-            setPicks([]);
-        } finally {
-            setIsLoadingPicks(false);
-        }
-    };
-
-    const fetchUserReservations = async () => {
-        setIsLoadingReservations(true);
-        try {
-            const token = localStorage.getItem('token');
-            const API_URL = import.meta.env.VITE_API_URL?.replace('/auth', '') || 'https://mused-backend.onrender.com/api';
-
-            const response = await axios.get(`${API_URL}/users/reservations`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-
-            if (response.data.success) {
-                setReservations(response.data.data);
-                setActivityCounts(prev => ({ ...prev, reservations: response.data.data.length }));
-            }
-        } catch (error) {
-            console.error('Error fetching reservations:', error);
-            setReservations([]);
-        } finally {
-            setIsLoadingReservations(false);
-        }
-    };
-
-    const fetchUserPurchases = async () => {
-        setIsLoadingPurchases(true);
-        try {
-            const token = localStorage.getItem('token');
-            const API_URL = import.meta.env.VITE_API_URL?.replace('/auth', '') || 'https://mused-backend.onrender.com/api';
-
-            const response = await axios.get(`${API_URL}/clothing/my-purchases`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-
-            if (response.data.success) {
-                setPurchases(response.data.data);
-                setActivityCounts(prev => ({ ...prev, purchases: response.data.data.length }));
-            }
-        } catch (error) {
-            console.error('Error fetching purchases:', error);
-            setPurchases([]);
-        } finally {
-            setIsLoadingPurchases(false);
-        }
+                if (coverStorageKey) {
+                    try {
+                        localStorage.setItem(coverStorageKey, dataUrl);
+                    } catch {
+                        setCoverError('Photo set for this session, but too large to save permanently');
+                        setTimeout(() => setCoverError(null), 4000);
+                    }
+                }
+            };
+            img.src = reader.result as string;
+        };
+        reader.readAsDataURL(file);
     };
 
     const handleLogout = () => {
@@ -383,36 +261,17 @@ export function Profile() {
     };
 
     const handlePhoneUpdate = (newPhone: string) => {
-        console.log('Phone updated to:', newPhone);
-        // Refresh user data or update local state
         if (user) {
             user.phone = newPhone;
         }
-        // Dismiss warning if it was showing
         setShowPhoneRequiredWarning(false);
-    };
-
-    const handleRemovePick = async (itemId: string) => {
-        try {
-            const token = localStorage.getItem('token');
-            const API_URL = import.meta.env.VITE_API_URL?.replace('/auth', '') || 'https://mused-backend.onrender.com/api';
-
-            await axios.delete(`${API_URL}/users/picks/${itemId}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-
-            setPicks(prev => prev.filter(item => item._id !== itemId));
-            setActivityCounts(prev => ({ ...prev, picks: prev.picks - 1 }));
-        } catch (error) {
-            console.error('Error removing pick:', error);
-        }
     };
 
     if (loading) {
         return (
             <div className="font-inter">
                 <Header />
-                <main className="min-h-screen bg-gradient-to-br from-cream to-amber-50 py-8">
+                <main className="min-h-screen bg-cream pt-28 md:pt-32 pb-8">
                     <div className="container mx-auto px-4 max-w-4xl text-center">
                         <div className="bg-white rounded-2xl shadow-lg p-12">
                             <div className="w-16 h-16 border-4 border-rose border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
@@ -431,9 +290,176 @@ export function Profile() {
 
     return (
         <div className="font-inter">
-            <Header />
-            <main className="min-h-screen bg-gradient-to-br from-cream to-amber-50 py-12">
-                <div className="container mx-auto px-4 max-w-6xl">
+            <main className="min-h-screen bg-white">
+                {/* Immersive profile hero — full-bleed photo, frosted panel */}
+                <div className="relative flex min-h-[44vh] w-full flex-col justify-end overflow-hidden">
+                    <img
+                        src={coverPhoto || '/main1-hero.jpg'}
+                        alt=""
+                        className="absolute inset-0 h-full w-full object-cover object-[center_20%]"
+                    />
+                    <div className="absolute inset-0 bg-black/10" />
+
+                    <input
+                        ref={coverInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleCoverPhotoSelect}
+                        className="hidden"
+                    />
+
+                    {coverError && (
+                        <div className="absolute left-1/2 top-20 z-20 -translate-x-1/2 rounded-full bg-[#C9614E] px-4 py-2 text-xs text-cream shadow-lg sm:top-24">
+                            {coverError}
+                        </div>
+                    )}
+
+                    {/* Top controls */}
+                    <div className="absolute inset-x-4 top-4 z-20 flex items-center justify-between sm:top-6">
+                        <button
+                            onClick={() => navigate('/')}
+                            className="flex h-10 w-10 items-center justify-center rounded-full bg-black/30 text-cream backdrop-blur-sm transition-colors hover:bg-black/50"
+                            aria-label="Back"
+                        >
+                            <ArrowLeft size={18} />
+                        </button>
+
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => coverInputRef.current?.click()}
+                                className="flex items-center gap-1.5 rounded-full bg-black/30 px-3.5 py-2.5 text-xs text-cream backdrop-blur-sm transition-colors hover:bg-black/50"
+                                aria-label="Change cover photo"
+                            >
+                                <Camera size={14} />
+                                <span className="hidden sm:inline">Change cover</span>
+                            </button>
+
+                            <div className="relative">
+                            <button
+                                onClick={() => setMenuOpen((v) => !v)}
+                                className="flex h-10 w-10 items-center justify-center rounded-full bg-black/30 text-cream backdrop-blur-sm transition-colors hover:bg-black/50"
+                                aria-label="More options"
+                            >
+                                <MoreHorizontal size={18} />
+                            </button>
+
+                            {menuOpen && (
+                                <>
+                                    <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
+                                    <div className="absolute right-0 top-12 z-20 w-48 overflow-hidden rounded-2xl bg-white py-2 shadow-xl">
+                                        <button
+                                            onClick={() => { setMenuOpen(false); navigate('/settings'); }}
+                                            className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-plum-dark transition-colors hover:bg-plum-dark/5"
+                                        >
+                                            <Settings size={16} />
+                                            Settings
+                                        </button>
+                                        <button
+                                            onClick={handleLogout}
+                                            className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-[#C9614E] transition-colors hover:bg-[#C9614E]/5"
+                                        >
+                                            <LogOut size={16} />
+                                            Logout
+                                        </button>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                        </div>
+                    </div>
+
+                    {/* Frosted bottom panel */}
+                    <div className="relative z-10 bg-gradient-to-t from-plum-dark/90 via-plum-dark/50 to-transparent px-6 pb-8 pt-14 sm:px-10">
+                        <div className="mx-auto max-w-md text-center">
+                            {/* Avatar Section with Upload */}
+                            <div className="group relative mx-auto mb-4 h-24 w-24">
+                                <div className="h-full w-full rounded-full bg-white p-1 shadow-md">
+                                    <div className="h-full w-full rounded-full bg-gradient-to-br from-[#C9A96E] via-burgundy to-plum-dark p-[3px]">
+                                        <div className="h-full w-full overflow-hidden rounded-full bg-white">
+                                            {avatar ? (
+                                                <img
+                                                    src={avatar}
+                                                    alt={user.name}
+                                                    className="h-full w-full object-cover"
+                                                    onError={() => setAvatar(null)}
+                                                />
+                                            ) : (
+                                                <div className="flex h-full w-full items-center justify-center">
+                                                    <User size={30} className="text-plum/30" />
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Upload button overlay - appears on hover */}
+                                <div className="absolute inset-1 flex items-center justify-center gap-2 rounded-full bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
+                                    <button
+                                        onClick={() => fileInputRef.current?.click()}
+                                        disabled={isUploadingAvatar}
+                                        className="rounded-full bg-white p-1.5 transition-colors hover:bg-cream disabled:opacity-50"
+                                        title="Upload photo"
+                                    >
+                                        <Camera size={14} className="text-plum" />
+                                    </button>
+                                    {avatar && (
+                                        <button
+                                            onClick={handleRemoveAvatar}
+                                            disabled={isUploadingAvatar}
+                                            className="rounded-full bg-white p-1.5 transition-colors hover:bg-red-50 disabled:opacity-50"
+                                            title="Remove photo"
+                                        >
+                                            <X size={14} className="text-[#C9614E]" />
+                                        </button>
+                                    )}
+                                </div>
+
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleFileSelect}
+                                    className="hidden"
+                                />
+
+                                {isUploadingAvatar && (
+                                    <div className="absolute inset-1 flex items-center justify-center rounded-full bg-white/80">
+                                        <div className="h-5 w-5 animate-spin rounded-full border-2 border-plum-dark border-t-transparent" />
+                                    </div>
+                                )}
+
+                                {avatarError && (
+                                    <p className="absolute left-1/2 top-full mt-2 w-40 -translate-x-1/2 text-center text-xs text-[#C9614E] font-inter">
+                                        {avatarError}
+                                    </p>
+                                )}
+                            </div>
+
+                            <h1 className="flex items-center justify-center gap-2 font-amandine font-normal text-3xl text-cream">
+                                {user.name}
+                                <Star size={16} className={user.role === 'admin' ? 'text-[#C9A96E]' : 'text-cream/30'} />
+                            </h1>
+                            <p className="mt-1 text-sm text-cream/50">@{user.email.split('@')[0]}</p>
+
+                            <div className="mt-6 inline-flex items-center justify-center gap-10 rounded-2xl bg-black/20 px-8 py-3 backdrop-blur-xl">
+                                <Link to="/my-uploads" className="text-center transition-opacity hover:opacity-80">
+                                    <div className="font-kaldera text-xl text-cream">{activityCounts.uploads}</div>
+                                    <div className="text-xs text-cream/50">Uploads</div>
+                                </Link>
+                                <Link to="/my-picks" className="text-center transition-opacity hover:opacity-80">
+                                    <div className="font-kaldera text-xl text-cream">{activityCounts.picks}</div>
+                                    <div className="text-xs text-cream/50">Picks</div>
+                                </Link>
+                                <Link to="/my-reservations" className="text-center transition-opacity hover:opacity-80">
+                                    <div className="font-kaldera text-xl text-cream">{activityCounts.reservations}</div>
+                                    <div className="text-xs text-cream/50">Reservations</div>
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="container mx-auto px-4 max-w-4xl py-8 md:py-12">
                     {/* Phone Required Warning Banner */}
                     {showPhoneRequiredWarning && !hasPhoneNumber() && (
                         <div id="phone-required-warning" className="flex items-center justify-between gap-4 bg-amber-50 border border-amber-200 text-amber-800 rounded-xl px-5 py-4 mb-6 shadow-sm animate-fadeIn">
@@ -441,7 +467,7 @@ export function Profile() {
                                 <AlertCircle size={22} className="text-amber-500 shrink-0" />
                                 <div>
                                     <p className="font-semibold">Phone Number Required </p>
-                                    <p className="text-sm text-amber-700">Please add your phone number in the Profile Info tab before accessing these features.</p>
+                                    <p className="text-sm text-amber-700">Please add your phone number below before accessing these features.</p>
                                 </div>
                             </div>
                             <button
@@ -474,765 +500,145 @@ export function Profile() {
                         </div>
                     )}
 
-                    {/* Profile Header */}
-                    <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-8">
-                        <div className="h-32 md:h-48 overflow-hidden relative">
-                            <img
-                                src="https://res.cloudinary.com/dapfjngt2/image/upload/v1778910768/Profile_banner_new_home_image_pages-to-jpg-0005_j8qowy.jpg"
-                                alt="Profile banner"
-                                className="block md:hidden w-full h-full object-cover object-center"
-                            />
-                            <img
-                                src="https://res.cloudinary.com/dapfjngt2/image/upload/v1778910768/Profile_banner_new_home_image_pages-to-jpg-0006_sewxrk.jpg"
-                                alt="Profile banner"
-                                className="hidden md:block w-full h-full object-cover object-center"
-                            />
-                        </div>
-                        <div className="px-8 pb-8 relative">
-                            <div className="flex flex-col md:flex-row md:items-end gap-6 -mt-16">
-                                {/* Avatar Section with Upload */}
-                                <div className="relative group">
-                                    <div className="w-32 h-32 bg-cream rounded-2xl border-4 border-white shadow-lg overflow-hidden">
-                                        {avatar ? (
-                                            <img
-                                                src={avatar}
-                                                alt={user.name}
-                                                className="w-full h-full object-cover"
-                                                onError={() => setAvatar(null)}
-                                            />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center">
-                                                <User size={48} className="text-plum/40" />
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {/* Upload button overlay - appears on hover */}
-                                    <div className="absolute inset-0 bg-black/50 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                                        <button
-                                            onClick={() => fileInputRef.current?.click()}
-                                            disabled={isUploadingAvatar}
-                                            className="p-2 bg-white rounded-full hover:bg-cream transition-colors disabled:opacity-50"
-                                            title="Upload photo"
-                                        >
-                                            <Camera size={18} className="text-plum" />
-                                        </button>
-                                        {avatar && (
-                                            <button
-                                                onClick={handleRemoveAvatar}
-                                                disabled={isUploadingAvatar}
-                                                className="p-2 bg-white rounded-full hover:bg-red-50 transition-colors disabled:opacity-50"
-                                                title="Remove photo"
-                                            >
-                                                <X size={18} className="text-red-500" />
-                                            </button>
-                                        )}
-                                    </div>
-
-                                    {/* Hidden file input */}
-                                    <input
-                                        ref={fileInputRef}
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={handleFileSelect}
-                                        className="hidden"
-                                    />
-
-                                    {/* Loading spinner */}
-                                    {isUploadingAvatar && (
-                                        <div className="absolute inset-0 bg-white/80 rounded-2xl flex items-center justify-center">
-                                            <div className="w-6 h-6 border-2 border-rose border-t-transparent rounded-full animate-spin" />
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Avatar error message */}
-                                {avatarError && (
-                                    <p className="text-red-500 text-xs mt-1 absolute left-36 bottom-0">{avatarError}</p>
-                                )}
-
-                                <div className="flex-1">
-                                    <h1 className="text-3xl font-kaldera text-plum">{user.name}</h1>
-                                    <p className="text-plum/60">{user.email}</p>
-                                    {user.phone && (
-                                        <p className="text-plum/60 text-sm mt-1">
-                                            {user.phone}
-                                        </p>
-                                    )}
-                                    {!user.phone && (
-                                        <p className="text-amber-600 text-sm mt-1 flex items-center gap-1">
-                                            <AlertCircle size={14} />
-                                            Phone number required for certain actions
-                                        </p>
-                                    )}
-                                    <div className="flex items-center gap-2 mt-2">
-                                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                                            user.role === 'admin'
-                                                ? 'bg-rose/20 text-rose'
-                                                : 'bg-plum/10 text-plum'
-                                        }`}>
-                                            {user.role === 'admin' ? 'Administrator' : 'Member'}
-                                        </span>
-                                    </div>
-                                </div>
-                                <button
-                                    onClick={handleLogout}
-                                    className="flex items-center gap-2 px-4 py-2 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+                    {/* Creations — preview grid of your uploaded pieces */}
+                    {uploadPreviews.length > 0 && (
+                        <div className="mb-10">
+                            <div className="mb-4 flex items-center justify-between">
+                                <h2 className="font-kaldera text-lg text-plum-dark">Creations</h2>
+                                <Link
+                                    to="/my-uploads"
+                                    className="flex items-center gap-1 text-sm text-plum/50 transition-colors hover:text-plum-dark"
                                 >
-                                    <LogOut size={18} />
-                                    Logout
-                                </button>
+                                    See all
+                                    <ArrowUpRight size={14} />
+                                </Link>
+                            </div>
+                            <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
+                                {uploadPreviews.map((item) => (
+                                    <Link
+                                        key={item._id}
+                                        to="/my-uploads"
+                                        className="aspect-square overflow-hidden rounded-xl bg-plum-dark/5"
+                                    >
+                                        {item.images?.[0] && (
+                                            <img
+                                                src={item.images[0]}
+                                                alt=""
+                                                className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
+                                            />
+                                        )}
+                                    </Link>
+                                ))}
                             </div>
                         </div>
-                    </div>
+                    )}
+                </div>
 
-                    {/* Tabs */}
-                    <div className="flex gap-2 mb-8 border-b border-cream overflow-x-auto">
-                        <button
-                            onClick={() => setActiveTab('profile')}
-                            className={`px-6 py-3 font-medium transition-all relative whitespace-nowrap ${
-                                activeTab === 'profile'
-                                    ? 'text-rose after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-rose'
-                                    : 'text-plum/60 hover:text-plum'
-                            }`}
-                        >
-                            Profile Info
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('uploads')}
-                            className={`px-6 py-3 font-medium transition-all relative whitespace-nowrap ${
-                                activeTab === 'uploads'
-                                    ? 'text-rose after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-rose'
-                                    : 'text-plum/60 hover:text-plum'
-                            }`}
-                        >
-                            My Uploads
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('picks')}
-                            className={`px-6 py-3 font-medium transition-all relative whitespace-nowrap ${
-                                activeTab === 'picks'
-                                    ? 'text-rose after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-rose'
-                                    : 'text-plum/60 hover:text-plum'
-                            }`}
-                        >
-                            <span className="flex items-center gap-2">
-                                <Heart size={16} />
-                                My Picks
-                                {activityCounts.picks > 0 && (
-                                    <span className="bg-rose text-white text-xs px-2 py-0.5 rounded-full">
-                                        {activityCounts.picks}
-                                    </span>
-                                )}
-                            </span>
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('reservations')}
-                            className={`px-6 py-3 font-medium transition-all relative whitespace-nowrap ${
-                                activeTab === 'reservations'
-                                    ? 'text-rose after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-rose'
-                                    : 'text-plum/60 hover:text-plum'
-                            }`}
-                        >
-                            <span className="flex items-center gap-2">
-                                <CheckCircle size={16} />
-                                My Reservations
-                                {activityCounts.reservations > 0 && (
-                                    <span className="bg-green-500 text-white text-xs px-2 py-0.5 rounded-full">
-                                        {activityCounts.reservations}
-                                    </span>
-                                )}
-                            </span>
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('orders')}
-                            className={`px-6 py-3 font-medium transition-all relative whitespace-nowrap ${
-                                activeTab === 'orders'
-                                    ? 'text-rose after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-rose'
-                                    : 'text-plum/60 hover:text-plum'
-                            }`}
-                        >
-                            <span className="flex items-center gap-2">
-                                <Package size={16} />
-                                My Orders
-                                {activityCounts.purchases > 0 && (
-                                    <span className="bg-plum text-white text-xs px-2 py-0.5 rounded-full">
-                                        {activityCounts.purchases}
-                                    </span>
-                                )}
-                            </span>
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('settings')}
-                            className={`px-6 py-3 font-medium transition-all relative whitespace-nowrap ${
-                                activeTab === 'settings'
-                                    ? 'text-rose after:absolute after:bottom-0 after:left-0 after:w-full after:h-0.5 after:bg-rose'
-                                    : 'text-plum/60 hover:text-plum'
-                            }`}
-                        >
-                            Settings
-                        </button>
-                    </div>
+                {/* Profile Information — full-width white section, flush with the screen */}
+                <div className="w-full bg-white">
+                    <div className="container mx-auto max-w-4xl px-4 py-10">
+                        <h2 className="font-kaldera text-xl text-plum-dark mb-6">Profile Information</h2>
 
-                    {/* Tab Content */}
-                    <div className="bg-white rounded-2xl shadow-lg p-8">
-                        {activeTab === 'profile' && (
-                            <div className="space-y-6">
-                                <h2 className="text-2xl font-kaldera text-plum mb-6">Profile Information</h2>
-
-                                <div className="grid md:grid-cols-2 gap-6">
-                                    <div>
-                                        <label className="block text-sm font-medium text-plum/60 mb-2">Full Name</label>
-                                        <div className="p-3 bg-cream/30 rounded-lg text-plum">{user.name}</div>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-plum/60 mb-2">Email Address</label>
-                                        <div className="p-3 bg-cream/30 rounded-lg text-plum">{user.email}</div>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-plum/60 mb-2">
-                                            Phone Number
-                                            {!user.phone && <span className="text-amber-500 ml-2">* Required for actions</span>}
-                                        </label>
-                                        <div className="p-3 bg-cream/30 rounded-lg">
-                                            <PhoneEdit
-                                                phone={user.phone || ''}
-                                                onUpdate={handlePhoneUpdate}
-                                            />
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-plum/60 mb-2">Member Since</label>
-                                        <div className="p-3 bg-cream/30 rounded-lg text-plum">
-                                            {user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', {
-                                                year: 'numeric',
-                                                month: 'long',
-                                                day: 'numeric'
-                                            }) : 'N/A'}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Activity Summary - Now using real data */}
-                                <div className="border-t border-cream pt-6 mt-6">
-                                    <h3 className="text-lg font-kaldera text-plum mb-4">Activity Summary</h3>
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                        <div className="bg-cream/30 rounded-xl p-4 text-center">
-                                            <Package className="mx-auto text-rose mb-2" size={24} />
-                                            <div className="text-2xl font-bold text-plum">{activityCounts.uploads}</div>
-                                            <div className="text-sm text-plum/60">Items Uploaded</div>
-                                        </div>
-                                        <div className="bg-cream/30 rounded-xl p-4 text-center">
-                                            <Heart className="mx-auto text-rose mb-2" size={24} />
-                                            <div className="text-2xl font-bold text-plum">{activityCounts.picks}</div>
-                                            <div className="text-sm text-plum/60">Items Picked</div>
-                                        </div>
-                                        <div className="bg-cream/30 rounded-xl p-4 text-center">
-                                            <CheckCircle className="mx-auto text-green-600 mb-2" size={24} />
-                                            <div className="text-2xl font-bold text-plum">{activityCounts.reservations}</div>
-                                            <div className="text-sm text-plum/60">Reservations</div>
-                                        </div>
-                                        <div className="bg-cream/30 rounded-xl p-4 text-center">
-                                            <Truck className="mx-auto text-plum mb-2" size={24} />
-                                            <div className="text-2xl font-bold text-plum">{activityCounts.purchases}</div>
-                                            <div className="text-sm text-plum/60">Orders</div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="border-t border-cream pt-6 mt-6">
-                                    <h3 className="text-lg font-kaldera text-plum mb-4">Quick Actions</h3>
-                                    <div className="flex flex-wrap gap-4">
-                                        {/* 1. Start Uploading */}
-                                        <button
-                                            onClick={() => requirePhoneNumber(() => navigate('/upload'))}
-                                            className={`flex items-center gap-2 px-6 py-3 bg-plum text-cream rounded-lg hover:bg-plum/90 hover:shadow-lg transition-all ${
-                                                !hasPhoneNumber() ? 'opacity-50 cursor-not-allowed' : ''
-                                            }`}
-                                            title={!hasPhoneNumber() ? 'Phone number required' : 'Upload a clothing item'}
-                                        >
-                                            <Package size={18} />
-                                            START UPLOADING HERE
-                                        </button>
-                                        {/* 2. Browse Collection — disabled for now, muted plum; full plum when enabled */}
-                                        <button
-                                            onClick={() => navigate('/collections-hk')}
-                                            className="flex items-center gap-2 px-6 py-3 bg-plum text-cream rounded-lg cursor-pointer hover:bg-rose transition-all"
-                                        >
-                                            Browse Collection
-                                        </button>
-                                        {/* 3. View My Uploads */}
-                                        <button
-                                            onClick={() => requirePhoneNumber(() => {
-                                                setActiveTab('uploads');
-                                                fetchUserUploads();
-                                            })}
-                                            className={`flex items-center gap-2 px-6 py-3 border-2 border-rose text-plum rounded-lg hover:bg-rose/10 transition-all ${
-                                                !hasPhoneNumber() ? 'opacity-50 cursor-not-allowed' : ''
-                                            }`}
-                                            title={!hasPhoneNumber() ? 'Phone number required' : ''}
-                                        >
-                                            <Heart size={18} />
-                                            VIEW MY UPLOADS
-                                        </button>
-                                        {/* 4. View My Picks */}
-                                        <button
-                                            onClick={() => requirePhoneNumber(() => {
-                                                setActiveTab('picks');
-                                                fetchUserPicks();
-                                            })}
-                                            className={`flex items-center gap-2 px-6 py-3 border-2 border-plum/20 text-plum rounded-lg hover:bg-plum/5 transition-all ${
-                                                !hasPhoneNumber() ? 'opacity-50 cursor-not-allowed' : ''
-                                            }`}
-                                            title={!hasPhoneNumber() ? 'Phone number required' : ''}
-                                        >
-                                            <Star size={18} />
-                                            VIEW MY PICKS
-                                        </button>
-                                        {/* 5. View My Reservation */}
-                                        <button
-                                            onClick={() => requirePhoneNumber(() => {
-                                                setActiveTab('reservations');
-                                                fetchUserReservations();
-                                            })}
-                                            className={`flex items-center gap-2 px-6 py-3 border-2 border-green-600/20 text-green-700 rounded-lg hover:bg-green-50 transition-all ${
-                                                !hasPhoneNumber() ? 'opacity-50 cursor-not-allowed' : ''
-                                            }`}
-                                            title={!hasPhoneNumber() ? 'Phone number required' : ''}
-                                        >
-                                            <CheckCircle size={18} />
-                                            VIEW MY RESERVATION
-                                        </button>
-                                        {/* 6. View My Orders */}
-                                        <button
-                                            onClick={() => {
-                                                setActiveTab('orders');
-                                                fetchUserPurchases();
-                                            }}
-                                            className="flex items-center gap-2 px-6 py-3 border-2 border-plum/20 text-plum rounded-lg hover:bg-plum/5 transition-all"
-                                        >
-                                            <Truck size={18} />
-                                            VIEW MY ORDERS
-                                        </button>
-                                    </div>
-                                    {!hasPhoneNumber() && (
-                                        <p className="text-sm text-amber-600 mt-4 flex items-center gap-2">
-                                            <AlertCircle size={16} />
-                                            Please add your phone number in the Profile Info section to access these features.
-                                        </p>
-                                    )}
+                        <div className="grid gap-5 sm:grid-cols-2">
+                            <div>
+                                <label className="mb-1.5 block text-xs uppercase tracking-label text-plum/40">Full Name</label>
+                                <div className="rounded-2xl bg-cream/40 p-3.5 text-plum-dark">{user.name}</div>
+                            </div>
+                            <div>
+                                <label className="mb-1.5 block text-xs uppercase tracking-label text-plum/40">Email Address</label>
+                                <div className="rounded-2xl bg-cream/40 p-3.5 text-plum-dark">{user.email}</div>
+                            </div>
+                            <div>
+                                <label className="mb-1.5 flex items-center gap-2 text-xs uppercase tracking-label text-plum/40">
+                                    Phone Number
+                                    {!user.phone && <span className="normal-case tracking-normal text-[#C9614E]">Required for actions</span>}
+                                </label>
+                                <div className="rounded-2xl bg-cream/40 p-3.5">
+                                    <PhoneEdit
+                                        phone={user.phone || ''}
+                                        onUpdate={handlePhoneUpdate}
+                                    />
                                 </div>
                             </div>
-                        )}
-
-                        {activeTab === 'uploads' && (
                             <div>
-                                <div className="flex justify-between items-center mb-6">
-                                    <h2 className="text-2xl font-kaldera text-plum">My Uploaded Items</h2>
+                                <label className="mb-1.5 block text-xs uppercase tracking-label text-plum/40">Member Since</label>
+                                <div className="rounded-2xl bg-cream/40 p-3.5 text-plum-dark">
+                                    {user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', {
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric'
+                                    }) : 'N/A'}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Navigate to the dedicated app screens */}
+                        <div className="mt-8 border-t border-cream pt-6">
+                            <h3 className="mb-4 font-kaldera text-lg text-plum-dark">Quick Actions</h3>
+                            <div className="flex flex-wrap gap-3">
+                                <div className="rounded-full shadow-[0_8px_16px_rgba(61,16,40,0.18)]">
                                     <button
-                                        onClick={() => navigate('/upload')}
-                                        className="flex items-center gap-2 px-4 py-2 bg-plum text-cream rounded-lg text-sm hover:bg-plum/90 hover:shadow-lg transition-all"
+                                        onClick={() => requirePhoneNumber(() => navigate('/upload'))}
+                                        className={`relative flex items-center gap-2 overflow-hidden rounded-full border border-white/15 bg-gradient-to-b from-plum-dark to-plum px-6 py-3 text-sm font-normal text-cream transition-all hover:brightness-110 ${
+                                            !hasPhoneNumber() ? 'cursor-not-allowed opacity-50' : ''
+                                        }`}
+                                        title={!hasPhoneNumber() ? 'Phone number required' : 'Upload a clothing item'}
                                     >
                                         <Package size={16} />
-                                        Upload New
+                                        Start uploading
                                     </button>
                                 </div>
-
-                                {isLoadingUploads ? (
-                                    <div className="text-center py-12">
-                                        <div className="w-12 h-12 border-4 border-rose border-t-transparent rounded-full animate-spin mx-auto"></div>
-                                    </div>
-                                ) : uploads.length === 0 ? (
-                                    <div className="text-center py-12 bg-cream/30 rounded-xl">
-                                        <Package size={48} className="text-plum/20 mx-auto mb-4" />
-                                        <p className="text-plum/60 mb-4">You haven't uploaded any items yet.</p>
-                                        <button
-                                            onClick={() => navigate('/upload')}
-                                            className="inline-flex items-center gap-2 px-6 py-3 bg-plum text-cream rounded-lg hover:bg-plum/90 hover:shadow-lg transition-all"
-                                        >
-                                            Upload Your First Item
-                                        </button>
-                                    </div>
-                                ) : (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                        {uploads.map((item) => (
-                                            <div key={item._id} className="bg-cream/20 rounded-xl overflow-hidden border border-cream hover:shadow-lg transition-all group">
-                                                {/* Image — shimmer while AI is still processing */}
-                                                {item.aiProcessed === false ? (
-                                                    <div className="h-48 bg-gradient-to-r from-cream via-amber-50 to-cream bg-[length:200%_100%] animate-[shimmer_1.5s_infinite] flex flex-col items-center justify-center gap-2 relative overflow-hidden">
-                                                        <style>{`
-                                                            @keyframes shimmer {
-                                                                0% { background-position: 200% 0; }
-                                                                100% { background-position: -200% 0; }
-                                                            }
-                                                        `}</style>
-                                                        <div className="w-6 h-6 border-2 border-rose/50 border-t-rose rounded-full animate-spin" />
-                                                        <p className="text-xs text-plum/50 font-medium">Enhancing with AI…</p>
-                                                    </div>
-                                                ) : (
-                                                    <div
-                                                        className="h-48 bg-cover bg-center group-hover:scale-105 transition-transform duration-300"
-                                                        style={{ backgroundImage: `url(${item.images[0]})` }}
-                                                    />
-                                                )}
-                                                <div className="p-4">
-                                                    <div className="flex justify-between items-start mb-2">
-                                                        <div>
-                                                            <h3 className="font-semibold text-plum">{item.category}</h3>
-                                                            <p className="text-sm text-plum/60">Size: {item.size}</p>
-                                                            {item.university && (
-                                                                <p className="text-xs text-plum/40 mt-1">{item.university}</p>
-                                                            )}
-                                                        </div>
-                                                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                                                            item.status === 'available'
-                                                                ? 'bg-green-100 text-green-700'
-                                                                : item.status === 'reserved'
-                                                                    ? 'bg-yellow-100 text-yellow-700'
-                                                                    : 'bg-gray-100 text-gray-700'
-                                                        }`}>
-                                                            {item.status}
-                                                        </span>
-                                                    </div>
-                                                    <p className="text-xs text-plum/40">
-                                                        Uploaded: {new Date(item.createdAt).toLocaleDateString()}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
+                                <button
+                                    onClick={() => navigate('/collections-hk')}
+                                    className="rounded-full border border-plum-dark/15 px-6 py-3 text-sm text-plum-dark transition-colors hover:bg-plum-dark/5"
+                                >
+                                    Browse collection
+                                </button>
+                                <button
+                                    onClick={() => requirePhoneNumber(() => navigate('/my-uploads'))}
+                                    className={`flex items-center gap-2 rounded-full border border-plum-dark/15 px-6 py-3 text-sm text-plum-dark transition-colors hover:bg-plum-dark/5 ${
+                                        !hasPhoneNumber() ? 'cursor-not-allowed opacity-50' : ''
+                                    }`}
+                                    title={!hasPhoneNumber() ? 'Phone number required' : ''}
+                                >
+                                    <Package size={16} />
+                                    My uploads
+                                </button>
+                                <button
+                                    onClick={() => requirePhoneNumber(() => navigate('/my-picks'))}
+                                    className={`flex items-center gap-2 rounded-full border border-plum-dark/15 px-6 py-3 text-sm text-plum-dark transition-colors hover:bg-plum-dark/5 ${
+                                        !hasPhoneNumber() ? 'cursor-not-allowed opacity-50' : ''
+                                    }`}
+                                    title={!hasPhoneNumber() ? 'Phone number required' : ''}
+                                >
+                                    <Star size={16} />
+                                    My picks
+                                </button>
+                                <button
+                                    onClick={() => requirePhoneNumber(() => navigate('/my-reservations'))}
+                                    className={`flex items-center gap-2 rounded-full border border-plum-dark/15 px-6 py-3 text-sm text-plum-dark transition-colors hover:bg-plum-dark/5 ${
+                                        !hasPhoneNumber() ? 'cursor-not-allowed opacity-50' : ''
+                                    }`}
+                                    title={!hasPhoneNumber() ? 'Phone number required' : ''}
+                                >
+                                    <CheckCircle size={16} />
+                                    My reservations
+                                </button>
+                                <button
+                                    onClick={() => navigate('/my-orders')}
+                                    className="flex items-center gap-2 rounded-full border border-plum-dark/15 px-6 py-3 text-sm text-plum-dark transition-colors hover:bg-plum-dark/5"
+                                >
+                                    <Truck size={16} />
+                                    My orders
+                                </button>
                             </div>
-                        )}
-
-                        {activeTab === 'picks' && (
-                            <div>
-                                <div className="flex justify-between items-center mb-6">
-                                    <h2 className="text-2xl font-kaldera text-plum flex items-center gap-2">
-                                        <Heart className="text-rose" size={24} />
-                                        My Picks
-                                    </h2>
-                                    <span className="text-sm text-plum/60 bg-cream/50 px-3 py-1 rounded-full">
-                                        {activityCounts.picks} items saved
-                                    </span>
-                                </div>
-
-                                {isLoadingPicks ? (
-                                    <div className="text-center py-12">
-                                        <div className="w-12 h-12 border-4 border-rose border-t-transparent rounded-full animate-spin mx-auto"></div>
-                                    </div>
-                                ) : picks.length === 0 ? (
-                                    <div className="text-center py-12 bg-cream/30 rounded-xl">
-                                        <Heart size={48} className="text-plum/20 mx-auto mb-4" />
-                                        <p className="text-plum/60 mb-2">No picks yet</p>
-                                        <p className="text-sm text-plum/40 mb-6">
-                                            Browse the collection and save items you like
-                                        </p>
-                                        <button
-                                            onClick={() => navigate('/collections-hk')}
-                                            className="inline-flex items-center gap-2 px-6 py-3 bg-plum text-cream rounded-lg hover:bg-plum/90 hover:shadow-lg transition-all"
-                                        >
-                                            Browse Collection
-                                        </button>
-                                    </div>
-                                ) : (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                        {picks.map((item) => (
-                                            <div key={item._id} className="bg-cream/20 rounded-xl overflow-hidden border border-cream hover:shadow-lg transition-all group relative">
-                                                <div
-                                                    className="h-48 bg-cover bg-center group-hover:scale-105 transition-transform duration-300"
-                                                    style={{ backgroundImage: `url(${item.images[0]})` }}
-                                                />
-                                                <button
-                                                    onClick={() => handleRemovePick(item._id)}
-                                                    className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md hover:bg-rose hover:text-white transition-colors"
-                                                    title="Remove from picks"
-                                                >
-                                                    <Heart size={16} className="fill-rose text-rose" />
-                                                </button>
-                                                <div className="p-4">
-                                                    <div className="flex justify-between items-start mb-2">
-                                                        <div>
-                                                            <h3 className="font-semibold text-plum">
-                                                                {item.fullName ? `${item.fullName}'s ${item.category}` : item.category}
-                                                            </h3>
-                                                            <p className="text-sm text-plum/60">Size: {item.size}</p>
-                                                        </div>
-                                                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                                                            item.status === 'available'
-                                                                ? 'bg-green-100 text-green-700'
-                                                                : item.status === 'reserved'
-                                                                    ? 'bg-yellow-100 text-yellow-700'
-                                                                    : 'bg-gray-100 text-gray-700'
-                                                        }`}>
-                                                            {item.status}
-                                                        </span>
-                                                    </div>
-                                                    <p className="text-xs text-plum/40">
-                                                        Added: {new Date(item.createdAt).toLocaleDateString()}
-                                                    </p>
-                                                    {item.status === 'reserved' && (
-                                                        <div className="mt-2 text-xs text-amber-600 bg-amber-50 p-1 rounded flex items-center gap-1">
-                                                            <CheckCircle size={12} />
-                                                            Already reserved by someone
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        )}
-
-                        {activeTab === 'reservations' && (
-                            <div>
-                                <div className="flex justify-between items-center mb-6">
-                                    <h2 className="text-2xl font-kaldera text-plum flex items-center gap-2">
-                                        <CheckCircle className="text-green-600" size={24} />
-                                        My Reservations
-                                    </h2>
-                                    <span className="text-sm text-plum/60 bg-cream/50 px-3 py-1 rounded-full">
-                                        {activityCounts.reservations} confirmed
-                                    </span>
-                                </div>
-
-                                {isLoadingReservations ? (
-                                    <div className="text-center py-12">
-                                        <div className="w-12 h-12 border-4 border-green-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
-                                    </div>
-                                ) : reservations.length === 0 ? (
-                                    <div className="text-center py-12 bg-cream/30 rounded-xl">
-                                        <CheckCircle size={48} className="text-plum/20 mx-auto mb-4" />
-                                        <p className="text-plum/60 mb-2">No reservations yet</p>
-                                        <p className="text-sm text-plum/40 mb-6">
-                                            Your paid and confirmed reservations will appear here
-                                        </p>
-                                        <button
-                                            onClick={() => navigate('/collections-hk')}
-                                            className="inline-flex items-center gap-2 px-6 py-3 bg-plum text-cream rounded-lg hover:bg-plum/90 hover:shadow-lg transition-all"
-                                        >
-                                            Browse Collection
-                                        </button>
-                                    </div>
-                                ) : (
-                                    <div className="space-y-6">
-                                        {reservations.map((reservation) => (
-                                            <div key={reservation._id} className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl overflow-hidden border border-green-200 shadow-md hover:shadow-lg transition-all">
-                                                <div className="flex flex-col md:flex-row">
-                                                    {reservation.clothingId && reservation.clothingId.images && reservation.clothingId.images.length > 0 && (
-                                                        <div className="md:w-48 h-48 md:h-auto">
-                                                            <img
-                                                                src={reservation.clothingId.images[0]}
-                                                                alt={reservation.clothingId.category}
-                                                                className="w-full h-full object-cover"
-                                                                onError={(e) => {
-                                                                    e.currentTarget.src = 'https://via.placeholder.com/400x400?text=Image+Not+Found';
-                                                                }}
-                                                            />
-                                                        </div>
-                                                    )}
-                                                    <div className="flex-1 p-6">
-                                                        <div className="flex justify-between items-start mb-4">
-                                                            <div>
-                                                                <h3 className="text-xl font-bold text-plum">
-                                                                    {reservation.clothingId?.fullName
-                                                                        ? `${reservation.clothingId.fullName}'s ${reservation.clothingId.category}`
-                                                                        : 'Reserved Item'}
-                                                                </h3>
-                                                                <p className="text-plum/60">Size: {reservation.clothingId?.size || 'N/A'}</p>
-                                                            </div>
-                                                            <span className="bg-green-600 text-white px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
-                                                                <CheckCircle size={12} />
-                                                                PAID & CONFIRMED
-                                                            </span>
-                                                        </div>
-
-                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                                            <div className="bg-white/50 rounded-lg p-3">
-                                                                <p className="text-xs text-plum/40">Delivery</p>
-                                                                <p className="text-sm font-medium text-plum">{reservation.pickupDay || 'Not specified'}</p>
-                                                                <p className="text-xs text-plum/60">{reservation.pickupTime || ''}</p>
-                                                            </div>
-                                                            <div className="bg-white/50 rounded-lg p-3">
-                                                                <p className="text-xs text-plum/40">Return/Pickup</p>
-                                                                <p className="text-sm font-medium text-plum">{reservation.returnDay || 'Not specified'}</p>
-                                                                <p className="text-xs text-plum/60">{reservation.returnTime || ''}</p>
-                                                            </div>
-                                                        </div>
-
-                                                        <div className="flex justify-between items-center text-xs text-plum/40 border-t border-green-200 pt-3">
-                                                            <span>Reserved on: {new Date(reservation.createdAt).toLocaleDateString()}</span>
-                                                            <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full">
-                                                                {reservation.status}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        )}
-
-                        {activeTab === 'orders' && (
-                            <div>
-                                <div className="flex justify-between items-center mb-6">
-                                    <h2 className="text-2xl font-kaldera text-plum flex items-center gap-2">
-                                        <Package className="text-plum" size={24} />
-                                        My Orders
-                                    </h2>
-                                    <span className="text-sm text-plum/60 bg-cream/50 px-3 py-1 rounded-full">
-                                        {activityCounts.purchases} purchased
-                                    </span>
-                                </div>
-
-                                {isLoadingPurchases ? (
-                                    <div className="text-center py-12">
-                                        <div className="w-12 h-12 border-4 border-plum border-t-transparent rounded-full animate-spin mx-auto"></div>
-                                    </div>
-                                ) : purchases.length === 0 ? (
-                                    <div className="text-center py-12 bg-cream/30 rounded-xl">
-                                        <Package size={48} className="text-plum/20 mx-auto mb-4" />
-                                        <p className="text-plum/60 mb-2">No orders yet</p>
-                                        <p className="text-sm text-plum/40 mb-6">
-                                            Items you buy from brand shops will appear here with shipping updates
-                                        </p>
-                                        <button
-                                            onClick={() => navigate('/shop')}
-                                            className="inline-flex items-center gap-2 px-6 py-3 bg-plum text-cream rounded-lg hover:bg-plum/90 hover:shadow-lg transition-all"
-                                        >
-                                            Browse Shop
-                                        </button>
-                                    </div>
-                                ) : (
-                                    <div className="space-y-6">
-                                        {purchases.map((purchase) => {
-                                            const stageIndex = getDeliveryStageIndex(purchase);
-                                            const issue = hasDeliveryIssue(purchase);
-
-                                            return (
-                                                <div key={purchase.orderId} className="bg-white rounded-xl overflow-hidden border border-cream shadow-md hover:shadow-lg transition-all">
-                                                    <div className="flex flex-col md:flex-row">
-                                                        {purchase.itemImage && (
-                                                            <div className="md:w-40 h-40 md:h-auto shrink-0">
-                                                                <img
-                                                                    src={purchase.itemImage}
-                                                                    alt={purchase.itemName}
-                                                                    className="w-full h-full object-cover"
-                                                                    onError={(e) => {
-                                                                        e.currentTarget.src = 'https://via.placeholder.com/400x400?text=Image+Not+Found';
-                                                                    }}
-                                                                />
-                                                            </div>
-                                                        )}
-                                                        <div className="flex-1 p-6">
-                                                            <div className="flex justify-between items-start mb-1">
-                                                                <div>
-                                                                    <h3 className="text-lg font-bold text-plum">{purchase.itemName}</h3>
-                                                                    <p className="text-sm text-plum/60">
-                                                                        {purchase.brand ? `${purchase.brand} · ` : ''}Size: {purchase.size}
-                                                                    </p>
-                                                                </div>
-                                                                {purchase.price != null && (
-                                                                    <span className="text-sm font-semibold text-gold whitespace-nowrap">
-                                                                        {(purchase.currency || '').toUpperCase()} {Number(purchase.price).toLocaleString()}
-                                                                    </span>
-                                                                )}
-                                                            </div>
-                                                            <p className="text-xs text-plum/40 mb-5">
-                                                                Ordered on {formatOrderDate(purchase.purchasedAt)}
-                                                            </p>
-
-                                                            {/* Delivery Stepper */}
-                                                            {issue ? (
-                                                                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4 flex items-start gap-3">
-                                                                    <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
-                                                                    <div>
-                                                                        <p className="text-red-800 font-semibold text-sm">Delivery issue</p>
-                                                                        <p className="text-red-700 text-xs mt-1">
-                                                                            {purchase.trackingLastEvent || 'There was a problem with this shipment. We\'ll follow up with you shortly.'}
-                                                                        </p>
-                                                                    </div>
-                                                                </div>
-                                                            ) : (
-                                                                <div className="flex items-center mb-5">
-                                                                    {DELIVERY_STAGES.map((label, i) => {
-                                                                        const complete = i <= stageIndex;
-                                                                        const icons = [Package, Clock, Truck, PackageCheck];
-                                                                        const StageIcon = icons[i];
-                                                                        return (
-                                                                            <div key={label} className="flex items-center flex-1 last:flex-none">
-                                                                                <div className="flex flex-col items-center">
-                                                                                    <div className={`w-9 h-9 rounded-full flex items-center justify-center border-2 transition-colors ${
-                                                                                        complete
-                                                                                            ? 'bg-green-600 border-green-600 text-white'
-                                                                                            : 'bg-white border-cream text-plum/30'
-                                                                                    }`}>
-                                                                                        <StageIcon size={16} />
-                                                                                    </div>
-                                                                                    <span className={`mt-2 text-[11px] font-medium text-center leading-tight max-w-[70px] ${
-                                                                                        complete ? 'text-plum' : 'text-plum/40'
-                                                                                    }`}>
-                                                                                        {label}
-                                                                                    </span>
-                                                                                </div>
-                                                                                {i < DELIVERY_STAGES.length - 1 && (
-                                                                                    <div className={`flex-1 h-0.5 mx-1 mb-5 ${
-                                                                                        i < stageIndex ? 'bg-green-600' : 'bg-cream'
-                                                                                    }`}></div>
-                                                                                )}
-                                                                            </div>
-                                                                        );
-                                                                    })}
-                                                                </div>
-                                                            )}
-
-                                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                                                                <div className="bg-cream/40 rounded-lg p-3">
-                                                                    <p className="text-xs text-plum/40 mb-1">Tracking Number</p>
-                                                                    <p className="font-medium text-plum">
-                                                                        {purchase.trackingNumber || 'Not shipped yet'}
-                                                                    </p>
-                                                                    {purchase.carrier && (
-                                                                        <p className="text-xs text-plum/60 mt-0.5">{purchase.carrier}</p>
-                                                                    )}
-                                                                </div>
-                                                                <div className="bg-cream/40 rounded-lg p-3">
-                                                                    <p className="text-xs text-plum/40 mb-1 flex items-center gap-1">
-                                                                        <MapPin size={12} /> Latest Update
-                                                                    </p>
-                                                                    <p className="font-medium text-plum">
-                                                                        {purchase.trackingLastEvent || 'Waiting for shipment'}
-                                                                    </p>
-                                                                    {purchase.trackingLastEventTime && (
-                                                                        <p className="text-xs text-plum/60 mt-0.5">
-                                                                            {formatOrderDate(purchase.trackingLastEventTime)}
-                                                                        </p>
-                                                                    )}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                )}
-                            </div>
-                        )}
-
-                        {activeTab === 'settings' && (
-                            <div>
-                                <h2 className="text-2xl font-kaldera text-plum mb-6">Account Settings</h2>
-
-                                <div className="bg-cream/30 rounded-xl p-6">
-                                    <p className="text-plum">If you have an issue with your account please get in touch we will assist your issue within 24h.
-                                    </p>
-                                </div>
-                            </div>
-                        )}
+                            {!hasPhoneNumber() && (
+                                <p className="mt-4 flex items-center gap-2 text-sm text-[#C9614E]">
+                                    <AlertCircle size={16} />
+                                    Please add your phone number above to access these features.
+                                </p>
+                            )}
+                        </div>
                     </div>
                 </div>
             </main>

@@ -348,7 +348,7 @@ export function BrandDashboard() {
     return (
         <div className="font-sans">
             <Header />
-            <main className="min-h-screen bg-gradient-to-br from-cream to-amber-50 py-8">
+            <main className="min-h-screen bg-gradient-to-br from-cream to-amber-50 pt-28 md:pt-32 pb-8">
                 <div className="container mx-auto px-4 max-w-6xl">
 
                     {/* ── Brand header ────────────────────────────────────── */}

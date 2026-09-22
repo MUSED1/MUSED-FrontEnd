@@ -1,5 +1,6 @@
 // components/FifthDinner.tsx
 import { useState, useEffect } from 'react';
+import { ArrowLeft, ChevronLeft, ChevronRight, Download, X } from 'lucide-react';
 import { Header } from './Header';
 import { Footer } from './Footer';
 import { Link } from 'react-router-dom';
@@ -125,10 +126,10 @@ export function FifthDinner() {
         return (
             <div className="font-sans">
                 <Header />
-                <main className="min-h-screen bg-gradient-to-br from-cream to-amber-50 py-8">
+                <main className="min-h-screen bg-cream pt-28 md:pt-32 pb-8">
                     <div className="container mx-auto px-4 text-center py-20">
-                        <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gold mb-4"></div>
-                        <p className="text-plum text-xl">Loading images...</p>
+                        <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-2 border-plum-dark/20 border-t-plum-dark"></div>
+                        <p className="text-sm text-plum/50">Loading images…</p>
                     </div>
                 </main>
                 <Footer />
@@ -140,16 +141,15 @@ export function FifthDinner() {
         return (
             <div className="font-sans">
                 <Header />
-                <main className="min-h-screen bg-gradient-to-br from-cream to-amber-50 py-8">
+                <main className="min-h-screen bg-cream pt-28 md:pt-32 pb-8">
                     <div className="container mx-auto px-4 text-center py-20">
-                        <div className="text-red-600 text-4xl mb-4">⚠️</div>
-                        <h2 className="text-2xl font-bold text-plum mb-4">Error Loading Images</h2>
-                        <p className="text-plum/80 mb-6">{error}</p>
+                        <h2 className="mb-3 font-kaldera text-2xl text-plum-dark">Unable to load images</h2>
+                        <p className="mb-6 text-plum/60">{error}</p>
                         <button
                             onClick={fetchImages}
-                            className="bg-gold text-plum px-6 py-3 rounded-full hover:bg-plum hover:text-cream transition-all duration-300 font-semibold"
+                            className="rounded-full bg-plum-dark px-6 py-3 text-cream transition-colors hover:bg-plum-dark/90"
                         >
-                            Try Again
+                            Try again
                         </button>
                     </div>
                 </main>
@@ -161,14 +161,28 @@ export function FifthDinner() {
     return (
         <div className="font-sans">
             <Header />
-            <main className="min-h-screen bg-gradient-to-br from-cream to-amber-50 py-8">
-                <div className="container mx-auto px-4">
+
+            {/* Persistent floating back button — always reachable while scrolling the gallery */}
+            <Link
+                to="/events"
+                className="fixed bottom-6 left-4 z-40 flex h-11 w-11 items-center justify-center rounded-full bg-plum-dark text-cream shadow-lg transition-transform hover:scale-105 sm:bottom-8 sm:left-6"
+                aria-label="Back to Events"
+            >
+                <ArrowLeft size={18} />
+            </Link>
+            <main className="min-h-screen bg-cream pt-28 md:pt-32 pb-8">
+                <div className="container mx-auto max-w-6xl px-4">
                     {/* Header Section */}
-                    <div className="text-center mb-12">
-                        <h1 className="text-5xl md:text-6xl font-bold text-plum mb-6">
-                            Mused in <span className="text-gold">Far East</span>
+                    <div className="mb-12 text-center">
+                        <Link to="/events" className="mb-4 inline-flex items-center gap-1.5 text-sm text-plum/50 transition-colors hover:text-plum-dark">
+                            <ArrowLeft size={14} />
+                            Events
+                        </Link>
+                        <br />
+                        <h1 className="font-kaldera text-4xl text-plum-dark sm:text-5xl">
+                            Mused in the <span className="italic">Far East</span>
                         </h1>
-                        <p className="text-xl text-plum/80 max-w-2xl mx-auto">
+                        <p className="mx-auto mt-4 max-w-2xl text-plum/60">
                             Step inside our fifth Wear Something Borrowed Dinner event.
                             Browse through the gallery and download your favorite moments.
                         </p>
@@ -177,8 +191,7 @@ export function FifthDinner() {
                     {/* Empty State */}
                     {visibleImages.length === 0 ? (
                         <div className="text-center py-20">
-                            <div className="text-5xl mb-4">📷</div>
-                            <h3 className="text-2xl font-bold text-plum mb-2">No Images Yet</h3>
+                            <h3 className="mb-2 font-kaldera text-2xl text-plum-dark">No images yet</h3>
                             <p className="text-plum/80 mb-6">Check back soon for photos from our fifth dinner event!</p>
                         </div>
                     ) : (
@@ -188,18 +201,18 @@ export function FifthDinner() {
                                 {images.filter(img => !brokenIds.has(img._id)).map((image, index) => (
                                     <div
                                         key={image._id}
-                                        className="group relative bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-xl"
+                                        className="group relative cursor-pointer overflow-hidden rounded-2xl bg-white shadow-sm transition-shadow duration-300 hover:shadow-lg"
                                         onClick={() => setSelectedImage(image)}
                                     >
                                         <img
                                             src={image.cloudinaryUrl}
                                             alt={`Photo ${index + 1}`}
-                                            className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-110"
+                                            className="h-64 w-full object-cover transition-transform duration-500 group-hover:scale-105"
                                             loading="lazy"
                                             onError={() => handleImageError(image._id)}
                                         />
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center p-4">
-                                            <span className="text-cream font-semibold text-lg">
+                                        <div className="absolute inset-0 flex items-end bg-gradient-to-t from-plum-dark/70 to-transparent p-3 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                                            <span className="text-sm text-cream">
                                                 Photo {index + 1}
                                             </span>
                                         </div>
@@ -210,15 +223,13 @@ export function FifthDinner() {
                     )}
 
                     {/* Back to Gallery Button */}
-                    <div className="text-center pb-8">
+                    <div className="pb-8 text-center">
                         <Link
                             to="/events"
-                            className="inline-flex items-center gap-2 bg-plum text-cream px-8 py-3 rounded-full hover:bg-gold hover:text-plum transition-all duration-300 font-semibold"
+                            className="inline-flex items-center gap-2 rounded-full border border-plum-dark/15 px-6 py-2.5 text-sm text-plum-dark transition-colors hover:bg-plum-dark/5"
                         >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                            </svg>
-                            Back to Gallery
+                            <ArrowLeft size={15} />
+                            Back to Events
                         </Link>
                     </div>
 
@@ -228,9 +239,10 @@ export function FifthDinner() {
                             <div className="relative max-w-4xl max-h-full">
                                 <button
                                     onClick={() => setSelectedImage(null)}
-                                    className="absolute -top-12 right-0 text-cream hover:text-gold transition-colors duration-300 text-2xl font-bold"
+                                    className="absolute -top-12 right-0 flex items-center gap-1.5 text-sm text-cream/80 transition-colors hover:text-cream"
                                 >
-                                    ✕ Close
+                                    <X size={16} />
+                                    Close
                                 </button>
 
                                 <img
@@ -245,11 +257,9 @@ export function FifthDinner() {
                                             const currentIndex = visibleImages.findIndex(img => img._id === selectedImage._id);
                                             downloadImage(selectedImage, currentIndex);
                                         }}
-                                        className="bg-gold text-plum px-6 py-2 rounded-full hover:bg-plum hover:text-cream transition-all duration-300 font-semibold flex items-center gap-2"
+                                        className="flex items-center gap-2 rounded-full bg-cream px-5 py-2 text-sm text-plum-dark transition-colors hover:bg-white"
                                     >
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                        </svg>
+                                        <Download size={15} />
                                         Download
                                     </button>
 
@@ -258,9 +268,10 @@ export function FifthDinner() {
                                             const prevImage = getPreviousImage();
                                             if (prevImage) setSelectedImage(prevImage);
                                         }}
-                                        className="bg-plum text-cream px-4 py-2 rounded-full hover:bg-gold transition-all duration-300 font-semibold"
+                                        className="rounded-full bg-white/10 p-2.5 text-cream transition-colors hover:bg-white/20"
+                                        aria-label="Previous"
                                     >
-                                        ← Previous
+                                        <ChevronLeft size={18} />
                                     </button>
 
                                     <button
@@ -268,9 +279,10 @@ export function FifthDinner() {
                                             const nextImage = getNextImage();
                                             if (nextImage) setSelectedImage(nextImage);
                                         }}
-                                        className="bg-plum text-cream px-4 py-2 rounded-full hover:bg-gold transition-all duration-300 font-semibold"
+                                        className="rounded-full bg-white/10 p-2.5 text-cream transition-colors hover:bg-white/20"
+                                        aria-label="Next"
                                     >
-                                        Next →
+                                        <ChevronRight size={18} />
                                     </button>
                                 </div>
 

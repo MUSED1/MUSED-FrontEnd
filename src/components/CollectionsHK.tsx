@@ -4,7 +4,7 @@ import { Header } from './Header';
 import { Footer } from './Footer';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
-import { Heart, ChevronLeft, ChevronRight, X, User, Mail, Phone, Calendar, MapPin, CreditCard, Loader2, Shield, Eye, ShoppingBag, Tag } from 'lucide-react';
+import { Heart, ChevronLeft, ChevronRight, X, User, Mail, Phone, Calendar, MapPin, CreditCard, Loader2, Shield, Eye, ShoppingBag, Tag, Search, SlidersHorizontal } from 'lucide-react';
 import axios from 'axios';
 
 interface ClothingItem {
@@ -131,6 +131,9 @@ export function CollectionsHK() {
     // Filter states
     const [selectedCategory, setSelectedCategory] = useState<string>('all');
     const [selectedSize, setSelectedSize] = useState<string>('all');
+    const [searchQuery, setSearchQuery] = useState<string>('');
+    const [filtersOpen, setFiltersOpen] = useState(false);
+    const activeFilterCount = (selectedCategory !== 'all' ? 1 : 0) + (selectedSize !== 'all' ? 1 : 0);
 
     // ✅ NEW: Active tab — 'rent' | 'buy'
     const [activeTab, setActiveTab] = useState<'rent' | 'buy'>('rent');
@@ -186,7 +189,7 @@ export function CollectionsHK() {
 
     useEffect(() => {
         filterItems();
-    }, [allItems, selectedCategory, selectedSize]);
+    }, [allItems, selectedCategory, selectedSize, searchQuery]);
 
     // Check for successful payment return
     useEffect(() => {
@@ -271,10 +274,14 @@ export function CollectionsHK() {
     };
 
     const filterItems = () => {
+        const query = searchQuery.trim().toLowerCase();
         const filtered = allItems.filter(item => {
             const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
             const matchesSize = selectedSize === 'all' || item.size === selectedSize;
-            return matchesCategory && matchesSize;
+            const matchesSearch = !query ||
+                item.fullName?.toLowerCase().includes(query) ||
+                item.category?.toLowerCase().includes(query);
+            return matchesCategory && matchesSize && matchesSearch;
         });
 
         const musedItems = filtered.filter(item => item.fullName.trim().toUpperCase() === 'MUSED');
@@ -461,6 +468,17 @@ export function CollectionsHK() {
 
     const getFirstName = (fullName: string) => fullName?.split(' ')[0] || fullName;
 
+    // RIIDE (buy) items filtered by the same search query
+    const filteredRiideItems = riideItems.filter(item => {
+        const query = searchQuery.trim().toLowerCase();
+        const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
+        const matchesSize = selectedSize === 'all' || item.size === selectedSize;
+        const matchesSearch = !query ||
+            item.productName.toLowerCase().includes(query) ||
+            item.category.toLowerCase().includes(query);
+        return matchesCategory && matchesSize && matchesSearch;
+    });
+
     // Pagination — rent tab only
     const totalPages = Math.ceil(groupedFilteredItems.length / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -476,12 +494,10 @@ export function CollectionsHK() {
         return (
             <div className="font-sans">
                 <Header />
-                <main className="min-h-screen bg-gradient-to-br from-cream to-amber-50 py-8">
+                <main className="min-h-screen bg-white pt-28 md:pt-32 pb-8">
                     <div className="container mx-auto px-4 max-w-7xl text-center">
-                        <div className="bg-white rounded-2xl shadow-lg p-12">
-                            <div className="w-16 h-16 border-4 border-rose border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                            <p className="text-plum">Loading HK collection...</p>
-                        </div>
+                        <div className="mx-auto h-10 w-10 animate-spin rounded-full border-2 border-plum-dark/20 border-t-plum-dark"></div>
+                        <p className="mt-4 text-sm text-plum/50">Loading HK collection…</p>
                     </div>
                 </main>
                 <Footer />
@@ -496,24 +512,24 @@ export function CollectionsHK() {
     return (
         <div className="font-sans">
             <Header />
-            <main className="min-h-screen bg-gradient-to-br from-cream to-amber-50 py-12">
+            <main className="min-h-screen bg-white pt-28 md:pt-32 pb-12">
                 <div className="container mx-auto px-4 max-w-7xl">
                     {/* Payment Processing Overlay */}
                     {(processingPayment || processingBuy) && (
-                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fadeIn">
-                            <div className="bg-white rounded-2xl p-8 max-w-md mx-4 transform animate-scaleIn">
+                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-plum-dark/50 backdrop-blur-sm animate-fadeIn">
+                            <div className="mx-4 w-full max-w-md transform rounded-[1.75rem] bg-white p-8 animate-scaleIn">
                                 <div className="text-center">
-                                    <CreditCard className="w-16 h-16 text-plum mx-auto mb-4 animate-pulse" />
-                                    <h3 className="text-2xl font-bold text-plum mb-4">Processing Payment</h3>
-                                    <p className="text-gray-600 mb-4">
+                                    <CreditCard className="mx-auto mb-4 h-14 w-14 animate-pulse text-plum-dark" />
+                                    <h3 className="mb-3 font-kaldera text-2xl text-plum-dark">Processing payment</h3>
+                                    <p className="mb-4 text-plum/60">
                                         You are being redirected to secure payment. Please complete the payment to confirm your order.
                                     </p>
-                                    <div className="flex items-center justify-center space-x-2 text-sm text-gray-500 mb-4">
+                                    <div className="mb-4 flex items-center justify-center gap-2 text-sm text-plum/40">
                                         <Shield size={16} />
                                         <span>Secure payment by Stripe</span>
                                     </div>
-                                    <Loader2 className="w-8 h-8 text-rose animate-spin mx-auto" />
-                                    <p className="text-sm text-gray-500 mt-4">
+                                    <Loader2 className="mx-auto h-7 w-7 animate-spin text-plum-dark" />
+                                    <p className="mt-4 text-sm text-plum/40">
                                         Don't close this window. You'll be redirected back after payment.
                                     </p>
                                 </div>
@@ -523,15 +539,15 @@ export function CollectionsHK() {
 
                     {/* Payment Error Alert */}
                     {paymentError && (
-                        <div className="fixed top-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl z-50 animate-fadeIn max-w-md">
-                            <div className="flex items-center space-x-2">
-                                <X className="w-5 h-5" />
-                                <span className="font-semibold">Payment Error</span>
+                        <div className="fixed top-4 right-4 z-50 max-w-md rounded-2xl border border-[#C9614E]/25 bg-white p-4 shadow-lg animate-fadeIn">
+                            <div className="flex items-center gap-2 text-[#C9614E]">
+                                <X className="h-4 w-4" />
+                                <span className="font-medium">Payment error</span>
                             </div>
-                            <p className="text-sm mt-1">{paymentError}</p>
+                            <p className="mt-1 text-sm text-plum/60">{paymentError}</p>
                             <button
                                 onClick={() => setPaymentError(null)}
-                                className="text-red-600 hover:text-red-800 text-sm mt-2 font-medium"
+                                className="mt-2 text-sm text-[#C9614E] hover:opacity-70"
                             >
                                 Dismiss
                             </button>
@@ -539,38 +555,75 @@ export function CollectionsHK() {
                     )}
 
                     {/* Header */}
-                    <div className="text-center mb-10">
-                        <h1 className="text-4xl md:text-5xl font-kaldera text-plum mb-4">
+                    <div className="mb-8 text-center">
+                        <span className="text-xs uppercase tracking-label text-plum/40">MUSED 852</span>
+                        <h1 className="mt-1 font-kaldera text-4xl text-plum-dark md:text-5xl">
                             HK Collection
                         </h1>
-                        <p className="text-lg text-plum/80 max-w-2xl mx-auto">
+                        <p className="mx-auto mt-3 max-w-2xl text-plum/60">
                             Discover our HK-inspired collection. Rent an outfit or shop RIIDE pieces to keep.
                         </p>
                     </div>
 
+                    {/* Search */}
+                    <div className="mx-auto mb-8 flex max-w-md items-center gap-2">
+                        <div className="flex flex-1 items-center gap-3 rounded-full border border-plum-dark/10 bg-white px-5 py-3 shadow-sm transition-colors focus-within:border-plum-dark/30">
+                            <Search size={17} className="shrink-0 text-plum/40" />
+                            <input
+                                type="text"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder="Search by name or category…"
+                                className="w-full bg-transparent text-sm text-plum-dark placeholder-plum/40 focus:outline-none"
+                            />
+                            {searchQuery && (
+                                <button
+                                    onClick={() => setSearchQuery('')}
+                                    className="shrink-0 text-plum/40 transition-colors hover:text-plum-dark"
+                                    aria-label="Clear search"
+                                >
+                                    <X size={15} />
+                                </button>
+                            )}
+                        </div>
+
+                        <button
+                            onClick={() => setFiltersOpen(true)}
+                            className="relative flex h-[46px] w-[46px] shrink-0 items-center justify-center rounded-full border border-plum-dark/10 bg-white text-plum-dark shadow-sm transition-colors hover:bg-plum-dark/5"
+                            aria-label="Filters"
+                        >
+                            <SlidersHorizontal size={17} />
+                            {activeFilterCount > 0 && (
+                                <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-plum-dark text-[10px] text-cream">
+                                    {activeFilterCount}
+                                </span>
+                            )}
+                        </button>
+                    </div>
+
                     {/* ✅ Tab switcher */}
-                    <div className="flex justify-center mb-8">
-                        <div className="bg-white rounded-2xl shadow-md p-1.5 flex gap-1.5">
+                    <div className="mb-8 flex justify-center">
+                        <div className="inline-flex items-center gap-1 rounded-full bg-plum-dark/6 p-1">
                             <button
                                 onClick={() => setActiveTab('rent')}
-                                className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-300 ${
+                                className={`flex items-center gap-2 rounded-full px-6 py-2.5 text-sm transition-all ${
                                     activeTab === 'rent'
-                                        ? 'bg-gradient-to-r from-plum to-rose text-cream shadow-lg'
-                                        : 'text-plum hover:bg-cream'
+                                        ? 'bg-white font-medium text-plum-dark shadow-sm'
+                                        : 'font-normal text-plum/50 hover:text-plum-dark'
                                 }`}
                             >
-                                <Calendar size={16} />
+                                <Calendar size={15} />
                                 Rent
                             </button>
                             <button
                                 onClick={() => setActiveTab('buy')}
-                                className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-300 ${
+                                className={`flex items-center gap-2 rounded-full px-6 py-2.5 text-sm transition-all ${
                                     activeTab === 'buy'
-                                        ? 'bg-gradient-to-r from-plum to-rose text-cream shadow-lg'
-                                        : 'text-plum hover:bg-cream'
+                                        ? 'bg-white font-medium text-plum-dark shadow-sm'
+                                        : 'font-normal text-plum/50 hover:text-plum-dark'
                                 }`}
                             >
-                                <ShoppingBag size={16} />
+                                <ShoppingBag size={15} />
                                 Shop RIIDE
                             </button>
                         </div>
@@ -579,45 +632,12 @@ export function CollectionsHK() {
                     {/* ─────────────────────────────── RENT TAB ─────────────────────────────── */}
                     {activeTab === 'rent' && (
                         <>
-                            {/* Filters */}
-                            <div className="bg-white rounded-xl shadow-md p-6 mb-8">
-                                <div className="grid md:grid-cols-2 gap-6">
-                                    <div className="filter-container">
-                                        <label className="filter-label">Category</label>
-                                        <select
-                                            value={selectedCategory}
-                                            onChange={(e) => setSelectedCategory(e.target.value)}
-                                            className="filter-select"
-                                        >
-                                            {categories.map(cat => (
-                                                <option key={cat} value={cat}>
-                                                    {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                    <div className="filter-container">
-                                        <label className="filter-label">Size</label>
-                                        <select
-                                            value={selectedSize}
-                                            onChange={(e) => setSelectedSize(e.target.value)}
-                                            className="filter-select"
-                                        >
-                                            {sizes.map(size => (
-                                                <option key={size} value={size}>
-                                                    {size === 'all' ? 'All Sizes' : size}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
 
                             {/* Error Message */}
                             {error && (
-                                <div className="mb-6 p-4 bg-red-100 text-red-800 rounded-xl border border-red-300 flex justify-between items-center">
+                                <div className="mb-6 flex items-center justify-between rounded-2xl border border-[#C9614E]/25 bg-[#C9614E]/8 p-4 text-[#C9614E]">
                                     <span>{error}</span>
-                                    <button onClick={() => setError('')} className="text-red-600 hover:text-red-800">
+                                    <button onClick={() => setError('')} className="text-[#C9614E] hover:opacity-70">
                                         <X size={16} />
                                     </button>
                                 </div>
@@ -633,14 +653,14 @@ export function CollectionsHK() {
                                         {currentItems.map((item) => (
                                             <div
                                                 key={item._id}
-                                                className="bg-white rounded-2xl shadow-md overflow-hidden cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                                                className="group cursor-pointer"
                                                 onClick={() => setSelectedOutfit(item)}
                                             >
-                                                <div className="relative">
+                                                <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl bg-plum-dark/5">
                                                     <img
                                                         src={getImageUrl(item, 0)}
                                                         alt={item.fullName}
-                                                        className="w-full h-64 object-cover"
+                                                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                                                         onError={(e) => {
                                                             e.currentTarget.src = 'https://via.placeholder.com/400x400?text=Image+Not+Found';
                                                         }}
@@ -652,9 +672,9 @@ export function CollectionsHK() {
                                                             e.stopPropagation();
                                                             setSelectedImage(getImageUrl(item, 0));
                                                         }}
-                                                        className="absolute top-3 left-3 p-3 rounded-full bg-white/90 text-plum hover:bg-white transition-all transform hover:scale-110"
+                                                        className="absolute left-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-plum-dark backdrop-blur-sm transition-colors hover:bg-white"
                                                     >
-                                                        <Eye size={20} />
+                                                        <Eye size={16} />
                                                     </button>
 
                                                     {/* Pick Button */}
@@ -663,43 +683,37 @@ export function CollectionsHK() {
                                                             e.stopPropagation();
                                                             togglePick(item._id);
                                                         }}
-                                                        className={`absolute top-3 right-3 p-3 rounded-full transition-all transform hover:scale-110 ${
-                                                            userPicks[item._id]
-                                                                ? 'bg-rose text-white shadow-lg'
-                                                                : 'bg-white/90 text-plum hover:bg-white'
-                                                        }`}
+                                                        className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-plum-dark backdrop-blur-sm transition-colors hover:bg-white"
                                                     >
-                                                        <Heart size={20} className={userPicks[item._id] ? 'fill-white' : ''} />
+                                                        <Heart size={16} className={userPicks[item._id] ? 'fill-burgundy text-burgundy' : ''} />
                                                     </button>
 
                                                     {item.images.length > 1 && (
-                                                        <div className="absolute bottom-3 left-3 bg-black/50 text-white text-xs px-2 py-1 rounded-full">
+                                                        <div className="absolute bottom-3 left-3 rounded-full bg-white/90 px-2.5 py-1 text-xs text-plum-dark backdrop-blur-sm">
                                                             1/{item.images.length}
                                                         </div>
                                                     )}
 
                                                     {item.count > 1 && (
-                                                        <div className="absolute bottom-3 right-3 bg-plum text-white text-xs font-semibold px-2 py-1 rounded-full">
+                                                        <div className="absolute bottom-3 right-3 rounded-full bg-white/90 px-2.5 py-1 text-xs text-plum-dark backdrop-blur-sm">
                                                             ×{item.count} available
                                                         </div>
                                                     )}
                                                 </div>
 
-                                                <div className="p-4">
-                                                    <div className="flex justify-between items-start mb-2">
-                                                        <h3 className="font-semibold text-plum">
+                                                <div className="pt-3">
+                                                    <div className="flex items-start justify-between gap-2">
+                                                        <h3 className="font-kaldera text-base text-plum-dark">
                                                             {getFirstName(item.fullName)}'s {item.category}
                                                         </h3>
-                                                        <span className="text-sm text-plum/60">Size {item.size}</span>
+                                                        <span className="shrink-0 text-xs text-plum/50">Size {item.size}</span>
                                                     </div>
 
                                                     {userPicks[item._id] && (
-                                                        <div className="mt-2">
-                                                            <span className="text-xs text-rose flex items-center gap-1">
-                                                                <Heart size={12} className="fill-rose" />
-                                                                Picked
-                                                            </span>
-                                                        </div>
+                                                        <span className="mt-1 flex items-center gap-1 text-xs text-burgundy">
+                                                            <Heart size={11} className="fill-burgundy" />
+                                                            Picked
+                                                        </span>
                                                     )}
                                                 </div>
                                             </div>
@@ -712,14 +726,14 @@ export function CollectionsHK() {
                                             <button
                                                 onClick={() => goToPage(currentPage - 1)}
                                                 disabled={currentPage === 1}
-                                                className={`p-2 rounded-lg transition-colors ${
-                                                    currentPage === 1 ? 'text-plum/20 cursor-not-allowed' : 'text-plum hover:bg-cream'
+                                                className={`flex h-9 w-9 items-center justify-center rounded-full transition-colors ${
+                                                    currentPage === 1 ? 'text-plum-dark/20' : 'text-plum-dark hover:bg-plum-dark/5'
                                                 }`}
                                             >
-                                                <ChevronLeft size={24} />
+                                                <ChevronLeft size={20} />
                                             </button>
 
-                                            <div className="flex items-center gap-2">
+                                            <div className="flex items-center gap-1.5">
                                                 {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                                                     let pageNum;
                                                     if (totalPages <= 5) {
@@ -735,8 +749,8 @@ export function CollectionsHK() {
                                                         <button
                                                             key={i}
                                                             onClick={() => goToPage(pageNum)}
-                                                            className={`w-10 h-10 rounded-lg transition-colors ${
-                                                                currentPage === pageNum ? 'bg-rose text-white' : 'hover:bg-cream text-plum'
+                                                            className={`h-9 w-9 rounded-full text-sm transition-colors ${
+                                                                currentPage === pageNum ? 'bg-plum-dark text-cream' : 'text-plum-dark hover:bg-plum-dark/5'
                                                             }`}
                                                         >
                                                             {pageNum}
@@ -748,11 +762,11 @@ export function CollectionsHK() {
                                             <button
                                                 onClick={() => goToPage(currentPage + 1)}
                                                 disabled={currentPage === totalPages}
-                                                className={`p-2 rounded-lg transition-colors ${
-                                                    currentPage === totalPages ? 'text-plum/20 cursor-not-allowed' : 'text-plum hover:bg-cream'
+                                                className={`flex h-9 w-9 items-center justify-center rounded-full transition-colors ${
+                                                    currentPage === totalPages ? 'text-plum-dark/20' : 'text-plum-dark hover:bg-plum-dark/5'
                                                 }`}
                                             >
-                                                <ChevronRight size={24} />
+                                                <ChevronRight size={20} />
                                             </button>
                                         </div>
                                     )}
@@ -764,32 +778,37 @@ export function CollectionsHK() {
                     {/* ─────────────────────────────── BUY TAB (RIIDE) ─────────────────────────────── */}
                     {activeTab === 'buy' && (
                         <div>
-                            <div className="text-center mb-8">
-                                <p className="text-plum/70 max-w-xl mx-auto">
-                                    This item is collaboration with RIIDE. Buy it & get your FREE ticket to MUSED. You can specify size (XS - S - M - L - XL) & We will hand deliver it to you. Or come to the store & Pick it your self xx
+                            <div className="mb-8 text-center">
+                                <p className="mx-auto max-w-xl text-plum/60">
+                                    This item is a collaboration with RIIDE. Buy it and get your free ticket to MUSED — pick your size and we'll hand-deliver it, or collect it in store.
                                 </p>
                             </div>
 
-                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                                {riideItems.map((item, idx) => (
+                            {filteredRiideItems.length === 0 ? (
+                                <div className="py-16 text-center text-plum/50">
+                                    <p>No RIIDE items match your search.</p>
+                                </div>
+                            ) : (
+                            <div className="grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-3 lg:grid-cols-4">
+                                {filteredRiideItems.map((item, idx) => (
                                     <div
                                         key={idx}
-                                        className="bg-white rounded-2xl shadow-md overflow-hidden cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                                        className="group cursor-pointer"
                                         onClick={() => setSelectedBuyItem(item)}
                                     >
-                                        <div className="relative">
+                                        <div className="relative aspect-[3/4] w-full overflow-hidden rounded-2xl bg-plum-dark/5">
                                             {item.image ? (
                                                 <img
                                                     src={item.image}
                                                     alt={item.productName}
-                                                    className="w-full h-64 object-cover"
+                                                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                                                     onError={(e) => {
                                                         e.currentTarget.src = 'https://via.placeholder.com/400x400?text=RIIDE';
                                                     }}
                                                 />
                                             ) : (
-                                                <div className="w-full h-64 bg-gradient-to-br from-cream to-amber-100 flex items-center justify-center">
-                                                    <ShoppingBag size={48} className="text-plum/30" />
+                                                <div className="flex h-full w-full items-center justify-center">
+                                                    <ShoppingBag size={40} className="text-plum-dark/20" />
                                                 </div>
                                             )}
 
@@ -799,9 +818,9 @@ export function CollectionsHK() {
                                                     e.stopPropagation();
                                                     if (item.image) setSelectedImage(item.image);
                                                 }}
-                                                className="absolute top-3 left-3 p-3 rounded-full bg-white/90 text-plum hover:bg-white transition-all transform hover:scale-110"
+                                                className="absolute left-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-plum-dark backdrop-blur-sm transition-colors hover:bg-white"
                                             >
-                                                <Eye size={20} />
+                                                <Eye size={16} />
                                             </button>
 
                                             {/* Heart (Pick) Button */}
@@ -810,56 +829,127 @@ export function CollectionsHK() {
                                                     e.stopPropagation();
                                                     togglePick(item.dbId);
                                                 }}
-                                                className={`absolute top-3 right-3 p-3 rounded-full transition-all transform hover:scale-110 ${
-                                                    userPicks[item.dbId]
-                                                        ? 'bg-rose text-white shadow-lg'
-                                                        : 'bg-white/90 text-plum hover:bg-white'
-                                                }`}
+                                                className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-plum-dark backdrop-blur-sm transition-colors hover:bg-white"
                                             >
-                                                <Heart size={20} className={userPicks[item.dbId] ? 'fill-white' : ''} />
+                                                <Heart size={16} className={userPicks[item.dbId] ? 'fill-burgundy text-burgundy' : ''} />
                                             </button>
                                         </div>
 
-                                        <div className="p-4">
-                                            <h3 className="font-semibold text-plum text-sm leading-tight mb-1">
+                                        <div className="pt-3">
+                                            <h3 className="font-kaldera text-sm leading-tight text-plum-dark">
                                                 {item.productName}
                                             </h3>
-                                            <div className="flex items-center justify-between mt-1">
-                                                <div className="flex items-center gap-1 text-plum font-bold text-sm">
-                                                    <Tag size={12} className="text-rose" />
+                                            <div className="mt-1 flex items-center justify-between">
+                                                <div className="flex items-center gap-1 text-sm text-plum-dark">
+                                                    <Tag size={12} className="text-[#C9A96E]" />
                                                     HKD {item.price.toLocaleString()}
                                                 </div>
-                                                <span className="text-xs text-plum/60">{item.category} · {item.size}</span>
+                                                <span className="text-xs text-plum/50">{item.category} · {item.size}</span>
                                             </div>
                                             {userPicks[item.dbId] && (
-                                                <div className="mt-2">
-                                                    <span className="text-xs text-rose flex items-center gap-1">
-                                                        <Heart size={12} className="fill-rose" />
-                                                        Picked
-                                                    </span>
-                                                </div>
+                                                <span className="mt-1 flex items-center gap-1 text-xs text-burgundy">
+                                                    <Heart size={11} className="fill-burgundy" />
+                                                    Picked
+                                                </span>
                                             )}
                                         </div>
                                     </div>
                                 ))}
                             </div>
+                            )}
                         </div>
                     )}
                 </div>
             </main>
             <Footer />
 
+            {/* Filters Modal */}
+            {filtersOpen && (
+                <div
+                    className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-md animate-overlayFadeIn sm:items-center sm:p-4"
+                    onClick={() => setFiltersOpen(false)}
+                >
+                    <div
+                        className="max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-t-[1.75rem] bg-white p-6 animate-sheetIn sm:rounded-[1.75rem] sm:p-8"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="mb-6 flex items-center justify-between">
+                            <h3 className="font-kaldera text-2xl text-plum-dark">Filters</h3>
+                            <button
+                                onClick={() => setFiltersOpen(false)}
+                                className="flex h-9 w-9 items-center justify-center rounded-full text-plum-dark transition-colors hover:bg-plum-dark/5"
+                                aria-label="Close"
+                            >
+                                <X size={18} />
+                            </button>
+                        </div>
+
+                        <p className="mb-2 text-xs uppercase tracking-label text-plum/40">Category</p>
+                        <div className="mb-6 flex flex-wrap gap-2">
+                            {categories.map(cat => (
+                                <button
+                                    key={cat}
+                                    onClick={() => setSelectedCategory(cat)}
+                                    className={`rounded-full border px-4 py-2 text-sm transition-colors ${
+                                        selectedCategory === cat
+                                            ? 'border-plum-dark bg-plum-dark text-cream'
+                                            : 'border-plum-dark/15 text-plum-dark hover:border-plum-dark/30 hover:bg-plum-dark/5'
+                                    }`}
+                                >
+                                    {cat === 'all' ? 'Everything' : cat}
+                                </button>
+                            ))}
+                        </div>
+
+                        <p className="mb-2 text-xs uppercase tracking-label text-plum/40">Size</p>
+                        <div className="mb-8 flex flex-wrap gap-2">
+                            {sizes.map(size => (
+                                <button
+                                    key={size}
+                                    onClick={() => setSelectedSize(size)}
+                                    className={`rounded-full border px-3.5 py-1.5 text-xs transition-colors ${
+                                        selectedSize === size
+                                            ? 'border-plum-dark bg-plum-dark/5 text-plum-dark'
+                                            : 'border-plum-dark/15 text-plum/50 hover:border-plum-dark/30'
+                                    }`}
+                                >
+                                    {size === 'all' ? 'All sizes' : size}
+                                </button>
+                            ))}
+                        </div>
+
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => {
+                                    setSelectedCategory('all');
+                                    setSelectedSize('all');
+                                }}
+                                className="flex-1 rounded-full border border-plum-dark/15 py-3 text-sm text-plum-dark transition-colors hover:bg-plum-dark/5"
+                            >
+                                Clear all
+                            </button>
+                            <button
+                                onClick={() => setFiltersOpen(false)}
+                                className="flex-1 rounded-full bg-plum-dark py-3 text-sm text-cream transition-colors hover:bg-plum-dark/90"
+                            >
+                                Show results
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Image Preview Modal */}
             {selectedImage && (
                 <div
-                    className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 p-4"
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-plum-dark/90 p-4"
                     onClick={() => setSelectedImage(null)}
                 >
                     <div className="relative max-w-5xl max-h-full">
                         <img
                             src={selectedImage}
                             alt="Preview"
-                            className="max-w-full max-h-[90vh] object-contain rounded-lg"
+                            className="max-w-full max-h-[90vh] object-contain rounded-2xl"
                             onError={(e) => {
                                 e.currentTarget.src = 'https://via.placeholder.com/800x800?text=Image+Not+Found';
                             }}
@@ -869,9 +959,9 @@ export function CollectionsHK() {
                                 e.stopPropagation();
                                 setSelectedImage(null);
                             }}
-                            className="absolute top-4 right-4 text-white bg-black/50 rounded-full p-2 hover:bg-black/75 transition-all"
+                            className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-plum-dark transition-colors hover:bg-white"
                         >
-                            <X size={24} />
+                            <X size={20} />
                         </button>
                     </div>
                 </div>
@@ -879,30 +969,31 @@ export function CollectionsHK() {
 
             {/* RENT — Reservation Modal */}
             {selectedOutfit && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 animate-fadeIn">
-                    <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto transform animate-scaleIn">
-                        <div className="relative">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-plum-dark/50 p-4 backdrop-blur-sm animate-fadeIn">
+                    <div className="max-h-[90vh] w-full max-w-2xl transform overflow-y-auto rounded-[1.75rem] bg-white animate-scaleIn">
+                        <div className="sticky top-0 z-10">
                             <img
                                 src={getImageUrl(selectedOutfit, 0)}
                                 alt={selectedOutfit.fullName}
-                                className="w-full h-64 object-cover"
+                                className="h-64 w-full object-cover"
                                 onError={(e) => {
                                     e.currentTarget.src = 'https://via.placeholder.com/400x400?text=Image+Not+Found';
                                 }}
                             />
                             <button
                                 onClick={() => setSelectedOutfit(null)}
-                                className="absolute top-4 right-4 bg-white rounded-full p-2 hover:bg-gray-100 transition-all duration-300 transform hover:scale-110 hover:rotate-90 shadow-lg"
+                                className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-plum-dark backdrop-blur-sm transition-colors hover:bg-white"
+                                aria-label="Close"
                             >
-                                <X size={24} className="text-plum" />
+                                <X size={18} />
                             </button>
                         </div>
 
                         <div className="p-8">
-                            <h2 className="text-3xl font-bold text-plum mb-3">
+                            <h2 className="mb-2 font-kaldera text-3xl text-plum-dark">
                                 {selectedOutfit.fullName.split(' ')[0]}'s {selectedOutfit.category}
                             </h2>
-                            <p className="text-gray-600 text-lg mb-6">Size: {selectedOutfit.size}</p>
+                            <p className="mb-6 text-plum/50">Size: {selectedOutfit.size}</p>
 
                             <ReservationForm
                                 outfit={selectedOutfit}
@@ -920,32 +1011,33 @@ export function CollectionsHK() {
 
             {/* ✅ BUY — Purchase Modal */}
             {selectedBuyItem && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 animate-fadeIn">
-                    <div className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto transform animate-scaleIn">
-                        <div className="relative">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-plum-dark/50 p-4 backdrop-blur-sm animate-fadeIn">
+                    <div className="max-h-[90vh] w-full max-w-lg transform overflow-y-auto rounded-[1.75rem] bg-white animate-scaleIn">
+                        <div className="sticky top-0 z-10">
                             {selectedBuyItem.image ? (
                                 <img
                                     src={selectedBuyItem.image}
                                     alt={selectedBuyItem.productName}
-                                    className="w-full h-52 object-cover"
+                                    className="h-52 w-full object-cover"
                                 />
                             ) : (
-                                <div className="w-full h-52 bg-gradient-to-br from-cream to-amber-100 flex items-center justify-center">
-                                    <ShoppingBag size={64} className="text-plum/30" />
+                                <div className="flex h-52 w-full items-center justify-center bg-plum-dark/5">
+                                    <ShoppingBag size={56} className="text-plum-dark/20" />
                                 </div>
                             )}
                             <button
                                 onClick={() => setSelectedBuyItem(null)}
-                                className="absolute top-4 right-4 bg-white rounded-full p-2 hover:bg-gray-100 transition-all duration-300 transform hover:scale-110 hover:rotate-90 shadow-lg"
+                                className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-plum-dark backdrop-blur-sm transition-colors hover:bg-white"
+                                aria-label="Close"
                             >
-                                <X size={24} className="text-plum" />
+                                <X size={18} />
                             </button>
                         </div>
 
                         <div className="p-8">
-                            <h2 className="text-2xl font-bold text-plum mb-1">{selectedBuyItem.productName}</h2>
-                            <p className="text-gray-500 text-sm mb-1">{selectedBuyItem.category} · Size {selectedBuyItem.size}</p>
-                            <p className="text-2xl font-bold text-rose mb-6">HKD {selectedBuyItem.price.toLocaleString()}</p>
+                            <h2 className="mb-1 font-kaldera text-2xl text-plum-dark">{selectedBuyItem.productName}</h2>
+                            <p className="mb-1 text-sm text-plum/50">{selectedBuyItem.category} · Size {selectedBuyItem.size}</p>
+                            <p className="mb-6 font-kaldera text-2xl text-plum-dark">HKD {selectedBuyItem.price.toLocaleString()}</p>
 
                             <PurchaseForm
                                 item={selectedBuyItem}
@@ -973,6 +1065,19 @@ export function CollectionsHK() {
 
                 .animate-fadeIn  { animation: fadeIn  0.3s ease-out; }
                 .animate-scaleIn { animation: scaleIn 0.3s ease-out; }
+
+                @keyframes overlayFadeIn {
+                    from { opacity: 0; }
+                    to   { opacity: 1; }
+                }
+
+                @keyframes sheetIn {
+                    from { opacity: 0; transform: translateY(24px) scale(0.98); }
+                    to   { opacity: 1; transform: translateY(0) scale(1); }
+                }
+
+                .animate-overlayFadeIn { animation: overlayFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1); }
+                .animate-sheetIn       { animation: sheetIn 0.35s cubic-bezier(0.16, 1, 0.3, 1); }
             `}</style>
         </div>
     );
@@ -1037,27 +1142,31 @@ function ReservationForm({
         }));
     };
 
-    return (
-        <form onSubmit={handleSubmit} className="space-y-6">
-            <h3 className="text-2xl font-bold text-plum mb-2">Reserve This Item</h3>
+    const inputClasses = "w-full rounded-2xl border border-plum-dark/15 bg-white px-4 py-3 text-plum-dark placeholder-plum/30 transition-colors focus:border-plum-dark/40 focus:outline-none focus:ring-2 focus:ring-plum-dark/10";
+    const labelClasses = "mb-1.5 flex items-center gap-1.5 text-xs uppercase tracking-label text-plum/40";
 
-            <div className="bg-gradient-to-br from-amber-100 to-amber-50 p-4 rounded-xl border-2 border-amber-300">
-                <div className="flex items-center space-x-3">
-                    <CreditCard className="text-plum flex-shrink-0" size={24} />
-                    <div>
-                        <p className="text-plum font-semibold">Payment Required</p>
-                        <p className="text-plum text-sm">
-                            After submitting this form, you'll be redirected to secure payment to complete your reservation.
-                        </p>
-                    </div>
+    return (
+        <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+                <h3 className="font-kaldera text-2xl text-plum-dark">Reserve this item</h3>
+                <div className="mt-2 h-px w-9 bg-[#C9A96E]" />
+            </div>
+
+            <div className="flex items-start gap-3 rounded-2xl bg-plum-dark/5 p-4">
+                <CreditCard className="mt-0.5 shrink-0 text-plum-dark" size={20} />
+                <div>
+                    <p className="text-sm font-medium text-plum-dark">Payment required</p>
+                    <p className="mt-0.5 text-sm text-plum/60">
+                        After submitting this form, you'll be redirected to secure payment to complete your reservation.
+                    </p>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="transform transition-all duration-300 hover:scale-105">
-                    <label className="block text-sm font-semibold text-plum mb-2 flex items-center">
-                        <User size={16} className="mr-2 text-rose" />
-                        Full Name *
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div>
+                    <label className={labelClasses}>
+                        <User size={13} />
+                        Full Name
                     </label>
                     <input
                         type="text"
@@ -1065,14 +1174,14 @@ function ReservationForm({
                         value={formData.name}
                         onChange={handleChange}
                         required
-                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose focus:border-rose text-plum transition-all duration-300"
+                        className={inputClasses}
                         placeholder="Enter your full name"
                     />
                 </div>
-                <div className="transform transition-all duration-300 hover:scale-105">
-                    <label className="block text-sm font-semibold text-plum mb-2 flex items-center">
-                        <Mail size={16} className="mr-2 text-rose" />
-                        Email *
+                <div>
+                    <label className={labelClasses}>
+                        <Mail size={13} />
+                        Email
                     </label>
                     <input
                         type="email"
@@ -1080,17 +1189,17 @@ function ReservationForm({
                         value={formData.email}
                         onChange={handleChange}
                         required
-                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose focus:border-rose text-plum transition-all duration-300"
+                        className={inputClasses}
                         placeholder="Enter your email"
                     />
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="transform transition-all duration-300 hover:scale-105">
-                    <label className="block text-sm font-semibold text-plum mb-2 flex items-center">
-                        <Phone size={16} className="mr-2 text-rose" />
-                        Phone Number *
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div>
+                    <label className={labelClasses}>
+                        <Phone size={13} />
+                        Phone Number
                     </label>
                     <input
                         type="tel"
@@ -1098,24 +1207,24 @@ function ReservationForm({
                         value={formData.phone}
                         onChange={handleChange}
                         required
-                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose focus:border-rose text-plum transition-all duration-300"
+                        className={inputClasses}
                         placeholder="Enter your phone number"
                     />
                 </div>
 
                 {/* Delivery Day — hidden for MUSED Accessories (picked up at dinner) */}
                 {!isMusedAccessory && (
-                    <div className="transform transition-all duration-300 hover:scale-105">
-                        <label className="block text-sm font-semibold text-plum mb-2 flex items-center">
-                            <Calendar size={16} className="mr-2 text-rose" />
-                            Delivery Day & Time *
+                    <div>
+                        <label className={labelClasses}>
+                            <Calendar size={13} />
+                            Delivery Day & Time
                         </label>
                         <select
                             name="deliveryDay"
                             value={formData.deliveryDay}
                             onChange={handleChange}
                             required
-                            className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose focus:border-rose text-plum transition-all duration-300"
+                            className={inputClasses}
                         >
                             <option value="">Select delivery day & time</option>
                             {deliveryDays.map((day, index) => (
@@ -1128,17 +1237,17 @@ function ReservationForm({
 
             {/* Pick-up Day — hidden for MUSED Accessories */}
             {!isMusedAccessory && (
-                <div className="transform transition-all duration-300 hover:scale-105">
-                    <label className="block text-sm font-semibold text-plum mb-2 flex items-center">
-                        <Calendar size={16} className="mr-2 text-rose" />
-                        Pick-up Day & Time *
+                <div>
+                    <label className={labelClasses}>
+                        <Calendar size={13} />
+                        Pick-up Day & Time
                     </label>
                     <select
                         name="returnDay"
                         value={formData.returnDay}
                         onChange={handleChange}
                         required
-                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose focus:border-rose text-plum transition-all duration-300"
+                        className={inputClasses}
                     >
                         <option value="">Select pick-up day & time</option>
                         {returnDays.map((day, index) => (
@@ -1150,34 +1259,32 @@ function ReservationForm({
 
             {/* Delivery Method — hidden for MUSED Accessories */}
             {!isMusedAccessory && (
-                <div className="transform transition-all duration-300 hover:scale-105">
-                    <label className="block text-sm font-semibold text-plum mb-2">
-                        Delivery Method *
-                    </label>
-                    <div className="space-y-3">
-                        <label className="flex items-center space-x-3">
+                <div>
+                    <label className={labelClasses}>Delivery Method</label>
+                    <div className="space-y-2">
+                        <label className="flex items-center gap-3 rounded-2xl border border-plum-dark/15 px-4 py-3 text-sm text-plum-dark">
                             <input
                                 type="radio"
                                 name="deliveryMethod"
                                 value="without"
                                 checked={formData.deliveryMethod === 'without'}
                                 onChange={handleChange}
-                                className="text-rose focus:ring-rose"
+                                className="accent-[#3D1028]"
                                 required
                             />
-                            <span className="text-plum">I don't need to be there</span>
+                            I don't need to be there
                         </label>
-                        <label className="flex items-center space-x-3">
+                        <label className="flex items-center gap-3 rounded-2xl border border-plum-dark/15 px-4 py-3 text-sm text-plum-dark">
                             <input
                                 type="radio"
                                 name="deliveryMethod"
                                 value="in-person"
                                 checked={formData.deliveryMethod === 'in-person'}
                                 onChange={handleChange}
-                                className="text-rose focus:ring-rose"
+                                className="accent-[#3D1028]"
                                 required
                             />
-                            <span className="text-plum">I need to be there</span>
+                            I need to be there
                         </label>
                     </div>
                 </div>
@@ -1185,10 +1292,10 @@ function ReservationForm({
 
             {/* Delivery Address — hidden for MUSED Accessories */}
             {!isMusedAccessory && (
-                <div className="transform transition-all duration-300 hover:scale-105">
-                    <label className="block text-sm font-semibold text-plum mb-2 flex items-center">
-                        <MapPin size={16} className="mr-2 text-rose" />
-                        Delivery Address *
+                <div>
+                    <label className={labelClasses}>
+                        <MapPin size={13} />
+                        Delivery Address
                     </label>
                     <textarea
                         name="address"
@@ -1196,7 +1303,7 @@ function ReservationForm({
                         onChange={handleChange}
                         required
                         rows={3}
-                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose focus:border-rose text-plum transition-all duration-300"
+                        className={inputClasses}
                         placeholder="Enter your complete delivery address"
                     />
                 </div>
@@ -1204,14 +1311,14 @@ function ReservationForm({
 
             {/* Special Instructions — hidden for MUSED Accessories */}
             {!isMusedAccessory && (
-                <div className="transform transition-all duration-300 hover:scale-105">
-                    <label className="block text-sm font-semibold text-plum mb-2">Special Instructions</label>
+                <div>
+                    <label className={labelClasses}>Special Instructions</label>
                     <textarea
                         name="instructions"
                         value={formData.instructions}
                         onChange={handleChange}
                         rows={2}
-                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose focus:border-rose text-plum transition-all duration-300"
+                        className={inputClasses}
                         placeholder="Any special requests, styling preferences, or instructions..."
                     />
                 </div>
@@ -1219,72 +1326,70 @@ function ReservationForm({
 
             {/* Dinner pickup info banner — shown only for MUSED Accessories */}
             {isMusedAccessory && (
-                <div className="bg-gradient-to-br from-plum/5 to-rose/5 p-4 rounded-xl border-2 border-plum/20">
-                    <div className="flex items-start gap-3">
-                        <MapPin size={20} className="text-rose flex-shrink-0 mt-0.5" />
-                        <div>
-                            <p className="text-plum font-semibold text-sm">Pickup at the Dinner</p>
-                            <p className="text-plum/80 text-sm mt-0.5">
-                                This accessory will be available for you to collect at the MUSED dinner event. No delivery needed!
-                            </p>
-                        </div>
+                <div className="flex items-start gap-3 rounded-2xl bg-plum-dark/5 p-4">
+                    <MapPin size={18} className="mt-0.5 shrink-0 text-plum-dark" />
+                    <div>
+                        <p className="text-sm font-medium text-plum-dark">Pickup at the dinner</p>
+                        <p className="mt-0.5 text-sm text-plum/60">
+                            This accessory will be available for you to collect at the MUSED dinner event. No delivery needed!
+                        </p>
                     </div>
                 </div>
             )}
 
             {/* Terms and Conditions */}
-            <div className="bg-gradient-to-br from-cream to-amber-50 p-6 rounded-xl border-2 border-amber-200 transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
-                <div className="flex items-start space-x-4">
-                    <input
-                        type="checkbox"
-                        name="agreeToTerms"
-                        checked={formData.agreeToTerms}
-                        onChange={handleChange}
-                        required
-                        className="mt-1 w-5 h-5 text-rose focus:ring-rose border-gray-300 rounded transition-all duration-300"
-                    />
-                    <label className="text-sm text-plum font-medium">
-                        I agree to the{' '}
-                        <a
-                            href="/terms"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-rose hover:text-burgundy underline underline-offset-2 transition-colors duration-200 font-semibold"
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            Terms & Conditions
-                        </a>{' '}
-                        and agree to treat the borrowed item with care and cover any repair or replacement costs for damage beyond normal wear.
-                    </label>
-                </div>
-            </div>
+            <label className="flex items-start gap-3 rounded-2xl border border-plum-dark/15 p-4 text-sm text-plum-dark">
+                <input
+                    type="checkbox"
+                    name="agreeToTerms"
+                    checked={formData.agreeToTerms}
+                    onChange={handleChange}
+                    required
+                    className="mt-0.5 h-4 w-4 shrink-0 accent-[#3D1028]"
+                />
+                <span>
+                    I agree to the{' '}
+                    <a
+                        href="/terms"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-burgundy underline underline-offset-2"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        Terms & Conditions
+                    </a>{' '}
+                    and agree to treat the borrowed item with care and cover any repair or replacement costs for damage beyond normal wear.
+                </span>
+            </label>
 
-            <div className="flex space-x-4">
+            <div className="flex gap-3">
                 <button
                     type="button"
                     onClick={onClose}
                     disabled={submitting || processing}
-                    className="flex-1 bg-cream text-plum py-4 rounded-xl font-semibold hover:bg-amber-200 hover:text-plum transition-all duration-300 transform hover:scale-105 disabled:opacity-50"
+                    className="flex-1 rounded-full border border-plum-dark/15 py-3.5 text-sm text-plum-dark transition-colors hover:bg-plum-dark/5 disabled:opacity-50"
                 >
                     Cancel
                 </button>
-                <button
-                    type="submit"
-                    disabled={!formData.agreeToTerms || submitting || processing}
-                    className="flex-1 bg-gradient-to-r from-plum to-rose text-cream py-4 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center"
-                >
-                    {submitting || processing ? (
-                        <>
-                            <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                            {processing ? 'Redirecting to Payment...' : 'Processing...'}
-                        </>
-                    ) : (
-                        <>
-                            <CreditCard className="w-5 h-5 mr-2" />
-                            Proceed to Payment
-                        </>
-                    )}
-                </button>
+                <div className="flex-1 rounded-full shadow-[0_8px_16px_rgba(61,16,40,0.18)]">
+                    <button
+                        type="submit"
+                        disabled={!formData.agreeToTerms || submitting || processing}
+                        className="flex w-full items-center justify-center gap-2 rounded-full border border-white/15 bg-gradient-to-b from-plum-dark to-plum py-3.5 text-sm font-normal text-cream transition-all hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                        {submitting || processing ? (
+                            <>
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                {processing ? 'Redirecting to payment…' : 'Processing…'}
+                            </>
+                        ) : (
+                            <>
+                                <CreditCard className="h-4 w-4" />
+                                Proceed to payment
+                            </>
+                        )}
+                    </button>
+                </div>
             </div>
         </form>
     );
@@ -1348,26 +1453,30 @@ function PurchaseForm({
         }
     };
 
+    const inputClasses = "w-full rounded-2xl border border-plum-dark/15 bg-white px-4 py-3 text-plum-dark placeholder-plum/30 transition-colors focus:border-plum-dark/40 focus:outline-none focus:ring-2 focus:ring-plum-dark/10";
+    const labelClasses = "mb-1.5 flex items-center gap-1.5 text-xs uppercase tracking-label text-plum/40";
+
     return (
         <form onSubmit={handleSubmit} className="space-y-5">
-            <h3 className="text-xl font-bold text-plum">Complete Your Purchase</h3>
+            <div>
+                <h3 className="font-kaldera text-2xl text-plum-dark">Complete your purchase</h3>
+                <div className="mt-2 h-px w-9 bg-[#C9A96E]" />
+            </div>
 
             {/* No-return banner */}
-            <div className="bg-gradient-to-br from-amber-100 to-amber-50 p-4 rounded-xl border-2 border-amber-300">
-                <div className="flex items-center space-x-3">
-                    <ShoppingBag className="text-plum flex-shrink-0" size={22} />
-                    <div>
-                        <p className="text-plum font-semibold text-sm">One-time purchase — yours to keep!</p>
-                        <p className="text-plum text-xs">No return required. You'll be redirected to secure payment.</p>
-                    </div>
+            <div className="flex items-center gap-3 rounded-2xl bg-plum-dark/5 p-4">
+                <ShoppingBag className="shrink-0 text-plum-dark" size={20} />
+                <div>
+                    <p className="text-sm font-medium text-plum-dark">One-time purchase — yours to keep</p>
+                    <p className="text-sm text-plum/60">No return required. You'll be redirected to secure payment.</p>
                 </div>
             </div>
 
             {/* Name */}
             <div>
-                <label className="block text-sm font-semibold text-plum mb-2 flex items-center">
-                    <User size={14} className="mr-2 text-rose" />
-                    Full Name *
+                <label className={labelClasses}>
+                    <User size={13} />
+                    Full Name
                 </label>
                 <input
                     type="text"
@@ -1375,16 +1484,16 @@ function PurchaseForm({
                     value={formData.name}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose focus:border-rose text-plum"
+                    className={inputClasses}
                     placeholder="Enter your full name"
                 />
             </div>
 
             {/* Email */}
             <div>
-                <label className="block text-sm font-semibold text-plum mb-2 flex items-center">
-                    <Mail size={14} className="mr-2 text-rose" />
-                    Email *
+                <label className={labelClasses}>
+                    <Mail size={13} />
+                    Email
                 </label>
                 <input
                     type="email"
@@ -1392,16 +1501,16 @@ function PurchaseForm({
                     value={formData.email}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose focus:border-rose text-plum"
+                    className={inputClasses}
                     placeholder="Enter your email"
                 />
             </div>
 
             {/* Phone */}
             <div>
-                <label className="block text-sm font-semibold text-plum mb-2 flex items-center">
-                    <Phone size={14} className="mr-2 text-rose" />
-                    Phone Number *
+                <label className={labelClasses}>
+                    <Phone size={13} />
+                    Phone Number
                 </label>
                 <input
                     type="tel"
@@ -1409,23 +1518,21 @@ function PurchaseForm({
                     value={formData.phone}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose focus:border-rose text-plum"
+                    className={inputClasses}
                     placeholder="Enter your phone number"
                 />
             </div>
 
             {/* ── Fulfillment method ── */}
             <div>
-                <label className="block text-sm font-semibold text-plum mb-3">
-                    How would you like to receive your item? *
-                </label>
+                <label className={labelClasses}>How would you like to receive your item?</label>
                 <div className="grid grid-cols-2 gap-3">
                     {/* Delivery option */}
                     <label
-                        className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                        className={`flex cursor-pointer flex-col items-center gap-2 rounded-2xl border p-4 transition-colors ${
                             formData.fulfillmentMethod === 'delivery'
-                                ? 'border-rose bg-rose/5 shadow-md'
-                                : 'border-gray-200 hover:border-rose/40'
+                                ? 'border-plum-dark bg-plum-dark/5'
+                                : 'border-plum-dark/15 hover:border-plum-dark/30'
                         }`}
                     >
                         <input
@@ -1436,17 +1543,17 @@ function PurchaseForm({
                             onChange={handleChange}
                             className="sr-only"
                         />
-                        <Calendar size={24} className={formData.fulfillmentMethod === 'delivery' ? 'text-rose' : 'text-plum/50'} />
-                        <span className="text-sm font-semibold text-plum text-center">Home Delivery</span>
-                        <span className="text-xs text-plum/60 text-center">We bring it to you</span>
+                        <Calendar size={20} className={formData.fulfillmentMethod === 'delivery' ? 'text-plum-dark' : 'text-plum/40'} />
+                        <span className="text-center text-sm text-plum-dark">Home Delivery</span>
+                        <span className="text-center text-xs text-plum/50">We bring it to you</span>
                     </label>
 
                     {/* Store pick-up option */}
                     <label
-                        className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                        className={`flex cursor-pointer flex-col items-center gap-2 rounded-2xl border p-4 transition-colors ${
                             formData.fulfillmentMethod === 'store'
-                                ? 'border-rose bg-rose/5 shadow-md'
-                                : 'border-gray-200 hover:border-rose/40'
+                                ? 'border-plum-dark bg-plum-dark/5'
+                                : 'border-plum-dark/15 hover:border-plum-dark/30'
                         }`}
                     >
                         <input
@@ -1457,9 +1564,9 @@ function PurchaseForm({
                             onChange={handleChange}
                             className="sr-only"
                         />
-                        <MapPin size={24} className={formData.fulfillmentMethod === 'store' ? 'text-rose' : 'text-plum/50'} />
-                        <span className="text-sm font-semibold text-plum text-center">Pick Up in Store</span>
-                        <span className="text-xs text-plum/60 text-center">Collect at RIIDE</span>
+                        <MapPin size={20} className={formData.fulfillmentMethod === 'store' ? 'text-plum-dark' : 'text-plum/40'} />
+                        <span className="text-center text-sm text-plum-dark">Pick Up in Store</span>
+                        <span className="text-center text-xs text-plum/50">Collect at RIIDE</span>
                     </label>
                 </div>
             </div>
@@ -1468,16 +1575,16 @@ function PurchaseForm({
             {formData.fulfillmentMethod === 'delivery' && (
                 <>
                     <div>
-                        <label className="block text-sm font-semibold text-plum mb-2 flex items-center">
-                            <Calendar size={14} className="mr-2 text-rose" />
-                            Delivery Time Slot *
+                        <label className={labelClasses}>
+                            <Calendar size={13} />
+                            Delivery Time Slot
                         </label>
                         <select
                             name="deliveryDay"
                             value={formData.deliveryDay}
                             onChange={handleChange}
                             required
-                            className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose focus:border-rose text-plum"
+                            className={inputClasses}
                         >
                             <option value="">Select a delivery slot</option>
                             {deliveryDays.map((day, i) => (
@@ -1487,9 +1594,9 @@ function PurchaseForm({
                     </div>
 
                     <div>
-                        <label className="block text-sm font-semibold text-plum mb-2 flex items-center">
-                            <MapPin size={14} className="mr-2 text-rose" />
-                            Delivery Address *
+                        <label className={labelClasses}>
+                            <MapPin size={13} />
+                            Delivery Address
                         </label>
                         <textarea
                             name="deliveryAddress"
@@ -1497,7 +1604,7 @@ function PurchaseForm({
                             onChange={handleChange}
                             required
                             rows={3}
-                            className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose focus:border-rose text-plum"
+                            className={inputClasses}
                             placeholder="Enter your complete delivery address"
                         />
                     </div>
@@ -1506,74 +1613,72 @@ function PurchaseForm({
 
             {/* Store info — shown only when store pick-up is selected */}
             {formData.fulfillmentMethod === 'store' && (
-                <div className="bg-gradient-to-br from-plum/5 to-rose/5 p-4 rounded-xl border-2 border-plum/20">
-                    <div className="flex items-start gap-3">
-                        <MapPin size={20} className="text-rose flex-shrink-0 mt-0.5" />
-                        <div>
-                            <p className="text-plum font-semibold text-sm">RIIDE Store</p>
-                            <p className="text-plum text-sm mt-0.5">24-26 Aberdeen St, Hong Kong</p>
-                            <p className="text-plum/70 text-xs mt-1">Open daily: 9am – 6pm</p>
-                            <p className="text-plum/60 text-xs mt-2">
-                                Please bring your order confirmation when you come to collect.
-                            </p>
-                        </div>
+                <div className="flex items-start gap-3 rounded-2xl bg-plum-dark/5 p-4">
+                    <MapPin size={18} className="mt-0.5 shrink-0 text-plum-dark" />
+                    <div>
+                        <p className="text-sm font-medium text-plum-dark">RIIDE Store</p>
+                        <p className="mt-0.5 text-sm text-plum/60">24-26 Aberdeen St, Hong Kong</p>
+                        <p className="mt-1 text-xs text-plum/50">Open daily: 9am – 6pm</p>
+                        <p className="mt-2 text-xs text-plum/50">
+                            Please bring your order confirmation when you come to collect.
+                        </p>
                     </div>
                 </div>
             )}
 
             {/* Terms */}
-            <div className="bg-gradient-to-br from-cream to-amber-50 p-4 rounded-xl border-2 border-amber-200">
-                <div className="flex items-start space-x-3">
-                    <input
-                        type="checkbox"
-                        name="agreeToTerms"
-                        checked={formData.agreeToTerms}
-                        onChange={handleChange}
-                        required
-                        className="mt-1 w-5 h-5 text-rose focus:ring-rose border-gray-300 rounded"
-                    />
-                    <label className="text-sm text-plum font-medium">
-                        I agree to the{' '}
-                        <a
-                            href="/terms"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-rose hover:text-burgundy underline underline-offset-2 font-semibold"
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            Terms & Conditions
-                        </a>
-                        . This purchase is final — no returns or exchanges.
-                    </label>
-                </div>
-            </div>
+            <label className="flex items-start gap-3 rounded-2xl border border-plum-dark/15 p-4 text-sm text-plum-dark">
+                <input
+                    type="checkbox"
+                    name="agreeToTerms"
+                    checked={formData.agreeToTerms}
+                    onChange={handleChange}
+                    required
+                    className="mt-0.5 h-4 w-4 shrink-0 accent-[#3D1028]"
+                />
+                <span>
+                    I agree to the{' '}
+                    <a
+                        href="/terms"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-burgundy underline underline-offset-2"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        Terms & Conditions
+                    </a>
+                    . This purchase is final — no returns or exchanges.
+                </span>
+            </label>
 
-            <div className="flex space-x-4">
+            <div className="flex gap-3">
                 <button
                     type="button"
                     onClick={onClose}
                     disabled={submitting || processing}
-                    className="flex-1 bg-cream text-plum py-3.5 rounded-xl font-semibold hover:bg-amber-200 transition-all disabled:opacity-50"
+                    className="flex-1 rounded-full border border-plum-dark/15 py-3.5 text-sm text-plum-dark transition-colors hover:bg-plum-dark/5 disabled:opacity-50"
                 >
                     Cancel
                 </button>
-                <button
-                    type="submit"
-                    disabled={!formData.agreeToTerms || !formData.fulfillmentMethod || submitting || processing}
-                    className="flex-1 bg-gradient-to-r from-plum to-rose text-cream py-3.5 rounded-xl font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center gap-2"
-                >
-                    {submitting || processing ? (
-                        <>
-                            <Loader2 className="w-5 h-5 animate-spin" />
-                            Redirecting...
-                        </>
-                    ) : (
-                        <>
-                            <CreditCard className="w-5 h-5" />
-                            Pay HKD {item.price.toLocaleString()}
-                        </>
-                    )}
-                </button>
+                <div className="flex-1 rounded-full shadow-[0_8px_16px_rgba(61,16,40,0.18)]">
+                    <button
+                        type="submit"
+                        disabled={!formData.agreeToTerms || !formData.fulfillmentMethod || submitting || processing}
+                        className="flex w-full items-center justify-center gap-2 rounded-full border border-white/15 bg-gradient-to-b from-plum-dark to-plum py-3.5 text-sm font-normal text-cream transition-all hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                        {submitting || processing ? (
+                            <>
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                Redirecting…
+                            </>
+                        ) : (
+                            <>
+                                <CreditCard className="h-4 w-4" />
+                                Pay HKD {item.price.toLocaleString()}
+                            </>
+                        )}
+                    </button>
+                </div>
             </div>
         </form>
     );

@@ -1,6 +1,6 @@
 // App.tsx
 import { useState, useEffect, lazy, Suspense } from 'react'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'
 import { AuthProvider } from './context'
 import { Header } from './components/Header'
 import { Hero } from './components/Hero'
@@ -20,6 +20,7 @@ const Confirmation = lazy(() => import('./components/Confirmation').then(m => ({
 const SimpleImageUpload = lazy(() => import('./components/SimpleImageUpload').then(m => ({ default: m.SimpleImageUpload })))
 const SecondDinner = lazy(() => import('./components/SecondDinner').then(m => ({ default: m.SecondDinner })))
 const Events = lazy(() => import('./components/Events').then(m => ({ default: m.Events })))
+const EventDetail = lazy(() => import('./components/EventDetail').then(m => ({ default: m.EventDetail })))
 // import { Collection } from './components/Collection'
 // import { ThePics } from './components/ThePics'
 // import { FAQ } from './components/FAQ'
@@ -27,6 +28,10 @@ const Events = lazy(() => import('./components/Events').then(m => ({ default: m.
 const Login = lazy(() => import('./components/Login').then(m => ({ default: m.Login })))
 const Signup = lazy(() => import('./components/Signup').then(m => ({ default: m.Signup })))
 const MyUploads = lazy(() => import('./components/MyUploads').then(m => ({ default: m.MyUploads })))
+const MyPicks = lazy(() => import('./components/MyPicks').then(m => ({ default: m.MyPicks })))
+const MyReservations = lazy(() => import('./components/MyReservations').then(m => ({ default: m.MyReservations })))
+const MyOrders = lazy(() => import('./components/MyOrders').then(m => ({ default: m.MyOrders })))
+const AccountSettings = lazy(() => import('./components/AccountSettings').then(m => ({ default: m.AccountSettings })))
 const Profile = lazy(() => import('./components/Profile').then(m => ({ default: m.Profile })))
 const OAuthSuccess = lazy(() => import('./components/OAuthSuccess').then(m => ({ default: m.OAuthSuccess })))
 const Terms = lazy(() => import('./components/Terms').then(m => ({ default: m.Terms })))
@@ -53,9 +58,26 @@ import { RequireSeller } from './components/RequireSeller';
 const BrandDashboard = lazy(() => import('./components/BrandDashboard').then(m => ({ default: m.BrandDashboard })))
 const BrandsShop = lazy(() => import('./components/BrandsShop').then(m => ({ default: m.BrandsShop })))
 const ShippingEstimate = lazy(() => import('./components/ShippingEstimate').then(m => ({ default: m.ShippingEstimate })))
+const Feed = lazy(() => import('./components/Feed').then(m => ({ default: m.Feed })))
+import { useAuth } from './hooks/useAuth';
 
+function ScrollToTop() {
+    const { pathname } = useLocation();
+
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, [pathname]);
+
+    return null;
+}
 
 function HomePage() {
+    const { isAuthenticated } = useAuth();
+
+    if (isAuthenticated) {
+        return <Feed />;
+    }
+
     return (
         <div className="font-sans">
             <Header />
@@ -89,12 +111,14 @@ export function App() {
     return (
         <AuthProvider>
             <Router>
+                <ScrollToTop />
                 <Suspense fallback={<div className="min-h-screen" />}>
                 <Routes>
                     <Route path="/" element={<HomePage />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/signup" element={<Signup />} />
                     <Route path="/events" element={<Events />} />
+                    <Route path="/events/next" element={<EventDetail />} />
                     {/* <Route path="/collections" element={<Collections />} /> */}
                     <Route path="/diner" element={<Diner />} />
                     <Route path="/about" element={<About />} />
@@ -110,6 +134,10 @@ export function App() {
                     {/* <Route path="/faq" element={<FAQ />} /> */}
                     {/* <Route path="/reachout" element={<Reachout />} /> */}
                     <Route path="/my-uploads" element={<MyUploads />} />
+                    <Route path="/my-picks" element={<MyPicks />} />
+                    <Route path="/my-reservations" element={<MyReservations />} />
+                    <Route path="/my-orders" element={<MyOrders />} />
+                    <Route path="/settings" element={<AccountSettings />} />
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/oauth-success" element={<OAuthSuccess />} />
                     {/* Legal Pages */}
