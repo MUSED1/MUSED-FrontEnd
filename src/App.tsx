@@ -1,63 +1,65 @@
 // App.tsx
-import { useState, useEffect } from 'react'
+import { useState, useEffect, lazy, Suspense } from 'react'
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'
 import { AuthProvider } from './context'
 import { Header } from './components/Header'
 import { Hero } from './components/Hero'
+import { BrandStory } from './components/BrandStory'
 // import { JoinWsb } from './components/JoinWsb.tsx'
 // import { HowItWorks } from './components/HowItWorks.tsx'
 import { Footer } from './components/Footer'
 import { LoadingScreen } from './components/LoadingScreen'
 // import { Collections } from './components/Collections'
-import { Diner } from './components/Diner'
-import { About } from './components/About'
-import { FirstDinner } from './components/FirstDinner'
-import { ClothingUploadForm } from './components/ClothingUploadForm'
-import { AdminClothing } from './components/AdminClothing'
-import { DinnerCollectionTwo } from './components/DinnerCollectionTwo'
-import { Confirmation } from './components/Confirmation'
-import { SimpleImageUpload } from './components/SimpleImageUpload'
-import { SecondDinner } from './components/SecondDinner'
-import { Events } from './components/Events'
-import { EventDetail } from './components/EventDetail'
+const Diner = lazy(() => import('./components/Diner').then(m => ({ default: m.Diner })))
+const About = lazy(() => import('./components/About').then(m => ({ default: m.About })))
+const FirstDinner = lazy(() => import('./components/FirstDinner').then(m => ({ default: m.FirstDinner })))
+const ClothingUploadForm = lazy(() => import('./components/ClothingUploadForm').then(m => ({ default: m.ClothingUploadForm })))
+const AdminClothing = lazy(() => import('./components/AdminClothing').then(m => ({ default: m.AdminClothing })))
+const DinnerCollectionTwo = lazy(() => import('./components/DinnerCollectionTwo').then(m => ({ default: m.DinnerCollectionTwo })))
+const Confirmation = lazy(() => import('./components/Confirmation').then(m => ({ default: m.Confirmation })))
+const SimpleImageUpload = lazy(() => import('./components/SimpleImageUpload').then(m => ({ default: m.SimpleImageUpload })))
+const SecondDinner = lazy(() => import('./components/SecondDinner').then(m => ({ default: m.SecondDinner })))
+const Events = lazy(() => import('./components/Events').then(m => ({ default: m.Events })))
+const EventDetail = lazy(() => import('./components/EventDetail').then(m => ({ default: m.EventDetail })))
 // import { Collection } from './components/Collection'
 // import { ThePics } from './components/ThePics'
 // import { FAQ } from './components/FAQ'
 // import { Reachout } from './components/Reachout'
-import { Login } from './components/Login'
-import { Signup } from './components/Signup'
-import { MyUploads } from './components/MyUploads'
-import { MyPicks } from './components/MyPicks'
-import { MyReservations } from './components/MyReservations'
-import { MyOrders } from './components/MyOrders'
-import { AccountSettings } from './components/AccountSettings'
-import { Profile } from './components/Profile'
-import { OAuthSuccess } from './components/OAuthSuccess'
-import { Terms } from './components/Terms'
-import { Privacy } from './components/Privacy'
-import { CollectionsM } from './components/CollectionsM';
-import { CollectionsNY } from './components/CollectionsNY';
-import { AdminReservations } from './components/AdminReservations';
-import { ThirdDinner } from './components/ThirdDinner';
-import { OAuthCallback } from './components/OAuthCallback';
-import { SubmissionSuccess } from "./components/SubsmissionSuccess";
-import {AdminPickups} from "./components/AdminPickups.tsx";
-import { FourthDinner } from './components/FourthDinner';
-import { ForgotPassword, ResetPassword } from './components/ForgotPassword'
-import { CollectionsHK } from './components/CollectionsHK';
-import { FifthDinner } from './components/FifthDinner';
-import { WishlistHK } from './components/WishlistHK';
-import { StaffRedeem } from './components/StaffRedeem';
-import { MyBrand } from './components/MyBrand';
-import { AdminBrands } from './components/AdminBrands';
-import { SellerLogin } from './components/SellerLogin.tsx';
-import { SellerSignup } from './components/SellerSignup.tsx';
+const Login = lazy(() => import('./components/Login').then(m => ({ default: m.Login })))
+const Signup = lazy(() => import('./components/Signup').then(m => ({ default: m.Signup })))
+const MyUploads = lazy(() => import('./components/MyUploads').then(m => ({ default: m.MyUploads })))
+const MyPicks = lazy(() => import('./components/MyPicks').then(m => ({ default: m.MyPicks })))
+const MyReservations = lazy(() => import('./components/MyReservations').then(m => ({ default: m.MyReservations })))
+const MyOrders = lazy(() => import('./components/MyOrders').then(m => ({ default: m.MyOrders })))
+const AccountSettings = lazy(() => import('./components/AccountSettings').then(m => ({ default: m.AccountSettings })))
+const Profile = lazy(() => import('./components/Profile').then(m => ({ default: m.Profile })))
+const OAuthSuccess = lazy(() => import('./components/OAuthSuccess').then(m => ({ default: m.OAuthSuccess })))
+const Terms = lazy(() => import('./components/Terms').then(m => ({ default: m.Terms })))
+const Privacy = lazy(() => import('./components/Privacy').then(m => ({ default: m.Privacy })))
+const CollectionsM = lazy(() => import('./components/CollectionsM').then(m => ({ default: m.CollectionsM })))
+const CollectionsNY = lazy(() => import('./components/CollectionsNY').then(m => ({ default: m.CollectionsNY })))
+const AdminReservations = lazy(() => import('./components/AdminReservations').then(m => ({ default: m.AdminReservations })))
+const ThirdDinner = lazy(() => import('./components/ThirdDinner').then(m => ({ default: m.ThirdDinner })))
+const OAuthCallback = lazy(() => import('./components/OAuthCallback').then(m => ({ default: m.OAuthCallback })))
+const SubmissionSuccess = lazy(() => import('./components/SubsmissionSuccess').then(m => ({ default: m.SubmissionSuccess })))
+const AdminPickups = lazy(() => import('./components/AdminPickups.tsx').then(m => ({ default: m.AdminPickups })))
+const FourthDinner = lazy(() => import('./components/FourthDinner').then(m => ({ default: m.FourthDinner })))
+const ForgotPassword = lazy(() => import('./components/ForgotPassword').then(m => ({ default: m.ForgotPassword })))
+const ResetPassword = lazy(() => import('./components/ForgotPassword').then(m => ({ default: m.ResetPassword })))
+const CollectionsHK = lazy(() => import('./components/CollectionsHK').then(m => ({ default: m.CollectionsHK })))
+const FifthDinner = lazy(() => import('./components/FifthDinner').then(m => ({ default: m.FifthDinner })))
+const WishlistHK = lazy(() => import('./components/WishlistHK').then(m => ({ default: m.WishlistHK })))
+const StaffRedeem = lazy(() => import('./components/StaffRedeem').then(m => ({ default: m.StaffRedeem })))
+const MyBrand = lazy(() => import('./components/MyBrand').then(m => ({ default: m.MyBrand })))
+const AdminBrands = lazy(() => import('./components/AdminBrands').then(m => ({ default: m.AdminBrands })))
+const SellerLogin = lazy(() => import('./components/SellerLogin.tsx').then(m => ({ default: m.SellerLogin })))
+const SellerSignup = lazy(() => import('./components/SellerSignup.tsx').then(m => ({ default: m.SellerSignup })))
 import { RequireSeller } from './components/RequireSeller';
-import { BrandDashboard } from './components/BrandDashboard';
-import { Feed } from './components/Feed';
+const BrandDashboard = lazy(() => import('./components/BrandDashboard').then(m => ({ default: m.BrandDashboard })))
+const BrandsShop = lazy(() => import('./components/BrandsShop').then(m => ({ default: m.BrandsShop })))
+const ShippingEstimate = lazy(() => import('./components/ShippingEstimate').then(m => ({ default: m.ShippingEstimate })))
+const Feed = lazy(() => import('./components/Feed').then(m => ({ default: m.Feed })))
 import { useAuth } from './hooks/useAuth';
-import { BrandsShop } from './components/BrandsShop';
-import { ShippingEstimate } from './components/ShippingEstimate';
 
 function ScrollToTop() {
     const { pathname } = useLocation();
@@ -83,6 +85,7 @@ function HomePage() {
                 <Hero />
                 {/* <JoinWsb /> */}
                 {/* <HowItWorks /> */}
+                <BrandStory />
             </main>
             <Footer />
         </div>
@@ -109,6 +112,7 @@ export function App() {
         <AuthProvider>
             <Router>
                 <ScrollToTop />
+                <Suspense fallback={<div className="min-h-screen" />}>
                 <Routes>
                     <Route path="/" element={<HomePage />} />
                     <Route path="/login" element={<Login />} />
@@ -165,6 +169,7 @@ export function App() {
 
 
                 </Routes>
+                </Suspense>
             </Router>
         </AuthProvider>
     )
