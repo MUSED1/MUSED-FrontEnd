@@ -1,13 +1,23 @@
 import { useState, useEffect } from 'react'
-import { Menu, X, User, LogOut, Package, Heart, CheckCircle, Settings, ShieldCheck, Truck } from 'lucide-react'
+import { Menu, X, User, LogOut, ShoppingBag, MessageCircle, Heart, Compass, Settings, ShieldCheck, Truck } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 
 const NAV_LINKS = [
     { path: '/', label: 'Home' },
-    { path: '/shop', label: 'Shop' },
     { path: '/events', label: 'Events' },
     { path: '/about', label: 'About' },
+]
+
+// Account section of the logged-in drawer. `path: null` = not live yet ("Soon")
+const ACCOUNT_LINKS = [
+    { path: '/profile', label: 'Profile', icon: User },
+    { path: '/collections-hk', label: 'Collection', icon: ShoppingBag },
+    { path: null, label: 'Chat', icon: MessageCircle },
+    { path: '/my-picks', label: 'Favs', icon: Heart },
+    { path: '/my-reservations', label: 'My Events', icon: Compass },
+    { path: '/my-orders', label: 'Orders', icon: Truck },
+    { path: '/settings', label: 'Settings', icon: Settings },
 ]
 
 export function Header() {
@@ -137,54 +147,31 @@ export function Header() {
                         <span className="px-2 pb-1 text-xs uppercase tracking-label text-cream/40">
                             {user?.name || 'Account'}
                         </span>
-                        <Link
-                            to="/profile"
-                            onClick={closeMenu}
-                            className="flex items-center gap-2 rounded-full px-2 py-1.5 text-sm text-cream/80 transition-colors hover:text-gold"
-                        >
-                            <User size={15} />
-                            Profile Info
-                        </Link>
-                        <Link
-                            to="/my-uploads"
-                            onClick={closeMenu}
-                            className="flex items-center gap-2 rounded-full px-2 py-1.5 text-sm text-cream/80 transition-colors hover:text-gold"
-                        >
-                            <Package size={15} />
-                            My Uploads
-                        </Link>
-                        <Link
-                            to="/my-picks"
-                            onClick={closeMenu}
-                            className="flex items-center gap-2 rounded-full px-2 py-1.5 text-sm text-cream/80 transition-colors hover:text-gold"
-                        >
-                            <Heart size={15} />
-                            My Picks
-                        </Link>
-                        <Link
-                            to="/my-reservations"
-                            onClick={closeMenu}
-                            className="flex items-center gap-2 rounded-full px-2 py-1.5 text-sm text-cream/80 transition-colors hover:text-gold"
-                        >
-                            <CheckCircle size={15} />
-                            My Reservations
-                        </Link>
-                        <Link
-                            to="/my-orders"
-                            onClick={closeMenu}
-                            className="flex items-center gap-2 rounded-full px-2 py-1.5 text-sm text-cream/80 transition-colors hover:text-gold"
-                        >
-                            <Truck size={15} />
-                            My Orders
-                        </Link>
-                        <Link
-                            to="/settings"
-                            onClick={closeMenu}
-                            className="flex items-center gap-2 rounded-full px-2 py-1.5 text-sm text-cream/80 transition-colors hover:text-gold"
-                        >
-                            <Settings size={15} />
-                            Settings
-                        </Link>
+                        {ACCOUNT_LINKS.map(({ path, label, icon: Icon }) =>
+                            path ? (
+                                <Link
+                                    key={label}
+                                    to={path}
+                                    onClick={closeMenu}
+                                    className="flex items-center gap-2 rounded-full px-2 py-1.5 text-sm text-cream/80 transition-colors hover:text-gold"
+                                >
+                                    <Icon size={15} />
+                                    {label}
+                                </Link>
+                            ) : (
+                                <span
+                                    key={label}
+                                    className="flex cursor-default items-center gap-2 px-2 py-1.5 text-sm text-cream/40"
+                                    aria-disabled="true"
+                                >
+                                    <Icon size={15} />
+                                    {label}
+                                    <span className="rounded-full bg-[#C9A96E] px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wide text-white">
+                                        Soon
+                                    </span>
+                                </span>
+                            )
+                        )}
                         <button
                             onClick={handleLogout}
                             className="mt-1 flex items-center gap-2 rounded-full px-2 py-1.5 text-sm text-cream/45 transition-colors hover:text-[#C9614E]"
