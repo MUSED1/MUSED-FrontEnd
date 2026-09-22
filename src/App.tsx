@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './context'
 import { Header } from './components/Header'
 import { Hero } from './components/Hero'
+import { BrandStory } from './components/BrandStory'
 // import { JoinWsb } from './components/JoinWsb.tsx'
 // import { HowItWorks } from './components/HowItWorks.tsx'
 import { Footer } from './components/Footer'
@@ -62,6 +63,7 @@ function HomePage() {
                 <Hero />
                 {/* <JoinWsb /> */}
                 {/* <HowItWorks /> */}
+                <BrandStory />
             </main>
             <Footer />
         </div>
