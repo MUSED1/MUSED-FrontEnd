@@ -520,7 +520,7 @@ export function Profile() {
                     {/* Quick actions */}
                     <div className="mb-10">
                         <h2 className="mb-4 font-kaldera text-lg text-plum-dark">Quick Actions</h2>
-                        <div className="flex gap-6 overflow-x-auto pb-2">
+                        <div className="grid grid-cols-5 gap-1 pt-2 sm:gap-4">
                             {[
                                 { label: 'Collection', icon: ShoppingBag, onClick: () => navigate('/collections-hk') },
                                 { label: 'Chat', icon: MessageCircle, onClick: null },
@@ -533,28 +533,28 @@ export function Profile() {
                                         key={label}
                                         onClick={onClick}
                                         title={needsPhone && !hasPhoneNumber() ? 'Phone number required' : undefined}
-                                        className={`group flex shrink-0 flex-col items-center gap-2 ${
+                                        className={`group flex min-w-0 flex-col items-center gap-2 ${
                                             needsPhone && !hasPhoneNumber() ? 'cursor-not-allowed opacity-50' : ''
                                         }`}
                                     >
-                                        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-plum-dark/6 text-plum-dark transition-colors group-hover:bg-plum-dark group-hover:text-cream">
+                                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-plum-dark/6 text-plum-dark transition-colors sm:h-14 sm:w-14 group-hover:bg-plum-dark group-hover:text-cream">
                                             <Icon size={20} />
                                         </div>
-                                        <span className="text-xs text-plum/60">{label}</span>
+                                        <span className="w-full truncate text-center text-[11px] text-plum/60 sm:text-xs">{label}</span>
                                     </button>
                                 ) : (
                                     <div
                                         key={label}
-                                        className="flex shrink-0 cursor-default flex-col items-center gap-2"
+                                        className="flex min-w-0 cursor-default flex-col items-center gap-2"
                                         aria-disabled="true"
                                     >
-                                        <div className="relative flex h-14 w-14 items-center justify-center rounded-full bg-plum-dark/6 text-plum-dark/40">
+                                        <div className="relative flex h-12 w-12 items-center justify-center rounded-full bg-plum-dark/6 text-plum-dark/40 sm:h-14 sm:w-14">
                                             <Icon size={20} />
-                                            <span className="absolute -right-1 -top-1 rounded-full bg-[#C9A96E] px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wide text-white">
+                                            <span className="absolute -top-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-[#C9A96E] px-1.5 py-0.5 text-[9px] leading-none font-medium uppercase tracking-wide text-white">
                                                 Soon
                                             </span>
                                         </div>
-                                        <span className="text-xs text-plum/40">{label}</span>
+                                        <span className="w-full truncate text-center text-[11px] text-plum/40 sm:text-xs">{label}</span>
                                     </div>
                                 )
                             )}
