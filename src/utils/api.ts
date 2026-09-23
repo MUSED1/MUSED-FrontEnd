@@ -21,6 +21,7 @@ export const API_CONFIG = {
         brand: '/brand',
         brandMe: '/brand/me',
         brandAdminAll: '/brand/admin/all',
+        brandInquiries: '/brand/inquiries',
         shippingEstimate: '/shipping/estimate'
     },
     pagination: {

@@ -63,6 +63,7 @@ const Closet = lazy(() => import('./components/Closet').then(m => ({ default: m.
 const ClosetAddItem = lazy(() => import('./components/ClosetAddItem').then(m => ({ default: m.ClosetAddItem })))
 const ClosetItemDetail = lazy(() => import('./components/ClosetItemDetail').then(m => ({ default: m.ClosetItemDetail })))
 const StyleCheck = lazy(() => import('./components/StyleCheck').then(m => ({ default: m.StyleCheck })))
+const PartnerWithUs = lazy(() => import('./components/PartnerWithUs').then(m => ({ default: m.PartnerWithUs })))
 import { useAuth } from './hooks/useAuth';
 
 function ScrollToTop() {
@@ -168,6 +169,7 @@ export function App() {
                     <Route path="/wishlist" element={<WishlistHK />} />
                     <Route path="/staff/redeem" element={<StaffRedeem />} />
                     <Route path="/admin/brands" element={<AdminBrands />} />
+                    <Route path="/partner-with-us" element={<PartnerWithUs />} />
                     <Route path="/seller/login" element={<SellerLogin />} />
                     <Route path="/seller/signup" element={<SellerSignup />} />
                     <Route path="/brand" element={<RequireSeller><MyBrand /></RequireSeller>} />

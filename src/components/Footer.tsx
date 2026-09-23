@@ -68,7 +68,7 @@ export function Footer() {
                             </li>
                             <li>
                                 <Link
-                                    to="/brand"
+                                    to="/partner-with-us"
                                     className="text-cream/70 hover:text-gold transition-colors"
                                 >
                                     Partner With Us

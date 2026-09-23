@@ -125,7 +125,7 @@ export function Header() {
                     ))}
 
                     <Link
-                        to="/brand"
+                        to="/partner-with-us"
                         onClick={closeMenu}
                         className="py-2 font-kaldera text-2xl text-gold transition-colors hover:text-cream sm:text-3xl"
                     >
@@ -250,7 +250,7 @@ export function Header() {
                             </Link>
                         )}
                         <Link
-                            to="/brand"
+                            to="/partner-with-us"
                             className="hidden sm:inline-block text-cream/90 hover:text-gold text-xs font-semibold tracking-widest uppercase border border-cream/30 hover:border-gold rounded-full px-4 py-1.5 transition-all duration-300"
                         >
                             Partner With Us
@@ -283,7 +283,7 @@ export function Header() {
                             )}
                             <li className="pt-3 mt-3 border-t border-gold/30">
                                 <Link
-                                    to="/brand"
+                                    to="/partner-with-us"
                                     className="block text-gold font-medium transition-all duration-300 ease-in-out transform hover:translate-x-2 font-kaldera"
                                     onClick={() => setIsMenuOpen(false)}
                                 >
