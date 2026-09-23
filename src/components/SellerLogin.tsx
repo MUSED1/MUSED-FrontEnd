@@ -5,9 +5,14 @@
 // A successful login always lands on /brand — RequireSeller (rendered by
 // that route) is what actually checks role === 'seller' | 'admin' and
 // bounces anyone else back here.
+//
+// Visually this now shares the exact same editorial split-panel layout as
+// Login.tsx (same AuthImagePanel, glass inputs, gradient pill button) —
+// only the copy, badge, and seller-specific redirect logic differ.
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { AuthImagePanel } from './AuthImagePanel';
 
 interface LoginFormData {
     email: string;
@@ -60,26 +65,31 @@ export const SellerLogin: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-cream via-cream to-rose/30 py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-md w-full">
-                <div className="absolute top-0 left-0 w-full h-64 bg-burgundy/5 -z-10" />
+        <div className="min-h-screen w-full flex flex-col md:flex-row bg-cream-clear">
+            <AuthImagePanel
+                heading={<>Sell with<br />MUSED.</>}
+                subtext="Reach a curated community of muses ready to rent, wear and love your pieces."
+            />
 
-                <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-8 md:p-10 border border-gold/20">
-                    <div className="text-center mb-8">
+            {/* Form panel */}
+            <div className="flex w-full items-center justify-center bg-cream px-6 py-12 sm:px-10 md:w-1/2 lg:w-[55%]">
+                <div className="w-full max-w-sm">
+                    <div className="mb-8 text-center md:text-left">
                         <span className="inline-block px-3 py-1 mb-4 rounded-full text-xs font-semibold tracking-wide uppercase bg-plum/10 text-plum">
                             Seller Portal
                         </span>
-                        <h2 className="font-amandine text-5xl md:text-6xl text-burgundy mb-3 tracking-tight">
+                        <h2 className="font-kaldera font-normal text-5xl text-burgundy mb-3 tracking-tight">
                             Welcome Back
                         </h2>
-                        <p className="text-plum/70 text-base font-inter">
+                        <div className="mx-auto mb-3 h-px w-9 bg-[#C9A96E] md:mx-0" />
+                        <p className="text-plum/70 text-base font-sans italic">
                             Sign in to manage your brand storefront
                         </p>
                     </div>
 
                     <form className="space-y-5" onSubmit={handleSubmit}>
                         {localError && (
-                            <div className="bg-red-50 border border-red-200 text-plum/80 px-5 py-4 rounded-2xl text-sm flex items-start gap-3 font-inter">
+                            <div className="bg-[#C9614E]/8 backdrop-blur-sm border border-[#C9614E]/25 text-[#C9614E] px-5 py-4 rounded-2xl text-sm flex items-start gap-3 font-inter">
                                 <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                                 </svg>
@@ -96,7 +106,7 @@ export const SellerLogin: React.FC = () => {
                                     name="email"
                                     type="email"
                                     required
-                                    className="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-plum placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-burgundy/20 focus:border-burgundy transition-all duration-200 font-inter"
+                                    className="w-full px-5 py-3.5 bg-white/50 backdrop-blur-md border border-white/60 rounded-2xl text-plum placeholder-plum/40 shadow-[inset_0_1px_0_rgba(255,255,255,0.6),0_2px_10px_rgba(93,27,58,0.06)] focus:outline-none focus:ring-2 focus:ring-plum/25 focus:border-plum/40 focus:bg-white/70 transition-all duration-200 font-inter"
                                     placeholder="you@yourbrand.com"
                                     value={formData.email}
                                     onChange={handleChange}
@@ -112,7 +122,7 @@ export const SellerLogin: React.FC = () => {
                                     name="password"
                                     type="password"
                                     required
-                                    className="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-plum placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-burgundy/20 focus:border-burgundy transition-all duration-200 font-inter"
+                                    className="w-full px-5 py-3.5 bg-white/50 backdrop-blur-md border border-white/60 rounded-2xl text-plum placeholder-plum/40 shadow-[inset_0_1px_0_rgba(255,255,255,0.6),0_2px_10px_rgba(93,27,58,0.06)] focus:outline-none focus:ring-2 focus:ring-plum/25 focus:border-plum/40 focus:bg-white/70 transition-all duration-200 font-inter"
                                     placeholder="••••••••"
                                     value={formData.password}
                                     onChange={handleChange}
@@ -125,32 +135,37 @@ export const SellerLogin: React.FC = () => {
                             <button
                                 type="button"
                                 onClick={() => navigate('/forgot-password')}
-                                className="text-sm text-burgundy hover:text-gold transition-colors font-medium font-inter"
+                                className="text-sm text-burgundy hover:text-gold transition-colors font-normal font-inter"
                             >
                                 Forgot password?
                             </button>
                         </div>
 
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="w-full px-6 py-4 bg-plum text-white text-base font-medium rounded-xl hover:bg-plum/90 focus:outline-none focus:ring-2 focus:ring-plum/50 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl font-inter"
-                        >
-                            {loading ? (
-                                <span className="flex items-center justify-center gap-2">
-                                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                                    </svg>
-                                    Signing in...
+                        <div className="rounded-full shadow-[0_8px_16px_rgba(61,16,40,0.18)]">
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="relative w-full overflow-hidden rounded-full border border-white/15 bg-gradient-to-b from-plum-dark to-plum px-6 py-4 text-base font-normal text-cream focus:outline-none focus:ring-2 focus:ring-plum/40 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:brightness-110 active:scale-[0.98] font-inter"
+                            >
+                                <span className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/10 to-transparent" />
+                                <span className="relative flex items-center justify-center gap-2">
+                                    {loading ? (
+                                        <>
+                                            <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                            </svg>
+                                            Signing in...
+                                        </>
+                                    ) : (
+                                        'Sign in to your storefront'
+                                    )}
                                 </span>
-                            ) : (
-                                'Sign in to your storefront'
-                            )}
-                        </button>
+                            </button>
+                        </div>
                     </form>
 
-                    <div className="text-center pt-6 space-y-2">
+                    <div className="text-center md:text-left pt-6 space-y-2">
                         <p className="text-plum/60 text-sm font-inter">
                             New brand?{' '}
                             <Link
@@ -168,8 +183,6 @@ export const SellerLogin: React.FC = () => {
                         </p>
                     </div>
                 </div>
-
-                <div className="absolute bottom-0 right-0 w-64 h-64 bg-gold/5 rounded-full blur-3xl -z-10" />
             </div>
         </div>
     );

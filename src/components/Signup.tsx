@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { AuthImagePanel } from './AuthImagePanel';
 
 interface SignupFormData {
     name: string;
@@ -104,23 +105,25 @@ export const Signup: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-cream via-cream to-rose/30 py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-md w-full">
-                <div className="absolute top-0 left-0 w-full h-64 bg-burgundy/5 -z-10" />
+        <div className="min-h-screen w-full flex flex-col md:flex-row bg-cream-clear">
+            <AuthImagePanel />
 
-                <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-8 md:p-10 border border-gold/20">
-                    <div className="text-center mb-8">
-                        <h2 className="font-amandine text-5xl md:text-6xl text-burgundy mb-3 tracking-tight">
-                            Join Us
+            {/* Form panel */}
+            <div className="flex w-full items-center justify-center bg-cream px-6 py-12 sm:px-10 md:w-1/2 lg:w-[55%]">
+                <div className="w-full max-w-sm">
+                    <div className="mb-8 text-center md:text-left">
+                        <h2 className="font-kaldera font-normal text-5xl text-burgundy mb-3 tracking-tight">
+                            Join MUSED 852
                         </h2>
-                        <p className="text-plum/70 text-base font-inter">
+                        <div className="mx-auto mb-3 h-px w-9 bg-[#C9A96E] md:mx-0" />
+                        <p className="text-plum/70 text-base font-sans italic">
                             Create your account to get started
                         </p>
                     </div>
 
                     <form className="space-y-5" onSubmit={handleSubmit}>
                         {localError && (
-                            <div className="bg-red-50 border border-red-200 text-red-600 px-5 py-4 rounded-2xl text-sm flex items-start gap-3 font-inter">
+                            <div className="bg-[#C9614E]/8 backdrop-blur-sm border border-[#C9614E]/25 text-[#C9614E] px-5 py-4 rounded-2xl text-sm flex items-start gap-3 font-inter">
                                 <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                                 </svg>
@@ -137,7 +140,7 @@ export const Signup: React.FC = () => {
                                     name="name"
                                     type="text"
                                     required
-                                    className="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-plum placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-burgundy/20 focus:border-burgundy transition-all duration-200 font-inter"
+                                    className="w-full px-5 py-3.5 bg-white/50 backdrop-blur-md border border-white/60 rounded-2xl text-plum placeholder-plum/40 shadow-[inset_0_1px_0_rgba(255,255,255,0.6),0_2px_10px_rgba(93,27,58,0.06)] focus:outline-none focus:ring-2 focus:ring-plum/25 focus:border-plum/40 focus:bg-white/70 transition-all duration-200 font-inter"
                                     placeholder="Enter your full name"
                                     value={formData.name}
                                     onChange={handleChange}
@@ -153,7 +156,7 @@ export const Signup: React.FC = () => {
                                     name="email"
                                     type="email"
                                     required
-                                    className="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-plum placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-burgundy/20 focus:border-burgundy transition-all duration-200 font-inter"
+                                    className="w-full px-5 py-3.5 bg-white/50 backdrop-blur-md border border-white/60 rounded-2xl text-plum placeholder-plum/40 shadow-[inset_0_1px_0_rgba(255,255,255,0.6),0_2px_10px_rgba(93,27,58,0.06)] focus:outline-none focus:ring-2 focus:ring-plum/25 focus:border-plum/40 focus:bg-white/70 transition-all duration-200 font-inter"
                                     placeholder="you@example.com"
                                     value={formData.email}
                                     onChange={handleChange}
@@ -169,7 +172,7 @@ export const Signup: React.FC = () => {
                                     name="phone"
                                     type="tel"
                                     required
-                                    className="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-plum placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-burgundy/20 focus:border-burgundy transition-all duration-200 font-inter"
+                                    className="w-full px-5 py-3.5 bg-white/50 backdrop-blur-md border border-white/60 rounded-2xl text-plum placeholder-plum/40 shadow-[inset_0_1px_0_rgba(255,255,255,0.6),0_2px_10px_rgba(93,27,58,0.06)] focus:outline-none focus:ring-2 focus:ring-plum/25 focus:border-plum/40 focus:bg-white/70 transition-all duration-200 font-inter"
                                     placeholder="+1 (555) 000-0000"
                                     value={formData.phone}
                                     onChange={handleChange}
@@ -185,7 +188,7 @@ export const Signup: React.FC = () => {
                                     name="password"
                                     type="password"
                                     required
-                                    className="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-plum placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-burgundy/20 focus:border-burgundy transition-all duration-200 font-inter"
+                                    className="w-full px-5 py-3.5 bg-white/50 backdrop-blur-md border border-white/60 rounded-2xl text-plum placeholder-plum/40 shadow-[inset_0_1px_0_rgba(255,255,255,0.6),0_2px_10px_rgba(93,27,58,0.06)] focus:outline-none focus:ring-2 focus:ring-plum/25 focus:border-plum/40 focus:bg-white/70 transition-all duration-200 font-inter"
                                     placeholder="Create a password"
                                     value={formData.password}
                                     onChange={handleChange}
@@ -204,7 +207,7 @@ export const Signup: React.FC = () => {
                                     name="confirmPassword"
                                     type="password"
                                     required
-                                    className="w-full px-5 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-plum placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-burgundy/20 focus:border-burgundy transition-all duration-200 font-inter"
+                                    className="w-full px-5 py-3.5 bg-white/50 backdrop-blur-md border border-white/60 rounded-2xl text-plum placeholder-plum/40 shadow-[inset_0_1px_0_rgba(255,255,255,0.6),0_2px_10px_rgba(93,27,58,0.06)] focus:outline-none focus:ring-2 focus:ring-plum/25 focus:border-plum/40 focus:bg-white/70 transition-all duration-200 font-inter"
                                     placeholder="Confirm your password"
                                     value={formData.confirmPassword}
                                     onChange={handleChange}
@@ -220,7 +223,7 @@ export const Signup: React.FC = () => {
                                     type="checkbox"
                                     checked={termsAccepted}
                                     onChange={(e) => setTermsAccepted(e.target.checked)}
-                                    className="w-5 h-5 rounded border-gray-300 text-burgundy focus:ring-burgundy/20 focus:ring-2 transition-colors"
+                                    className="w-5 h-5 rounded border-plum/30 text-plum accent-plum focus:ring-plum/25 focus:ring-2 transition-colors"
                                     required
                                 />
                             </div>
@@ -239,23 +242,28 @@ export const Signup: React.FC = () => {
                             </label>
                         </div>
 
-                        <button
-                            type="submit"
-                            disabled={loading || !termsAccepted}
-                            className="w-full mt-6 px-6 py-4 bg-gradient-to-r from-burgundy to-burgundy-light text-white text-base font-medium rounded-xl hover:from-burgundy-dark hover:to-burgundy focus:outline-none focus:ring-2 focus:ring-burgundy/50 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl font-inter"
-                        >
-                            {loading ? (
-                                <span className="flex items-center justify-center gap-2">
-                                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                                    </svg>
-                                    Creating account...
+                        <div className="mt-6 rounded-full shadow-[0_8px_16px_rgba(61,16,40,0.18)]">
+                            <button
+                                type="submit"
+                                disabled={loading || !termsAccepted}
+                                className="relative w-full overflow-hidden rounded-full border border-white/15 bg-gradient-to-b from-plum-dark to-plum px-6 py-4 text-base font-normal text-cream focus:outline-none focus:ring-2 focus:ring-plum/40 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:brightness-110 active:scale-[0.98] font-inter"
+                            >
+                                <span className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/10 to-transparent" />
+                                <span className="relative flex items-center justify-center gap-2">
+                                    {loading ? (
+                                        <>
+                                            <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                            </svg>
+                                            Creating account...
+                                        </>
+                                    ) : (
+                                        'Create account'
+                                    )}
                                 </span>
-                            ) : (
-                                'Create account'
-                            )}
-                        </button>
+                            </button>
+                        </div>
                     </form>
 
                     <div className="mt-8">
@@ -264,7 +272,7 @@ export const Signup: React.FC = () => {
                                 <div className="w-full border-t border-gold/20"></div>
                             </div>
                             <div className="relative flex justify-center text-sm">
-                                <span className="px-4 bg-white text-plum/60 font-inter">
+                                <span className="rounded-full border border-white/50 bg-white/40 px-4 py-1 text-plum/60 backdrop-blur-md font-inter">
                                     Or sign up with
                                 </span>
                             </div>
@@ -275,7 +283,7 @@ export const Signup: React.FC = () => {
                                 type="button"
                                 onClick={handleGoogleLogin}
                                 disabled={loading}
-                                className="flex items-center justify-center gap-3 px-4 py-3 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gold/30 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="flex items-center justify-center gap-3 px-4 py-3 bg-white/70 backdrop-blur-sm border border-gold/20 rounded-full hover:bg-white hover:border-gold/40 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 <svg className="h-5 w-5" viewBox="0 0 24 24">
                                     <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
@@ -290,7 +298,7 @@ export const Signup: React.FC = () => {
                                 type="button"
                                 onClick={handleAppleLogin}
                                 disabled={loading}
-                                className="flex items-center justify-center gap-3 px-4 py-3 bg-black border border-black rounded-xl hover:bg-gray-900 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="flex items-center justify-center gap-3 px-4 py-3 bg-black border border-black rounded-full hover:bg-gray-900 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 <svg className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="currentColor">
                                     <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" />
@@ -300,7 +308,7 @@ export const Signup: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="text-center pt-6">
+                    <div className="text-center md:text-left pt-6">
                         <p className="text-plum/60 text-sm font-inter">
                             Already have an account?{' '}
                             <Link
@@ -312,8 +320,6 @@ export const Signup: React.FC = () => {
                         </p>
                     </div>
                 </div>
-
-                <div className="absolute bottom-0 right-0 w-64 h-64 bg-gold/5 rounded-full blur-3xl -z-10" />
             </div>
         </div>
     );

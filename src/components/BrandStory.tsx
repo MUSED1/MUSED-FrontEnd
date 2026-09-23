@@ -1,5 +1,3 @@
-import { Button } from './Button'
-
 export function BrandStory() {
     return (
         <div className="w-full">
@@ -29,13 +27,13 @@ export function BrandStory() {
 
                         <div className="space-y-6 text-left mb-10">
                             <p className="font-sans text-lg leading-relaxed" style={{ color: 'rgba(255,240,200,0.85)' }}>
-                                The best brands shouldn't have to be the biggest. MUSED is building a curated marketplace for rising designers and independent brands worth knowing.
+                                The best brands don't have to be the biggest.
                             </p>
                             <p className="font-sans text-lg leading-relaxed" style={{ color: 'rgba(255,240,200,0.85)' }}>
-                                No endless listings. No noise. Just the good stuff — hand-picked, personal and trusted.
+                                MUSED is your insider for the brands worth knowing, a curated marketplace of up-and-rising designers and independent labels, discovered before they become everywhere.
                             </p>
                             <p className="font-sans text-lg leading-relaxed" style={{ color: 'rgba(255,240,200,0.85)' }}>
-                                For brands, it's a way to get discovered by a community already looking for what's next.
+                                For brands, MUSED is a way to be discovered by a community that's always looking for what's next.
                             </p>
                         </div>
 
@@ -51,19 +49,31 @@ export function BrandStory() {
                             You find it. You fall for it. You get MUSED.
                         </p>
 
-                        {/* CTA Button */}
-                        <div className="inline-block transform transition-all duration-500 hover:scale-105">
-                            <Button variant="primary" className="group" onClick={() => window.open('https://www.mused852.com/brand', '_blank', 'noopener,noreferrer')}>
+                        {/* CTA — question as a soft lead-in, short pill matching the hero CTA */}
+                        <div className="pt-8" style={{ borderTop: '1px solid rgba(255,240,200,0.15)' }}>
+                            <p
+                                className="font-sans italic text-base mb-5"
+                                style={{ color: 'rgba(255,240,200,0.7)' }}
+                            >
+                                Have an eye on something? Know a brand owner you want to bet on?
+                            </p>
+                            <a
+                                href="https://www.mused852.com/brand"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="group inline-flex items-center gap-2 rounded-full px-8 py-3 transition-all duration-300 hover:scale-105 hover:opacity-90"
+                                style={{ backgroundColor: '#FFF0C8', color: '#5B1B3A' }}
+                            >
                                 <span
-                                    className="flex items-center gap-2 font-abril uppercase"
-                                    style={{ fontSize: '15px', letterSpacing: '0.2em' }}
+                                    className="font-abril uppercase text-[13px] md:text-[15px]"
+                                    style={{ letterSpacing: '0.2em' }}
                                 >
-                                    Have An Eye On Something? Know A Brand Owner You Want To Bet On?
-                                    <svg className="w-4 h-4 transform transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                    </svg>
+                                    Put a Brand on Our Radar
                                 </span>
-                            </Button>
+                                <svg className="w-4 h-4 transform transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -96,7 +106,7 @@ export function BrandStory() {
                             className="font-sans text-lg leading-relaxed"
                             style={{ color: 'rgba(91,27,58,0.8)' }}
                         >
-                            Today, MUSED is the roommate you wish you had — the one whose closet you'd raid, whose taste you trust, and who always knows where to find the good stuff.
+                            Today, MUSED is the roommate you wish you had: the one whose closet you'd raid, whose taste you trust, and who always knows where to find the good stuff.
                         </p>
                     </div>
 
@@ -185,7 +195,7 @@ export function BrandStory() {
                                             borderLeft: '4px solid #5B1B3A',
                                         }}
                                     >
-                                        We arrived in Hong Kong with one suitcase each, living in a tiny room, borrowing everything from friends — and we weren't the only ones. We noticed hidden gems tucked away in closets and girls with incredible style walking the streets. We were MUSED.
+                                        We arrived in Hong Kong with one suitcase each, living in a tiny room, borrowing everything from friends, and we weren't the only ones. We noticed hidden gems tucked away in closets and girls with incredible style walking the streets. We were MUSED.
                                     </p>
 
                                     <p
@@ -207,7 +217,7 @@ export function BrandStory() {
                                             borderLeft: '4px solid #7A2B50',
                                         }}
                                     >
-                                        From there, a community of 500+ grew across Hong Kong, New York and Geneva. And we learned something: people weren't just looking for clothes. They were looking for connection, uniqueness and meaning.
+                                        From there, a community of 500+ grew across Hong Kong, New York and London. And we learned something: people weren't just looking for clothes. They were looking for connection, uniqueness and meaning.
                                     </p>
                                 </div>
 

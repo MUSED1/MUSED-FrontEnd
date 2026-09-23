@@ -7,7 +7,11 @@ export const API_CONFIG = {
         clothingAdmin: '/admin/clothing',  // FIXED: matches backend route
         clothingAdminImages: '/admin/clothing',  // For image updates
         clothingMyItems: '/clothing/my-items',
+        clothingMyPurchases: '/clothing/my-purchases',
+        clothingShop: '/clothing/shop',
         clothingImage: '/clothing/image',
+        clothingAnalyze: '/clothing/analyze-photo',
+        styleCheck: '/style-check',
         usersPicks: '/users/picks',
         usersReservations: '/users/reservations',
         auth: '/auth',
@@ -16,7 +20,9 @@ export const API_CONFIG = {
         uploadImage: '/images/upload',  // FIXED: correct path
         brand: '/brand',
         brandMe: '/brand/me',
-        brandAdminAll: '/brand/admin/all'
+        brandAdminAll: '/brand/admin/all',
+        brandInquiries: '/brand/inquiries',
+        shippingEstimate: '/shipping/estimate'
     },
     pagination: {
         defaultLimit: 20,

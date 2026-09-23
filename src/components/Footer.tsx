@@ -67,14 +67,12 @@ export function Footer() {
                                 </Link>
                             </li>
                             <li>
-                                <a
-                                    href="https://www.mused852.com/brand"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
+                                <Link
+                                    to="/partner-with-us"
                                     className="text-cream/70 hover:text-gold transition-colors"
                                 >
                                     Partner With Us
-                                </a>
+                                </Link>
                             </li>
                         </ul>
                     </div>

@@ -60,7 +60,7 @@ export function Diner() {
                         opacity: 1;
                     }
                 `}</style>
-                <div className="container mx-auto px-4 py-16">
+                <div className="container mx-auto px-4 pt-28 pb-16 md:pt-32">
 
                     {/* Hero Section */}
                     <div className="text-center mb-16">

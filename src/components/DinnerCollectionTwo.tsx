@@ -297,7 +297,7 @@ export function DinnerCollectionTwo() {
             )}
 
             {/* Collection Type Selector */}
-            <div className="bg-[#5b1b3a] py-8">
+            <div className="bg-[#5b1b3a] pt-28 pb-8 md:pt-32">
                 <div className="container mx-auto px-4">
                     <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6">
                         <button
