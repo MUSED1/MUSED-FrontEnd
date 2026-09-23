@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { Link } from 'react-router-dom'
 
 // Shuffles an array of indices randomly
 function shuffleIndices(length: number): number[] {
@@ -203,6 +204,22 @@ export function Hero() {
                         </span>
                     </div>
 
+                    {/* CTA — between logo and tagline, fades in with tagline */}
+                    <div className="mb-6">
+                        <Link
+                            to="/collections-hk"
+                            className={`tagline-text inline-block rounded-full transition-all duration-300 hover:scale-105 hover:opacity-90${taglineVisible ? ' visible' : ''}`}
+                            style={{ backgroundColor: '#FFF0C8', color: '#5B1B3A' }}
+                        >
+                            <span
+                                className="font-abril uppercase block px-8 py-3 text-[13px] md:text-[15px]"
+                                style={{ letterSpacing: '0.2em' }}
+                            >
+                                Find My Next Obsession
+                            </span>
+                        </Link>
+                    </div>
+
                     {/* Tagline — simple fade-in after logo */}
                     <p
                         className={`tagline-text font-abril max-w-2xl drop-shadow-lg${taglineVisible ? ' visible' : ''}`}
@@ -218,21 +235,6 @@ export function Hero() {
                         <br />
                         {TAGLINE_LINE_2}
                     </p>
-
-                    {/* CTA — hidden for now
-                    <Link
-                        to="/collections"
-                        className={`tagline-text mt-8 inline-block rounded-full transition-all duration-300 hover:scale-105 hover:opacity-90${taglineVisible ? ' visible' : ''}`}
-                        style={{ backgroundColor: '#FFF0C8', color: '#5B1B3A' }}
-                    >
-                        <span
-                            className="font-abril uppercase block px-8 py-3 text-[13px] md:text-[15px]"
-                            style={{ letterSpacing: '0.2em' }}
-                        >
-                            Find Your Next Obsession
-                        </span>
-                    </Link>
-                    */}
                 </div>
             </div>
 

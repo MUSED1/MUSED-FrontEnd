@@ -6,7 +6,7 @@ import { Footer } from './Footer'
 
 const STATS = [
     { value: '500+', label: 'Community members' },
-    { value: '3', label: 'Cities — HK, NY, London' },
+    { value: '3', label: 'Cities — HK, NY, LDN' },
     { value: '1', label: 'Suitcase each, to start' },
 ]
 
@@ -51,11 +51,6 @@ export function About() {
             {/* ============================================================ */}
             <section className="w-full bg-plum-dark px-4 py-24 sm:py-32">
                 <div className="container mx-auto max-w-3xl text-center">
-                    <p className="font-amandine font-normal text-cream" style={{ fontSize: 'clamp(28px, 5vw, 44px)', lineHeight: 1.3 }}>
-                        No endless listings. No noise.
-                        <br />
-                        Just the good stuff — hand-picked, personal and trusted.
-                    </p>
                     <div className="mx-auto my-8 h-px w-9 bg-[#C9A96E]" />
                     <p className="font-sans text-lg italic text-cream/60">
                         You find it. You fall for it. You get MUSED.
@@ -75,7 +70,7 @@ export function About() {
                                 The <span className="italic">roommate</span> you wish you had
                             </h2>
                             <p className="mt-6 max-w-lg leading-relaxed text-plum/70">
-                                Today, MUSED is the roommate you wish you had — the one whose closet
+                                Today, MUSED is the roommate you wish you had: the one whose closet
                                 you'd raid, whose taste you trust, and who always knows where to find
                                 the good stuff.
                             </p>
@@ -98,7 +93,7 @@ export function About() {
                         </div>
 
                         <div className="order-1 aspect-[4/5] overflow-hidden rounded-3xl lg:order-2">
-                            <img src="/dress4.jpg" alt="" className="h-full w-full object-cover" />
+                            <img src="/roommate-poster.jpg" alt="MUSED 852" className="h-full w-full object-cover" />
                         </div>
                     </div>
                 </div>
@@ -123,7 +118,7 @@ export function About() {
                             <div className="mt-6 space-y-5">
                                 <p className="leading-relaxed text-plum/70">
                                     We arrived in Hong Kong with one suitcase each, living in a tiny
-                                    room, borrowing everything from friends — and we weren't the only
+                                    room, borrowing everything from friends, and we weren't the only
                                     ones. We noticed hidden gems tucked away in closets and girls with
                                     incredible style walking the streets. We were MUSED.
                                 </p>

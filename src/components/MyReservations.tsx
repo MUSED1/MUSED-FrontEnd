@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, CheckCircle } from 'lucide-react';
 import { Header } from './Header';
 import { Footer } from './Footer';
+import { UpcomingEventCard } from './UpcomingEventCard';
 import { useAuth } from '../hooks/useAuth';
 import axios from 'axios';
 
@@ -68,7 +69,7 @@ export function MyReservations() {
     return (
         <div className="font-inter">
             <Header />
-            <main className="min-h-screen bg-white pt-28 md:pt-32 pb-8">
+            <main className="min-h-screen bg-cream-clear pt-28 md:pt-32 pb-8">
                 <div className="container mx-auto px-4 max-w-6xl">
                     <Link to="/profile" className="inline-flex items-center gap-1.5 text-sm text-plum/50 hover:text-plum-dark transition-colors mb-4">
                         <ArrowLeft size={14} />
@@ -83,12 +84,17 @@ export function MyReservations() {
                     </div>
                     <div className="mb-8 h-px w-9 bg-[#C9A96E]" />
 
+                    <h2 className="mb-4 font-kaldera text-xl text-plum-dark">Upcoming</h2>
+                    <div className="mb-12">
+                        <UpcomingEventCard />
+                    </div>
+
                     {loading ? (
                         <div className="text-center py-12">
                             <div className="w-12 h-12 border-4 border-plum-dark/20 border-t-plum-dark rounded-full animate-spin mx-auto"></div>
                         </div>
                     ) : reservations.length === 0 ? (
-                        <div className="rounded-[1.75rem] border border-plum-dark/8 bg-white p-12 text-center shadow-[0_8px_24px_rgba(61,16,40,0.06)]">
+                        <div className="rounded-[1.75rem] border border-plum-dark/8 bg-cream-clear p-12 text-center shadow-[0_8px_24px_rgba(61,16,40,0.06)]">
                             <CheckCircle size={40} className="text-plum/20 mx-auto mb-4" />
                             <p className="text-plum/60 mb-2">No reservations yet</p>
                             <p className="text-sm text-plum/40 mb-6">Your paid and confirmed reservations will appear here</p>

@@ -13,12 +13,12 @@ interface AuthImagePanelProps {
 export const AuthImagePanel: React.FC<AuthImagePanelProps> = ({
     heading = (
         <>
-            Fashion, borrowed
+            The roommate
             <br />
-            beautifully.
+            you wish you had.
         </>
     ),
-    subtext = 'Rent, wear and return standout pieces from a curated community of muses.',
+    subtext = 'The one with the best finds before everyone else.',
 }) => (
     <div className="relative w-full h-64 sm:h-80 overflow-hidden md:h-screen md:w-1/2 md:sticky md:top-0 lg:w-[45%]">
         <img

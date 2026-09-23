@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
-import { MapPin, Calendar, ArrowUpRight } from 'lucide-react'
+import { MapPin, ArrowUpRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Header } from './Header'
 import { Footer } from './Footer'
+import { UpcomingEventCard } from './UpcomingEventCard'
 
 interface ImageData {
     _id: string;
@@ -185,7 +186,7 @@ export function Events() {
     ];
 
     return (
-        <div className="bg-white">
+        <div className="bg-cream-clear">
             <Header />
 
             {/* ============================================================ */}
@@ -198,7 +199,7 @@ export function Events() {
                         Events
                     </h1>
                     <p className="mt-2 max-w-md text-sm text-plum/50">
-                        Dinners, drops and MUSED moments across Hong Kong, New York and London.
+                        Come for the glam. Stay for the people. Leave with something to talk about. Rumour has it, you're on the list.
                     </p>
                 </div>
             </section>
@@ -210,45 +211,7 @@ export function Events() {
                 <div className="container mx-auto max-w-5xl">
                     <h2 className="mb-4 font-kaldera text-xl text-plum-dark">Upcoming</h2>
 
-                    <Link
-                        to="/events/next"
-                        className="group relative flex flex-col overflow-hidden rounded-3xl bg-plum-dark sm:flex-row"
-                    >
-                        <div className="relative h-56 w-full overflow-hidden sm:h-auto sm:w-2/5">
-                            <img
-                                src="https://res.cloudinary.com/dapfjngt2/image/upload/v1778993726/quick_Eternity_2__page-0001_kgg4kr.jpg"
-                                alt=""
-                                className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                            />
-                            <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs text-plum-dark">
-                                Dinner
-                            </span>
-                        </div>
-
-                        <div className="flex flex-1 flex-col justify-center p-6 sm:p-8">
-                            <h3 className="font-kaldera text-2xl text-cream sm:text-3xl">
-                                Wear Something <span className="italic">Borrowed</span>
-                            </h3>
-                            <div className="mt-3 space-y-1.5 text-sm text-cream/60">
-                                <div className="flex items-center gap-2">
-                                    <MapPin size={14} />
-                                    Sai Ying Pun, Hong Kong
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <Calendar size={14} />
-                                    June 18 — 8:00 PM
-                                </div>
-                            </div>
-
-                            <div className="mt-5 flex items-center justify-between">
-                                <span className="font-kaldera text-xl text-cream">HK$ 290</span>
-                                <span className="flex items-center gap-1.5 text-sm text-cream/80 transition-colors group-hover:text-gold">
-                                    RSVP
-                                    <ArrowUpRight size={15} />
-                                </span>
-                            </div>
-                        </div>
-                    </Link>
+                    <UpcomingEventCard />
                 </div>
             </section>
 
@@ -257,7 +220,7 @@ export function Events() {
             {/* ============================================================ */}
 
             {/* Past Events Collections Grid */}
-            <section className="w-full bg-white px-4 py-16">
+            <section className="w-full bg-cream-clear px-4 py-16">
                 <div className="container mx-auto max-w-6xl">
                     <h2 className="mb-6 font-kaldera text-xl text-plum-dark">Past Events</h2>
 

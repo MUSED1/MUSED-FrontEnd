@@ -1,22 +1,24 @@
 // components/EventDetail.tsx
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Share2, MapPin, Calendar, ArrowUpRight, Instagram, Link2, X } from 'lucide-react'
+import { ArrowLeft, Share2, Instagram, Link2, X } from 'lucide-react'
 import { Footer } from './Footer'
 
+// General "next gathering" page — no date/venue until one is announced.
+// Pre-registration goes to an Instagram DM for now; swap PRE_REGISTER_URL
+// for a WhatsApp link or form once one exists.
 const EVENT = {
-    tag: 'Dinner',
-    title: 'Wear Something Borrowed',
-    dateLabel: 'June 18th, 2026',
-    timeLabel: '8:00 PM',
-    venue: 'Ping Pong',
-    address: '129 Second Street L/G Nam Cheong House, Sai Ying Pun, Hong Kong',
+    tag: 'Coming Soon',
+    title: 'MUSED Event',
     price: 'HK$ 290',
     image: 'https://res.cloudinary.com/dapfjngt2/image/upload/v1778993726/quick_Eternity_2__page-0001_kgg4kr.jpg',
-    description:
-        "Come wearing a borrowed piece from the collection. This is where muses can meet the mused. Get to know who you are lending to and borrowing from. Share your style, share a moment.",
-    mapQuery: '129 Second Street, Sai Ying Pun, Hong Kong',
+    description: [
+        'A night for good clothes, good people, and the MUSED community.',
+        "Come as you are and meet the people behind the pieces, the brands, and the community. Discover new faces, share your style, and see what's next.",
+    ],
 }
+
+const PRE_REGISTER_URL = 'https://ig.me/m/mused852'
 
 export function EventDetail() {
     const navigate = useNavigate()
@@ -38,7 +40,7 @@ export function EventDetail() {
 
     return (
         <div className="font-inter">
-            <main className="min-h-screen bg-white">
+            <main className="min-h-screen bg-cream-clear">
                 {/* Hero */}
                 <div className="relative h-[60vh] min-h-[420px] w-full overflow-hidden">
                     <img src={EVENT.image} alt="" className="absolute inset-0 h-full w-full object-cover" />
@@ -113,7 +115,7 @@ export function EventDetail() {
                 </div>
 
                 {/* Info card */}
-                <div className="relative z-10 mx-auto -mt-8 max-w-2xl rounded-t-[2rem] bg-white px-6 pb-32 pt-6 shadow-[0_-8px_24px_rgba(61,16,40,0.08)] sm:px-8">
+                <div className="relative z-10 mx-auto -mt-8 max-w-2xl rounded-t-[2rem] bg-cream-clear px-6 pb-32 pt-6 shadow-[0_-8px_24px_rgba(61,16,40,0.08)] sm:px-8">
                     <span className="inline-block rounded-full bg-plum-dark/6 px-3 py-1 text-xs text-plum-dark">
                         {EVENT.tag}
                     </span>
@@ -122,22 +124,17 @@ export function EventDetail() {
                         {EVENT.title}
                     </h1>
 
-                    <div className="mt-4 space-y-2 text-sm text-plum/60">
-                        <div className="flex items-center gap-2">
-                            <MapPin size={15} className="text-plum/40" />
-                            {EVENT.venue} — {EVENT.address}
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <Calendar size={15} className="text-plum/40" />
-                            {EVENT.dateLabel} · {EVENT.timeLabel}
-                        </div>
-                    </div>
+                    <p className="mt-4 text-sm text-plum/60">
+                        Dates, place and dress code are shared with the list first.
+                    </p>
 
                     <div className="my-6 h-px w-9 bg-[#C9A96E]" />
 
                     <div>
-                        <h2 className="font-kaldera text-lg text-plum-dark">About this dinner</h2>
-                        <p className="mt-2 leading-relaxed text-plum/70">{EVENT.description}</p>
+                        <h2 className="font-kaldera text-lg text-plum-dark">About this event</h2>
+                        {EVENT.description.map((para) => (
+                            <p key={para} className="mt-2 leading-relaxed text-plum/70">{para}</p>
+                        ))}
                     </div>
 
                     <div className="mt-8 flex items-center gap-3 border-t border-cream pt-6">
@@ -149,32 +146,21 @@ export function EventDetail() {
                             <p className="text-xs text-plum/50">852 — Hong Kong</p>
                         </div>
                     </div>
-
-                    <a
-                        href={`https://maps.google.com/?q=${encodeURIComponent(EVENT.mapQuery)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-6 flex items-center justify-between border-t border-cream py-4 text-sm text-plum-dark"
-                    >
-                        View on map
-                        <ArrowUpRight size={15} className="text-plum/40" />
-                    </a>
                 </div>
 
                 {/* Sticky book bar */}
-                <div className="fixed inset-x-0 bottom-0 z-40 border-t border-plum-dark/10 bg-white/95 px-6 py-4 backdrop-blur-xl sm:px-8">
-                    <div className="mx-auto flex max-w-2xl items-center justify-between gap-4">
-                        <div>
-                            <p className="text-xs text-plum/50">Per person</p>
-                            <p className="font-kaldera text-2xl text-plum-dark">{EVENT.price}</p>
-                        </div>
+                <div className="fixed inset-x-0 bottom-0 z-40 border-t border-plum-dark/10 bg-cream-clear px-6 py-4 backdrop-blur-xl sm:px-8">
+                    {/* Price hidden while the next date is TBA — restore with EVENT.price */}
+                    <div className="mx-auto flex max-w-2xl items-center justify-center gap-4">
                         <div className="rounded-full shadow-[0_8px_16px_rgba(61,16,40,0.18)]">
-                            <button
-                                onClick={() => navigate('/collections-hk')}
-                                className="rounded-full border border-white/15 bg-gradient-to-b from-plum-dark to-plum px-8 py-3.5 text-sm font-normal text-cream transition-all hover:brightness-110"
+                            <a
+                                href={PRE_REGISTER_URL}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="rounded-full border border-white/15 bg-gradient-to-b from-plum-dark to-plum inline-block px-8 py-3.5 text-sm font-normal text-cream transition-all hover:brightness-110"
                             >
-                                Pick Your Outfit
-                            </button>
+                                Pre-Register
+                            </a>
                         </div>
                     </div>
                 </div>
