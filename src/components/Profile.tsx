@@ -5,7 +5,7 @@ import { Header } from './Header';
 import { Footer } from './Footer';
 import { PhoneEdit } from './PhoneEdit';
 import { useAuth } from '../hooks/useAuth';
-import { User, LogOut, Star, CheckCircle, AlertCircle, Camera, X, MoreHorizontal, Settings, ArrowUpRight, ArrowLeft, Truck, ShoppingBag, MessageCircle, Heart, Compass, Shirt, ShieldCheck } from 'lucide-react';
+import { User, LogOut, Star, CheckCircle, AlertCircle, Camera, X, MoreHorizontal, Settings, ArrowUpRight, ArrowLeft, Truck, ShoppingBag, MessageCircle, Heart, Shirt, ShieldCheck } from 'lucide-react';
 import axios from 'axios';
 import {
     type Purchase,
@@ -475,10 +475,6 @@ export function Profile() {
                                     <div className="font-kaldera text-xl text-cream">{activityCounts.picks}</div>
                                     <div className="text-xs text-cream/50">Favs</div>
                                 </Link>
-                                <Link to="/my-reservations" className="text-center transition-opacity hover:opacity-80">
-                                    <div className="font-kaldera text-xl text-cream">{activityCounts.events}</div>
-                                    <div className="text-xs text-cream/50">Events</div>
-                                </Link>
                             </div>
                         </div>
                     </div>
@@ -528,13 +524,12 @@ export function Profile() {
                     {/* Quick actions */}
                     <div className="mb-10">
                         <h2 className="mb-4 font-kaldera text-lg text-plum-dark">Quick Actions</h2>
-                        <div className={`grid gap-1 pt-2 sm:gap-4 ${user?.role === 'admin' ? 'grid-cols-7' : 'grid-cols-6'}`}>
+                        <div className={`grid gap-1 pt-2 sm:gap-4 ${user?.role === 'admin' ? 'grid-cols-6' : 'grid-cols-5'}`}>
                             {[
                                 { label: 'Closet', icon: Shirt, onClick: () => navigate('/closet') },
-                                { label: 'Collection', icon: ShoppingBag, onClick: () => navigate('/collections-hk') },
+                                { label: 'Shop', icon: ShoppingBag, onClick: () => navigate('/shop') },
                                 { label: 'Chat', icon: MessageCircle, onClick: () => navigate('/style-check') },
                                 { label: 'Favs', icon: Heart, onClick: () => requirePhoneNumber(() => navigate('/my-picks')), needsPhone: true },
-                                { label: 'Events', icon: Compass, onClick: () => requirePhoneNumber(() => navigate('/my-reservations')), needsPhone: true },
                                 { label: 'Orders', icon: Truck, onClick: () => navigate('/my-orders') },
                                 // Same profile everyone else gets, plus this one admin-only action —
                                 // no separate admin dashboard/profile for now.

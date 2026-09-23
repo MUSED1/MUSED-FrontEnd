@@ -169,7 +169,7 @@ export function About() {
                 </h2>
                 <div className="mx-auto my-6 h-px w-9 bg-[#C9A96E]" />
 
-                <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+                <div className="flex flex-col items-center justify-center gap-4">
                     <div className="rounded-full shadow-[0_8px_16px_rgba(61,16,40,0.18)]">
                         <Link
                             to="/signup"
@@ -180,10 +180,10 @@ export function About() {
                         </Link>
                     </div>
                     <Link
-                        to="/collections-hk"
+                        to="/shop"
                         className="text-sm text-plum/60 transition-colors hover:text-plum-dark"
                     >
-                        Or browse the collection
+                        Or browse the shop
                     </Link>
                 </div>
             </section>

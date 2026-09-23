@@ -162,7 +162,7 @@ export function Diner() {
 
                                     {/* CTA: Abril Display, uppercase, tracking 200, 15px */}
                                     <button
-                                        onClick={() => navigate('/collections-hk')}
+                                        onClick={() => navigate('/shop')}
                                         className="rounded-full inline-block transition-opacity hover:opacity-80 cursor-pointer border-0"
                                         style={{ backgroundColor: '#5B1B3A', color: '#FFF0C8', fontFamily: 'inherit' }}
                                     >

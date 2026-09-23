@@ -7,7 +7,7 @@ export function Footer() {
             <div className="container mx-auto px-4 py-12">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                     <div>
-                        <h3 className="text-xl font-bold mb-4">MUSED</h3>
+                        <h3 className="font-kaldera text-xl tracking-wider mb-4">MUSED</h3>
 
                         <div className="flex space-x-4">
                             <a
@@ -44,7 +44,7 @@ export function Footer() {
                             </li>
                             <li>
                                 <Link
-                                    to="/reachout"
+                                    to="/enquiries"
                                     className="text-cream/70 hover:text-gold transition-colors"
                                 >
                                     Enquiries

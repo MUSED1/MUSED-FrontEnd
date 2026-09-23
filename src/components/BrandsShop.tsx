@@ -124,15 +124,15 @@ export function BrandsShop() {
 
     const API_URL = API_CONFIG.baseURL;
 
+    // Shop is public — anyone can browse and buy without an account. Only
+    // "picks" (saving a heart) is account-bound, so that's fetched/guarded
+    // separately rather than gating the whole page.
     useEffect(() => {
-        if (!authLoading && !isAuthenticated) {
-            navigate('/login');
-        }
-    }, [isAuthenticated, authLoading, navigate]);
+        fetchShopItems();
+    }, []);
 
     useEffect(() => {
         if (isAuthenticated) {
-            fetchShopItems();
             fetchUserPicks();
         }
     }, [isAuthenticated]);
@@ -194,6 +194,10 @@ export function BrandsShop() {
     };
 
     const togglePick = async (itemId: string) => {
+        if (!isAuthenticated) {
+            navigate('/login', { state: { from: '/shop' } });
+            return;
+        }
         try {
             const token = localStorage.getItem('token');
             const isPicked = userPicks[itemId];
@@ -298,10 +302,6 @@ export function BrandsShop() {
                 <Footer />
             </div>
         );
-    }
-
-    if (!isAuthenticated) {
-        return null;
     }
 
     return (

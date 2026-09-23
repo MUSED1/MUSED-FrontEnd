@@ -207,7 +207,7 @@ export function Hero() {
                     {/* CTA — between logo and tagline, fades in with tagline */}
                     <div className="mb-6">
                         <Link
-                            to="/collections-hk"
+                            to="/shop"
                             className={`tagline-text inline-block rounded-full transition-all duration-300 hover:scale-105 hover:opacity-90${taglineVisible ? ' visible' : ''}`}
                             style={{ backgroundColor: '#FFF0C8', color: '#5B1B3A' }}
                         >

@@ -100,7 +100,7 @@ export function MyPicks() {
                             <p className="text-sm text-plum/40 mb-6">Browse the collection and save items you like</p>
                             <div className="inline-block rounded-full shadow-[0_8px_16px_rgba(61,16,40,0.18)]">
                                 <button
-                                    onClick={() => navigate('/collections-hk')}
+                                    onClick={() => navigate('/shop')}
                                     className="rounded-full border border-white/15 bg-gradient-to-b from-plum-dark to-plum px-6 py-3 text-sm font-normal text-cream transition-all hover:brightness-110 active:scale-[0.98]"
                                 >
                                     Browse Collection

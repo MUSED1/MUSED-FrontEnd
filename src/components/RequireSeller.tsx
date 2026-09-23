@@ -56,7 +56,7 @@ export function RequireSeller({ children }: RequireSellerProps) {
             <Navigate
                 to="/seller/login"
                 replace
-                state={{ message: 'This account isn\u2019t set up as a seller. Sign in with a brand account, or apply below.' }}
+                state={{ message: 'This account isn\u2019t set up as a seller. Sign in with a brand account, or get in touch with us below.' }}
             />
         );
     }

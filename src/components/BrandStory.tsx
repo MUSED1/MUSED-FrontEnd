@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 export function BrandStory() {
     return (
         <div className="w-full">
@@ -57,10 +59,8 @@ export function BrandStory() {
                             >
                                 Have an eye on something? Know a brand owner you want to bet on?
                             </p>
-                            <a
-                                href="https://www.mused852.com/brand"
-                                target="_blank"
-                                rel="noopener noreferrer"
+                            <Link
+                                to="/partner-with-us"
                                 className="group inline-flex items-center gap-2 rounded-full px-8 py-3 transition-all duration-300 hover:scale-105 hover:opacity-90"
                                 style={{ backgroundColor: '#FFF0C8', color: '#5B1B3A' }}
                             >
@@ -73,7 +73,7 @@ export function BrandStory() {
                                 <svg className="w-4 h-4 transform transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                 </svg>
-                            </a>
+                            </Link>
                         </div>
                     </div>
                 </div>

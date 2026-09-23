@@ -19,7 +19,7 @@ import { useAuth } from '../hooks/useAuth';
 // `to: null` marks a feature that isn't live yet — rendered as a "Soon" tile
 const CATEGORIES = [
     { to: '/closet', icon: Shirt, label: 'Closet' },
-    { to: '/collections-hk', icon: ShoppingBag, label: 'Collection' },
+    { to: '/shop', icon: ShoppingBag, label: 'Shop' },
     { to: '/style-check', icon: MessageCircle, label: 'Chat' },
     { to: '/my-picks', icon: Heart, label: 'Favs' },
     { to: '/events', icon: Compass, label: 'Events' },
@@ -46,7 +46,7 @@ export function Feed() {
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
-        navigate('/collections-hk');
+        navigate('/shop');
     };
 
     const firstName = user?.name?.split(' ')[0];
@@ -124,7 +124,7 @@ export function Feed() {
 
                     {/* Featured card */}
                     <Link
-                        to="/collections-hk"
+                        to="/shop"
                         className="group relative mt-10 block h-72 overflow-hidden rounded-3xl sm:h-80"
                     >
                         <img
@@ -152,7 +152,7 @@ export function Feed() {
                     {/* Edits — horizontal scroll */}
                     <div className="mt-12 flex items-center justify-between">
                         <h3 className="font-kaldera text-xl text-plum-dark">Collections</h3>
-                        <Link to="/collections-hk" className="text-sm text-plum/50 transition-colors hover:text-plum-dark">
+                        <Link to="/shop" className="text-sm text-plum/50 transition-colors hover:text-plum-dark">
                             See all
                         </Link>
                     </div>
@@ -161,7 +161,7 @@ export function Feed() {
                         {EDITS.map(({ image, title, note }) => (
                             <Link
                                 key={title}
-                                to="/collections-hk"
+                                to="/shop"
                                 className="group w-40 shrink-0 sm:w-48"
                             >
                                 <div className="h-56 w-full overflow-hidden rounded-2xl bg-plum-dark/5 sm:h-64">

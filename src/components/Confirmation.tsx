@@ -259,10 +259,10 @@ export function Confirmation() {
                                         <span>Contact Support Urgently</span>
                                     </button>
                                     <Link
-                                        to="/collections-m"
+                                        to="/shop"
                                         className="bg-gray-600 text-white px-8 py-3 rounded-full hover:bg-gray-700 transition-all duration-300 font-semibold text-center"
                                     >
-                                        Back to Collection
+                                        Back to Shop
                                     </Link>
                                 </div>
                             </>
@@ -425,10 +425,10 @@ export function Confirmation() {
 
                                 <div className="mt-4">
                                     <Link
-                                        to="/collections-ny"
+                                        to="/shop"
                                         className="text-plum/60 hover:text-plum transition-colors duration-300 text-sm underline"
                                     >
-                                        Continue browsing collection
+                                        Continue browsing the shop
                                     </Link>
                                 </div>
                             </>

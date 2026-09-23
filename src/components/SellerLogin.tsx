@@ -169,10 +169,10 @@ export const SellerLogin: React.FC = () => {
                         <p className="text-plum/60 text-sm font-inter">
                             New brand?{' '}
                             <Link
-                                to="/seller/signup"
+                                to="/partner-with-us"
                                 className="text-burgundy font-medium hover:text-gold transition-colors"
                             >
-                                Apply to sell on MUSED
+                                Get in touch with us
                             </Link>
                         </p>
                         <p className="text-plum/40 text-xs font-inter">
