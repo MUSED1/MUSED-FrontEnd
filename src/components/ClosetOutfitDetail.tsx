@@ -21,6 +21,7 @@ interface ClosetItem {
     category: string;
     images: string[];
     outfitId?: string | null;
+    outfitSourceImage?: string | null;
 }
 
 export function ClosetOutfitDetail() {
@@ -89,7 +90,7 @@ export function ClosetOutfitDetail() {
         );
     }
 
-    const photo = items[0].images?.[1] || items[0].images?.[0];
+    const photo = items[0].outfitSourceImage || items[0].images?.[0];
 
     return (
         <div className="font-sans">

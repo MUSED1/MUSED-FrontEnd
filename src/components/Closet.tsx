@@ -22,6 +22,7 @@ interface ClosetItem {
     styleTags?: string[];
     images: string[];
     outfitId?: string | null;
+    outfitSourceImage?: string | null;
 }
 
 interface StyleProfile {
@@ -100,7 +101,7 @@ export function Closet() {
     }, [items, selectedCategory]);
 
     // Group pieces that were extracted together from the same outfit photo.
-    // Each group's items[1] is the same shared source photo.
+    // Each group shares the same outfitSourceImage.
     const outfits = useMemo(() => {
         const groups = new Map<string, ClosetItem[]>();
         items.forEach((item) => {
@@ -111,7 +112,7 @@ export function Closet() {
         });
         return Array.from(groups.entries()).map(([outfitId, outfitItems]) => ({
             outfitId,
-            photo: outfitItems[0]?.images?.[1] || outfitItems[0]?.images?.[0],
+            photo: outfitItems[0]?.outfitSourceImage || outfitItems[0]?.images?.[0],
             items: outfitItems,
         }));
     }, [items]);

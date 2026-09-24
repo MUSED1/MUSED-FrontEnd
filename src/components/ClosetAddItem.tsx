@@ -475,11 +475,15 @@ export function ClosetAddItem() {
             const body = {
                 userInfo: { fullName: user?.name || '', email: user?.email || '', phoneNumber: user?.phone || '' },
                 clothingItems: pieces.map((p) => ({
-                    // Cropped piece first (the closet grid's cover photo), original
-                    // full photo second — so the user can still see the whole outfit
-                    // this was extracted from via the item detail page's gallery.
-                    images: sourceImage ? [p.image, sourceImage] : [p.image],
+                    // Cropped piece in both slots — index 0 becomes the AI
+                    // ghost-mannequin cover photo, index 1 stays the plain
+                    // cropped photo (the backend skips the AI transform for
+                    // outfit pieces past index 0). The shared full outfit
+                    // photo goes in outfitSourceImage instead, so a piece's
+                    // own gallery shows itself, not the whole outfit.
+                    images: sourceImage ? [p.image, p.image] : [p.image],
                     outfitId,
+                    outfitSourceImage: outfitId ? sourceImage : undefined,
                     category: p.category,
                     sizeSystem: p.sizeSystem,
                     size: p.size || 'One Size',
