@@ -36,7 +36,9 @@ export const Signup: React.FC = () => {
     const getPostSignupDestination = (): string => {
         const from = (location.state as any)?.from;
         if (from) return from;
-        return '/upload';
+        // The main "marketplace" right now is browsing brand storefronts,
+        // not the old per-user listing form — send new users there.
+        return '/shop';
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>): void => {

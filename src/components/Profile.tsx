@@ -1,11 +1,11 @@
 // components/Profile.tsx
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Header } from './Header';
 import { Footer } from './Footer';
 import { PhoneEdit } from './PhoneEdit';
 import { useAuth } from '../hooks/useAuth';
-import { User, LogOut, Star, CheckCircle, AlertCircle, Camera, X, MoreHorizontal, Settings, ArrowUpRight, ArrowLeft, Truck, ShoppingBag, MessageCircle, Heart, Shirt, ShieldCheck } from 'lucide-react';
+import { User, LogOut, Star, AlertCircle, Camera, X, MoreHorizontal, Settings, ArrowUpRight, ArrowLeft, Truck, ShoppingBag, MessageCircle, Heart, Shirt, ShieldCheck } from 'lucide-react';
 import axios from 'axios';
 import { convertHeicIfNeeded } from '../utils/api';
 import {
@@ -17,18 +17,9 @@ import {
     formatOrderDate,
 } from '../utils/orderTracking';
 
-interface UploadPreview {
-    _id: string;
-    images: string[];
-}
-
 export function Profile() {
     const { user, isAuthenticated, loading, logout, updateUser } = useAuth();
     const navigate = useNavigate();
-    const location = useLocation();
-    const [showUploadSuccess, setShowUploadSuccess] = useState(
-        (location.state as { uploadSuccess?: boolean })?.uploadSuccess === true
-    );
     const [showPhoneRequiredWarning, setShowPhoneRequiredWarning] = useState(false);
 
     // Avatar states
@@ -46,24 +37,15 @@ export function Profile() {
     const [activityCounts, setActivityCounts] = useState({
         orders: 0,
         picks: 0,
-        events: 0
     });
     const [latestOrder, setLatestOrder] = useState<Purchase | null>(null);
     const [menuOpen, setMenuOpen] = useState(false);
-    const [uploadPreviews, setUploadPreviews] = useState<UploadPreview[]>([]);
 
     useEffect(() => {
         if (!loading && !isAuthenticated) {
             navigate('/login');
         }
     }, [isAuthenticated, loading, navigate]);
-
-    // Auto-dismiss upload success banner after 6 seconds
-    useEffect(() => {
-        if (!showUploadSuccess) return;
-        const timer = setTimeout(() => setShowUploadSuccess(false), 6000);
-        return () => clearTimeout(timer);
-    }, [showUploadSuccess]);
 
     // Auto-dismiss phone warning after 6 seconds
     useEffect(() => {
@@ -81,10 +63,8 @@ export function Profile() {
                 const token = localStorage.getItem('token');
                 const API_URL = import.meta.env.VITE_API_URL?.replace('/auth', '') || 'https://mused-backend.onrender.com/api';
 
-                const [uploadsRes, picksRes, reservationsRes, purchasesRes] = await Promise.all([
-                    axios.get(`${API_URL}/clothing/my-items`, { headers: { Authorization: `Bearer ${token}` } }),
+                const [picksRes, purchasesRes] = await Promise.all([
                     axios.get(`${API_URL}/users/picks`, { headers: { Authorization: `Bearer ${token}` } }),
-                    axios.get(`${API_URL}/users/reservations`, { headers: { Authorization: `Bearer ${token}` } }),
                     // Orders are optional here — don't let a failure blank out the other counts
                     axios.get(`${API_URL}/clothing/my-purchases`, { headers: { Authorization: `Bearer ${token}` } })
                         .catch(() => ({ data: { success: false, data: [] } })),
@@ -95,15 +75,10 @@ export function Profile() {
                 setActivityCounts({
                     orders: purchases.length,
                     picks: picksRes.data.success ? picksRes.data.data.length : 0,
-                    events: reservationsRes.data.success ? reservationsRes.data.data.length : 0,
                 });
 
                 // Track the most recent order that hasn't arrived yet, else the most recent one
                 setLatestOrder(purchases.find((p) => p.trackingStatus !== 'delivered') || purchases[0] || null);
-
-                if (uploadsRes.data.success) {
-                    setUploadPreviews(uploadsRes.data.data.slice(0, 6));
-                }
             } catch (error) {
                 console.error('Error fetching activity counts:', error);
             }
@@ -517,26 +492,6 @@ export function Profile() {
                         </div>
                     )}
 
-                    {/* Upload success banner */}
-                    {showUploadSuccess && (
-                        <div className="flex items-center justify-between gap-4 bg-green-50 border border-green-200 text-green-800 rounded-xl px-5 py-4 mb-6 shadow-sm animate-fadeIn">
-                            <div className="flex items-center gap-3">
-                                <CheckCircle size={22} className="text-green-500 shrink-0" />
-                                <div>
-                                    <p className="font-semibold">Thank you for your submission! </p>
-                                    <p className="text-sm text-green-700">Your clothing items were uploaded successfully and are now being reviewed.</p>
-                                </div>
-                            </div>
-                            <button
-                                onClick={() => setShowUploadSuccess(false)}
-                                className="text-green-500 hover:text-green-700 transition-colors shrink-0 text-lg leading-none"
-                                aria-label="Dismiss"
-                            >
-                                ✕
-                            </button>
-                        </div>
-                    )}
-
                     {/* Quick actions */}
                     <div className="mb-10">
                         <h2 className="mb-4 font-kaldera text-lg text-plum-dark">Quick Actions</h2>
@@ -669,38 +624,6 @@ export function Profile() {
                         </div>
                     )}
 
-                    {/* Creations — preview grid of your uploaded pieces */}
-                    {uploadPreviews.length > 0 && (
-                        <div className="mb-10">
-                            <div className="mb-4 flex items-center justify-between">
-                                <h2 className="font-kaldera text-lg text-plum-dark">Creations</h2>
-                                <Link
-                                    to="/my-uploads"
-                                    className="flex items-center gap-1 text-sm text-plum/50 transition-colors hover:text-plum-dark"
-                                >
-                                    See all
-                                    <ArrowUpRight size={14} />
-                                </Link>
-                            </div>
-                            <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
-                                {uploadPreviews.map((item) => (
-                                    <Link
-                                        key={item._id}
-                                        to="/my-uploads"
-                                        className="aspect-square overflow-hidden rounded-xl bg-plum-dark/5"
-                                    >
-                                        {item.images?.[0] && (
-                                            <img
-                                                src={item.images[0]}
-                                                alt=""
-                                                className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
-                                            />
-                                        )}
-                                    </Link>
-                                ))}
-                            </div>
-                        </div>
-                    )}
                 </div>
 
                 {/* Profile Information — full-width white section, flush with the screen */}
