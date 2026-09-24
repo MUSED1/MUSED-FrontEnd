@@ -244,6 +244,7 @@ export function ClosetAddItem() {
 
     // Multi-item extraction state
     const [sourceImage, setSourceImage] = useState<string | null>(null);
+    const [outfitId, setOutfitId] = useState<string | null>(null);
     const [detectedItems, setDetectedItems] = useState<DetectedItem[]>([]);
     const [detectIndex, setDetectIndex] = useState(0);
     const [crop, setCrop] = useState<Crop>();
@@ -314,6 +315,7 @@ export function ClosetAddItem() {
                 setDetectedItems(items);
                 setDetectIndex(0);
                 setSourceImage(dataUrl);
+                setOutfitId(crypto.randomUUID());
                 setStage('extracting');
             }
         } catch {
@@ -473,7 +475,11 @@ export function ClosetAddItem() {
             const body = {
                 userInfo: { fullName: user?.name || '', email: user?.email || '', phoneNumber: user?.phone || '' },
                 clothingItems: pieces.map((p) => ({
-                    images: [p.image],
+                    // Cropped piece first (the closet grid's cover photo), original
+                    // full photo second — so the user can still see the whole outfit
+                    // this was extracted from via the item detail page's gallery.
+                    images: sourceImage ? [p.image, sourceImage] : [p.image],
+                    outfitId,
                     category: p.category,
                     sizeSystem: p.sizeSystem,
                     size: p.size || 'One Size',

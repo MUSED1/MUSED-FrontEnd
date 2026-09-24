@@ -21,6 +21,7 @@ interface ClosetItem {
     colors?: string[];
     styleTags?: string[];
     images: string[];
+    outfitId?: string | null;
 }
 
 interface StyleProfile {
@@ -41,6 +42,7 @@ export function Closet() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [selectedCategory, setSelectedCategory] = useState<string>('All');
+    const [view, setView] = useState<'pieces' | 'outfits'>('pieces');
 
     useEffect(() => {
         if (!authLoading && !isAuthenticated) {
@@ -96,6 +98,23 @@ export function Closet() {
         if (selectedCategory === 'All') return items;
         return items.filter((item) => item.category === selectedCategory);
     }, [items, selectedCategory]);
+
+    // Group pieces that were extracted together from the same outfit photo.
+    // Each group's items[1] is the same shared source photo.
+    const outfits = useMemo(() => {
+        const groups = new Map<string, ClosetItem[]>();
+        items.forEach((item) => {
+            if (!item.outfitId) return;
+            const group = groups.get(item.outfitId) || [];
+            group.push(item);
+            groups.set(item.outfitId, group);
+        });
+        return Array.from(groups.entries()).map(([outfitId, outfitItems]) => ({
+            outfitId,
+            photo: outfitItems[0]?.images?.[1] || outfitItems[0]?.images?.[0],
+            items: outfitItems,
+        }));
+    }, [items]);
 
     const colorCount = new Set(items.flatMap((i) => i.colors || [])).size;
     const styleCount = new Set(items.flatMap((i) => i.styleTags || [])).size;
@@ -176,59 +195,109 @@ export function Closet() {
                         </div>
                     )}
 
-                    {/* Category filter */}
-                    {categories.length > 1 && (
-                        <div className="mb-6 flex flex-wrap gap-2">
-                            {categories.map((cat) => (
-                                <button
-                                    key={cat}
-                                    onClick={() => setSelectedCategory(cat)}
-                                    className={`rounded-full px-4 py-1.5 text-xs font-medium uppercase tracking-wide transition-colors ${
-                                        selectedCategory === cat
-                                            ? 'bg-plum-dark text-cream'
-                                            : 'bg-white/60 text-plum/60 border border-white/60 hover:bg-white'
-                                    }`}
-                                >
-                                    {cat}
-                                </button>
-                            ))}
-                        </div>
-                    )}
-
-                    {/* Grid / empty state */}
-                    {filteredItems.length === 0 ? (
-                        <div className="rounded-3xl bg-white/60 backdrop-blur-md border border-white/60 py-16 text-center">
-                            <Shirt size={40} className="mx-auto mb-4 text-plum/25" />
-                            <p className="mb-5 text-plum/60">
-                                {items.length === 0 ? "Your closet's empty — add your first piece." : 'Nothing in this category yet.'}
-                            </p>
-                            <Link
-                                to="/closet/add"
-                                className="inline-flex items-center gap-2 rounded-full bg-gradient-to-b from-plum-dark to-plum px-6 py-3 text-sm font-medium text-cream"
+                    {/* Pieces / Outfits toggle */}
+                    <div className="mb-6 inline-flex rounded-full bg-white/60 border border-white/60 p-1">
+                        {(['pieces', 'outfits'] as const).map((v) => (
+                            <button
+                                key={v}
+                                onClick={() => setView(v)}
+                                className={`rounded-full px-5 py-1.5 text-sm font-medium capitalize transition-colors ${
+                                    view === v ? 'bg-plum-dark text-cream' : 'text-plum/60 hover:text-plum-dark'
+                                }`}
                             >
-                                <Plus size={16} />
-                                Add a Piece
-                            </Link>
-                        </div>
+                                {v}
+                            </button>
+                        ))}
+                    </div>
+
+                    {view === 'pieces' ? (
+                        <>
+                            {/* Category filter */}
+                            {categories.length > 1 && (
+                                <div className="mb-6 flex flex-wrap gap-2">
+                                    {categories.map((cat) => (
+                                        <button
+                                            key={cat}
+                                            onClick={() => setSelectedCategory(cat)}
+                                            className={`rounded-full px-4 py-1.5 text-xs font-medium uppercase tracking-wide transition-colors ${
+                                                selectedCategory === cat
+                                                    ? 'bg-plum-dark text-cream'
+                                                    : 'bg-white/60 text-plum/60 border border-white/60 hover:bg-white'
+                                            }`}
+                                        >
+                                            {cat}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Grid / empty state */}
+                            {filteredItems.length === 0 ? (
+                                <div className="rounded-3xl bg-white/60 backdrop-blur-md border border-white/60 py-16 text-center">
+                                    <Shirt size={40} className="mx-auto mb-4 text-plum/25" />
+                                    <p className="mb-5 text-plum/60">
+                                        {items.length === 0 ? "Your closet's empty — add your first piece." : 'Nothing in this category yet.'}
+                                    </p>
+                                    <Link
+                                        to="/closet/add"
+                                        className="inline-flex items-center gap-2 rounded-full bg-gradient-to-b from-plum-dark to-plum px-6 py-3 text-sm font-medium text-cream"
+                                    >
+                                        <Plus size={16} />
+                                        Add a Piece
+                                    </Link>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-3 gap-1 sm:gap-3">
+                                    {filteredItems.map((item) => (
+                                        <Link
+                                            key={item._id}
+                                            to={`/closet/${item._id}`}
+                                            className="group aspect-square overflow-hidden rounded-lg sm:rounded-2xl bg-plum-dark/5"
+                                        >
+                                            <img
+                                                src={item.images?.[0] || getImageUrl(item._id, 0)}
+                                                alt={item.productName || item.category}
+                                                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                                onError={(e) => {
+                                                    e.currentTarget.src = getImageUrl(item._id, 0);
+                                                }}
+                                            />
+                                        </Link>
+                                    ))}
+                                </div>
+                            )}
+                        </>
                     ) : (
-                        <div className="grid grid-cols-3 gap-1 sm:gap-3">
-                            {filteredItems.map((item) => (
-                                <Link
-                                    key={item._id}
-                                    to={`/closet/${item._id}`}
-                                    className="group aspect-square overflow-hidden rounded-lg sm:rounded-2xl bg-plum-dark/5"
-                                >
-                                    <img
-                                        src={item.images?.[0] || getImageUrl(item._id, 0)}
-                                        alt={item.productName || item.category}
-                                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                                        onError={(e) => {
-                                            e.currentTarget.src = getImageUrl(item._id, 0);
-                                        }}
-                                    />
-                                </Link>
-                            ))}
-                        </div>
+                        /* Outfits — each card is the shared source photo; click in to see its pieces */
+                        outfits.length === 0 ? (
+                            <div className="rounded-3xl bg-white/60 backdrop-blur-md border border-white/60 py-16 text-center">
+                                <Shirt size={40} className="mx-auto mb-4 text-plum/25" />
+                                <p className="text-plum/60">
+                                    No outfits yet — extract 2+ pieces from one photo when adding to your closet.
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3">
+                                {outfits.map((outfit) => (
+                                    <Link
+                                        key={outfit.outfitId}
+                                        to={`/closet/outfit/${outfit.outfitId}`}
+                                        className="group relative aspect-[3/4] overflow-hidden rounded-2xl bg-plum-dark/5"
+                                    >
+                                        {outfit.photo && (
+                                            <img
+                                                src={outfit.photo}
+                                                alt=""
+                                                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                            />
+                                        )}
+                                        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent px-3 py-2">
+                                            <span className="text-xs font-medium text-white">{outfit.items.length} pieces</span>
+                                        </div>
+                                    </Link>
+                                ))}
+                            </div>
+                        )
                     )}
                 </div>
             </main>

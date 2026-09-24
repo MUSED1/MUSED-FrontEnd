@@ -62,6 +62,7 @@ const Feed = lazy(() => import('./components/Feed').then(m => ({ default: m.Feed
 const Closet = lazy(() => import('./components/Closet').then(m => ({ default: m.Closet })))
 const ClosetAddItem = lazy(() => import('./components/ClosetAddItem').then(m => ({ default: m.ClosetAddItem })))
 const ClosetItemDetail = lazy(() => import('./components/ClosetItemDetail').then(m => ({ default: m.ClosetItemDetail })))
+const ClosetOutfitDetail = lazy(() => import('./components/ClosetOutfitDetail').then(m => ({ default: m.ClosetOutfitDetail })))
 const StyleCheck = lazy(() => import('./components/StyleCheck').then(m => ({ default: m.StyleCheck })))
 const PartnerWithUs = lazy(() => import('./components/PartnerWithUs').then(m => ({ default: m.PartnerWithUs })))
 const Enquiries = lazy(() => import('./components/Enquiries').then(m => ({ default: m.Enquiries })))
@@ -141,6 +142,7 @@ export function App() {
                     {/* <Route path="/reachout" element={<Reachout />} /> */}
                     <Route path="/closet" element={<Closet />} />
                     <Route path="/closet/add" element={<ClosetAddItem />} />
+                    <Route path="/closet/outfit/:outfitId" element={<ClosetOutfitDetail />} />
                     <Route path="/closet/:id" element={<ClosetItemDetail />} />
                     <Route path="/style-check" element={<StyleCheck />} />
                     <Route path="/my-uploads" element={<MyUploads />} />

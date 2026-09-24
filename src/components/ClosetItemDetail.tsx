@@ -8,7 +8,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Header } from './Header';
 import { Footer } from './Footer';
-import { MessageCircle, Trash2, Pencil, ChevronLeft, ChevronRight } from 'lucide-react';
+import { MessageCircle, Trash2, Pencil, ChevronLeft, ChevronRight, Shirt } from 'lucide-react';
 import { API_CONFIG } from '../utils/api';
 
 const CATEGORIES = ['Dresses', 'Tops', 'Bottoms', 'Outerwear', 'Accessories', 'Shoes', 'Bags', 'Jewelry', 'Skirts', 'Vests', 'Others'];
@@ -32,6 +32,7 @@ interface ClosetItemDoc {
     styleTags?: string[];
     additionalInfo?: string;
     images: string[];
+    outfitId?: string | null;
 }
 
 export function ClosetItemDetail() {
@@ -256,13 +257,24 @@ export function ClosetItemDetail() {
                                     <p className="mt-4 text-sm text-plum/70">{item.additionalInfo}</p>
                                 )}
 
-                                <Link
-                                    to="/style-check"
-                                    className="mt-6 inline-flex items-center gap-2 rounded-full border border-plum/20 px-5 py-2.5 text-sm font-medium text-plum-dark hover:bg-plum/5 transition-colors"
-                                >
-                                    <MessageCircle size={16} />
-                                    Ask M about this piece
-                                </Link>
+                                <div className="mt-6 flex flex-wrap gap-3">
+                                    <Link
+                                        to="/style-check"
+                                        className="inline-flex items-center gap-2 rounded-full border border-plum/20 px-5 py-2.5 text-sm font-medium text-plum-dark hover:bg-plum/5 transition-colors"
+                                    >
+                                        <MessageCircle size={16} />
+                                        Ask M about this piece
+                                    </Link>
+                                    {item.outfitId && (
+                                        <Link
+                                            to={`/closet/outfit/${item.outfitId}`}
+                                            className="inline-flex items-center gap-2 rounded-full border border-plum/20 px-5 py-2.5 text-sm font-medium text-plum-dark hover:bg-plum/5 transition-colors"
+                                        >
+                                            <Shirt size={16} />
+                                            Part of an outfit — view it
+                                        </Link>
+                                    )}
+                                </div>
                             </>
                         ) : (
                             <div className="space-y-5">
