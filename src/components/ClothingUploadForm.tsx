@@ -6,7 +6,7 @@ import { Footer } from './Footer';
 import { Upload, Plus, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { PhoneEdit } from './PhoneEdit';
-import { API_CONFIG, compressImage } from '../utils/api';
+import { API_CONFIG, compressImage, convertHeicIfNeeded } from '../utils/api';
 
 interface ClothingItem {
     image: string;
@@ -144,30 +144,39 @@ export function ClothingUploadForm() {
     };
 
     const handleImageUpload = async (index: number, event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (file) {
-            if (file.size > 5 * 1024 * 1024) {
+        const rawFile = event.target.files?.[0];
+        if (rawFile) {
+            if (rawFile.size > 5 * 1024 * 1024) {
                 alert('File too large. Maximum size is 5MB.');
                 return;
             }
             setUploadProgress(0);
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                const base64Image = e.target?.result as string;
-                const base64Data = base64Image.split(',')[1] || base64Image;
-                try {
-                    setUploadProgress(50);
-                    const compressed = await compressImage(base64Data);
-                    setUploadProgress(100);
-                    handleClothingItemChange(index, 'image', compressed);
-                    setTimeout(() => setUploadProgress(0), 1000);
-                } catch (error) {
-                    console.error('Image compression error:', error);
-                    alert('Failed to process image. Please try another image.');
-                    setUploadProgress(0);
-                }
-            };
-            reader.readAsDataURL(file);
+            try {
+                // HEIC (the default iPhone photo format) can't be decoded by the
+                // canvas-based compressImage() below — convert it to JPEG first.
+                const file = await convertHeicIfNeeded(rawFile);
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    const base64Image = e.target?.result as string;
+                    const base64Data = base64Image.split(',')[1] || base64Image;
+                    try {
+                        setUploadProgress(50);
+                        const compressed = await compressImage(base64Data);
+                        setUploadProgress(100);
+                        handleClothingItemChange(index, 'image', compressed);
+                        setTimeout(() => setUploadProgress(0), 1000);
+                    } catch (error) {
+                        console.error('Image compression error:', error);
+                        alert('Failed to process image. Please try another image.');
+                        setUploadProgress(0);
+                    }
+                };
+                reader.readAsDataURL(file);
+            } catch (error) {
+                console.error('HEIC conversion error:', error);
+                alert('Failed to process image. Please try another image.');
+                setUploadProgress(0);
+            }
         }
     };
 

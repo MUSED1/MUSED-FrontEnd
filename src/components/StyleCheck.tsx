@@ -17,7 +17,7 @@ import { Header } from './Header';
 import { Footer } from './Footer';
 import { Camera, Send, Sparkles, X, RotateCcw } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
-import { API_CONFIG } from '../utils/api';
+import { API_CONFIG, convertHeicIfNeeded } from '../utils/api';
 
 const OCCASIONS = ['Casual', 'Smart Casual', 'Formal'];
 
@@ -126,7 +126,7 @@ export function StyleCheck() {
         const file = e.target.files?.[0];
         if (!file) return;
         try {
-            setStartPhoto(await fileToDataUrl(file));
+            setStartPhoto(await fileToDataUrl(await convertHeicIfNeeded(file)));
         } catch {
             setError('Could not read that photo.');
         }
@@ -137,7 +137,7 @@ export function StyleCheck() {
         const file = e.target.files?.[0];
         if (!file) return;
         try {
-            setFollowUpPhoto(await fileToDataUrl(file));
+            setFollowUpPhoto(await fileToDataUrl(await convertHeicIfNeeded(file)));
         } catch {
             setError('Could not read that photo.');
         }

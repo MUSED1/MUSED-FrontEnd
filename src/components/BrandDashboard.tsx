@@ -46,7 +46,7 @@ import {
     CheckCircle2, AlertCircle, Clock, Upload, Boxes, Store, Layers,
     ExternalLink, Search, Truck, Check, ChevronDown, Ban
 } from 'lucide-react'
-import { API_CONFIG } from '../utils/api'
+import { API_CONFIG, convertHeicIfNeeded } from '../utils/api'
 
 // ------------------------------------------------------------------
 // Types
@@ -961,7 +961,7 @@ function AddItemModal({
         if (!files) return;
         const urls: string[] = [];
         for (const file of Array.from(files).slice(0, 3)) {
-            urls.push(await fileToDataUrl(file));
+            urls.push(await fileToDataUrl(await convertHeicIfNeeded(file)));
         }
         setImages(prev => [...prev, ...urls].slice(0, 3));
     };

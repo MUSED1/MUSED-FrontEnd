@@ -1,4 +1,5 @@
 // utils/api.ts
+import heic2any from 'heic2any';
 
 export const API_CONFIG = {
     baseURL: import.meta.env.VITE_API_URL?.replace('/auth', '') || 'https://mused-backend.onrender.com/api',
@@ -11,6 +12,7 @@ export const API_CONFIG = {
         clothingShop: '/clothing/shop',
         clothingImage: '/clothing/image',
         clothingAnalyze: '/clothing/analyze-photo',
+        clothingDetectItems: '/clothing/detect-items',
         styleCheck: '/style-check',
         usersPicks: '/users/picks',
         usersReservations: '/users/reservations',
@@ -91,6 +93,26 @@ export async function fetchPaginated<T>(
 // Helper function to get image URL
 export function getImageUrl(itemId: string, imageIndex: number = 0): string {
     return `${API_CONFIG.baseURL}${API_CONFIG.endpoints.clothingImage}/${itemId}/${imageIndex}`;
+}
+
+// HEIC/HEIF (the default photo format on iPhone) can't be decoded by the
+// Canvas/Image APIs any browser exposes — compressImage()'s `new Image()`
+// load would just fail silently on one. Detect it up front (by MIME type,
+// falling back to the file extension since iOS Safari sometimes hands
+// over an empty/generic type for HEIC files) and convert to a JPEG File
+// before it ever reaches FileReader/compressImage. Non-HEIC files pass
+// through untouched.
+export async function convertHeicIfNeeded(file: File): Promise<File> {
+    const isHeic =
+        /image\/hei[cf]/i.test(file.type) ||
+        /\.hei[cf]$/i.test(file.name);
+
+    if (!isHeic) return file;
+
+    const converted = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.9 });
+    const blob = Array.isArray(converted) ? converted[0] : converted;
+    const newName = file.name.replace(/\.hei[cf]$/i, '.jpg');
+    return new File([blob], newName || 'photo.jpg', { type: 'image/jpeg' });
 }
 
 // Helper function to compress image

@@ -7,6 +7,7 @@ import { PhoneEdit } from './PhoneEdit';
 import { useAuth } from '../hooks/useAuth';
 import { User, LogOut, Star, CheckCircle, AlertCircle, Camera, X, MoreHorizontal, Settings, ArrowUpRight, ArrowLeft, Truck, ShoppingBag, MessageCircle, Heart, Shirt, ShieldCheck } from 'lucide-react';
 import axios from 'axios';
+import { convertHeicIfNeeded } from '../utils/api';
 import {
     type Purchase,
     DELIVERY_STAGES,
@@ -225,19 +226,30 @@ export function Profile() {
 
     // Resize a chosen cover photo down to a reasonable size before storing it,
     // so it stays well under the browser's localStorage quota.
-    const handleCoverPhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
+    const handleCoverPhotoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const rawFile = e.target.files?.[0];
         if (e.target) e.target.value = '';
-        if (!file) return;
+        if (!rawFile) return;
 
-        if (!file.type.startsWith('image/')) {
+        if (!rawFile.type.startsWith('image/')) {
             setCoverError('Please select an image file');
             setTimeout(() => setCoverError(null), 3000);
             return;
         }
 
-        if (file.size > 10 * 1024 * 1024) {
+        if (rawFile.size > 10 * 1024 * 1024) {
             setCoverError('Image must be less than 10MB');
+            setTimeout(() => setCoverError(null), 3000);
+            return;
+        }
+
+        // HEIC (the default iPhone photo format) can't be decoded by the
+        // canvas below — convert to JPEG first.
+        let file: File;
+        try {
+            file = await convertHeicIfNeeded(rawFile);
+        } catch {
+            setCoverError('Could not process that photo. Try a different image.');
             setTimeout(() => setCoverError(null), 3000);
             return;
         }
@@ -245,6 +257,10 @@ export function Profile() {
         const reader = new FileReader();
         reader.onload = () => {
             const img = new Image();
+            img.onerror = () => {
+                setCoverError('Could not process that photo. Try a different image.');
+                setTimeout(() => setCoverError(null), 3000);
+            };
             img.onload = () => {
                 const maxWidth = 1600;
                 const scale = Math.min(1, maxWidth / img.width);
