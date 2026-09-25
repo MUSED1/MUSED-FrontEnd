@@ -40,16 +40,6 @@ interface MConversation {
     messages: MMessage[];
 }
 
-interface SuggestionItem {
-    _id: string;
-    productName?: string;
-    brand?: string;
-    images: string[];
-    price?: number;
-    currency?: string;
-    category: string;
-}
-
 function fileToDataUrl(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -72,7 +62,6 @@ export function StyleCheck() {
 
     // Conversation state
     const [conversation, setConversation] = useState<MConversation | null>(null);
-    const [suggestionsByIndex, setSuggestionsByIndex] = useState<Record<number, SuggestionItem[]>>({});
     const [sending, setSending] = useState(false);
     const [error, setError] = useState('');
 
@@ -202,21 +191,8 @@ export function StyleCheck() {
         }
     };
 
-    const handleTipTap = async (tip: Tip, messageIndex: number) => {
+    const handleTipTap = async (tip: Tip) => {
         await sendFollowUp(tip.text, null);
-        try {
-            const token = localStorage.getItem('token');
-            const res = await fetch(
-                `${API_CONFIG.baseURL}${API_CONFIG.endpoints.styleCheck}/${conversation?._id}/suggestions?category=${encodeURIComponent(tip.category)}`,
-                { headers: token ? { Authorization: `Bearer ${token}` } : {} }
-            );
-            const result = await res.json();
-            if (result.success) {
-                setSuggestionsByIndex((prev) => ({ ...prev, [messageIndex]: result.data }));
-            }
-        } catch {
-            // Non-fatal — suggestions are a bonus, not required.
-        }
     };
 
     const startOver = () => {
@@ -224,7 +200,6 @@ export function StyleCheck() {
         setStartPhoto(null);
         setOccasion(null);
         setDetail('');
-        setSuggestionsByIndex({});
         setError('');
     };
 
@@ -358,26 +333,11 @@ export function StyleCheck() {
                                                     {msg.tips.map((tip, ti) => (
                                                         <button
                                                             key={ti}
-                                                            onClick={() => handleTipTap(tip, i)}
+                                                            onClick={() => handleTipTap(tip)}
                                                             className="rounded-full bg-[#C9A96E]/15 px-3 py-1.5 text-xs text-plum-dark hover:bg-[#C9A96E]/25 transition-colors"
                                                         >
                                                             {tip.text}
                                                         </button>
-                                                    ))}
-                                                </div>
-                                            )}
-
-                                            {suggestionsByIndex[i] && suggestionsByIndex[i].length > 0 && (
-                                                <div className="mt-3 flex gap-3 overflow-x-auto pb-1">
-                                                    {suggestionsByIndex[i].map((item) => (
-                                                        <div key={item._id} className="w-24 shrink-0">
-                                                            <div className="h-24 w-24 overflow-hidden rounded-xl bg-plum-dark/5">
-                                                                {item.images?.[0] && (
-                                                                    <img src={item.images[0]} alt="" className="h-full w-full object-cover" />
-                                                                )}
-                                                            </div>
-                                                            <p className="mt-1 truncate text-[10px] text-plum/60">{item.productName || item.category}</p>
-                                                        </div>
                                                     ))}
                                                 </div>
                                             )}
