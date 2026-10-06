@@ -1,8 +1,9 @@
 // components/MyReservations.tsx
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, CheckCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { CheckCircle } from 'lucide-react';
 import { Header } from './Header';
+import { BackLink } from './BackLink';
 import { Footer } from './Footer';
 import { UpcomingEventCard } from './UpcomingEventCard';
 import { useAuth } from '../hooks/useAuth';
@@ -71,10 +72,7 @@ export function MyReservations() {
             <Header />
             <main className="min-h-screen bg-cream-clear pt-28 md:pt-32 pb-8">
                 <div className="container mx-auto px-4 max-w-6xl">
-                    <Link to="/profile" className="inline-flex items-center gap-1.5 text-sm text-plum/50 hover:text-plum-dark transition-colors mb-4">
-                        <ArrowLeft size={14} />
-                        Profile
-                    </Link>
+                    <BackLink className="mb-4" />
 
                     <div className="flex items-center justify-between mb-2">
                         <h1 className="text-3xl font-kaldera text-plum-dark">My Reservations</h1>

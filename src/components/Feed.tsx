@@ -1,30 +1,11 @@
 // components/Feed.tsx
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import {
-    Search,
-    ShoppingBag,
-    MessageCircle,
-    Heart,
-    Compass,
-    Package,
-    ArrowUpRight,
-    User,
-    Shirt,
-} from 'lucide-react';
+import { Search, ArrowUpRight, User } from 'lucide-react';
 import { Header } from './Header';
 import { Footer } from './Footer';
 import { useAuth } from '../hooks/useAuth';
-
-// `to: null` marks a feature that isn't live yet — rendered as a "Soon" tile
-const CATEGORIES = [
-    { to: '/closet', icon: Shirt, label: 'Closet' },
-    { to: '/shop', icon: ShoppingBag, label: 'Shop' },
-    { to: '/style-check', icon: MessageCircle, label: 'Chat' },
-    { to: '/my-picks', icon: Heart, label: 'Favs' },
-    { to: '/events', icon: Compass, label: 'Events' },
-    { to: '/my-orders', icon: Package, label: 'Orders' },
-];
+import { FEED_SHORTCUTS } from '../config/nav';
 
 const EDITS = [
     { image: '/main1-hero.jpg', title: 'Night Out', note: 'Cocktail & dinner pieces' },
@@ -90,36 +71,20 @@ export function Feed() {
                         </div>
                     </form>
 
-                    {/* Categories */}
-                    <div className="mt-8 grid grid-cols-6 gap-1 pt-2 sm:gap-4">
-                        {CATEGORIES.map(({ to, icon: Icon, label }) =>
-                            to ? (
-                                <Link
-                                    key={label}
-                                    to={to}
-                                    className="group flex min-w-0 flex-col items-center gap-2"
-                                >
-                                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-plum-dark/6 text-plum-dark transition-colors sm:h-14 sm:w-14 group-hover:bg-plum-dark group-hover:text-cream">
-                                        <Icon size={20} />
-                                    </div>
-                                    <span className="w-full truncate text-center text-[11px] text-plum/60 sm:text-xs">{label}</span>
-                                </Link>
-                            ) : (
-                                <div
-                                    key={label}
-                                    className="flex min-w-0 cursor-default flex-col items-center gap-2"
-                                    aria-disabled="true"
-                                >
-                                    <div className="relative flex h-12 w-12 items-center justify-center rounded-full bg-plum-dark/6 text-plum-dark/40 sm:h-14 sm:w-14">
-                                        <Icon size={20} />
-                                        <span className="absolute -top-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-[#C9A96E] px-1.5 py-0.5 text-[9px] leading-none font-medium uppercase tracking-wide text-white">
-                                            Soon
-                                        </span>
-                                    </div>
-                                    <span className="w-full truncate text-center text-[11px] text-plum/40 sm:text-xs">{label}</span>
+                    {/* Shortcuts — things to explore and do. Your own pages live on the profile. */}
+                    <div className="mt-8 grid grid-cols-4 gap-1 pt-2 sm:gap-4">
+                        {FEED_SHORTCUTS.map(({ path, label, icon: Icon }) => (
+                            <Link
+                                key={path}
+                                to={path}
+                                className="group flex min-w-0 flex-col items-center gap-2"
+                            >
+                                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-plum-dark/6 text-plum-dark transition-colors sm:h-14 sm:w-14 group-hover:bg-plum-dark group-hover:text-cream">
+                                    <Icon size={20} />
                                 </div>
-                            )
-                        )}
+                                <span className="w-full truncate text-center text-[11px] text-plum/60 sm:text-xs">{label}</span>
+                            </Link>
+                        ))}
                     </div>
 
                     {/* Featured card */}

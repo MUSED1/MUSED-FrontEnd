@@ -1,8 +1,8 @@
 // components/AccountSettings.tsx
 import { useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Header } from './Header';
+import { BackLink } from './BackLink';
 import { Footer } from './Footer';
 import { useAuth } from '../hooks/useAuth';
 
@@ -25,10 +25,7 @@ export function AccountSettings() {
             <Header />
             <main className="min-h-screen bg-white pt-28 md:pt-32 pb-8">
                 <div className="container mx-auto px-4 max-w-4xl">
-                    <Link to="/profile" className="inline-flex items-center gap-1.5 text-sm text-plum/50 hover:text-plum-dark transition-colors mb-4">
-                        <ArrowLeft size={14} />
-                        Profile
-                    </Link>
+                    <BackLink className="mb-4" />
 
                     <h1 className="text-3xl font-kaldera text-plum-dark mb-2">Settings</h1>
                     <div className="mb-8 h-px w-9 bg-[#C9A96E]" />

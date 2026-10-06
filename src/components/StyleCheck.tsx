@@ -14,6 +14,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from './Header';
+import { BackLink } from './BackLink';
 import { Footer } from './Footer';
 import { Camera, Send, Sparkles, X, RotateCcw } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
@@ -224,6 +225,8 @@ export function StyleCheck() {
             <Header />
             <main className="min-h-screen bg-cream pt-28 pb-8 sm:pt-32">
                 <div className="container mx-auto max-w-2xl px-4">
+                    <BackLink className="mb-4" />
+
                     <div className="mb-6 flex items-center justify-between">
                         <div>
                             <span className="text-xs uppercase tracking-label text-plum/40">Ask</span>
