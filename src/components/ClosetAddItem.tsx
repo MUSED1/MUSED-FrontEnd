@@ -25,6 +25,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import ReactCrop, { type Crop, type PixelCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import { Header } from './Header';
+import { BackLink } from './BackLink';
 import { Footer } from './Footer';
 import { Sparkles, Upload, X, Trash2, ArrowRight, SkipForward } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
@@ -521,9 +522,7 @@ export function ClosetAddItem() {
             <main className="min-h-screen bg-cream pt-28 pb-20 sm:pt-32">
                 <div className="container mx-auto max-w-2xl px-4">
                     <div className="mb-8">
-                        <Link to="/closet" className="text-sm text-plum/60 hover:text-burgundy transition-colors">
-                            ← Back to Closet
-                        </Link>
+                        <BackLink to="/closet" label="Closet" />
                         <h1 className="mt-3 font-kaldera font-normal text-3xl text-plum-dark sm:text-4xl">
                             {stage === 'single' ? 'Add a Piece' : stage === 'extracting' ? 'Extract Pieces' : `Review ${pieces.length} Piece${pieces.length === 1 ? '' : 's'}`}
                         </h1>

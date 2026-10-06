@@ -9,6 +9,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Header } from './Header';
+import { BackLink } from './BackLink';
 import { Footer } from './Footer';
 import { Plus, Shirt, Sparkles } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
@@ -139,6 +140,8 @@ export function Closet() {
             <Header />
             <main className="min-h-screen bg-cream pt-28 pb-20 sm:pt-32">
                 <div className="container mx-auto max-w-5xl px-4">
+                    <BackLink className="mb-4" />
+
                     <div className="mb-8 flex items-center justify-between gap-4">
                         <div>
                             <span className="text-xs uppercase tracking-label text-plum/40">Your</span>

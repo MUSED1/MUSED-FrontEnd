@@ -5,9 +5,10 @@ import { Header } from './Header';
 import { Footer } from './Footer';
 import { PhoneEdit } from './PhoneEdit';
 import { useAuth } from '../hooks/useAuth';
-import { User, LogOut, Star, AlertCircle, Camera, X, MoreHorizontal, Settings, ArrowUpRight, ArrowLeft, Truck, ShoppingBag, MessageCircle, Heart, Shirt, ShieldCheck } from 'lucide-react';
+import { User, LogOut, Star, AlertCircle, Camera, X, MoreHorizontal, Settings, ArrowUpRight, ArrowLeft, ShieldCheck } from 'lucide-react';
 import axios from 'axios';
 import { convertHeicIfNeeded } from '../utils/api';
+import { PROFILE_SHORTCUTS } from '../config/nav';
 import {
     type Purchase,
     DELIVERY_STAGES,
@@ -104,6 +105,8 @@ export function Profile() {
             setAvatar(user.avatar);
         }
     }, [user?.avatar]);
+
+    const isAdmin = user?.role === 'admin';
 
     const hasPhoneNumber = () => {
         return !!(user?.phone && user.phone.trim().length > 0);
@@ -492,29 +495,23 @@ export function Profile() {
                         </div>
                     )}
 
-                    {/* Quick actions */}
+                    {/* Your account — the pages that are yours. Shop/Events/Closet live on home. */}
                     <div className="mb-10">
-                        <h2 className="mb-4 font-kaldera text-lg text-plum-dark">Quick Actions</h2>
-                        <div className={`grid gap-1 pt-2 sm:gap-4 ${user?.role === 'admin' ? 'grid-cols-6' : 'grid-cols-5'}`}>
-                            {[
-                                { label: 'Closet', icon: Shirt, onClick: () => navigate('/closet') },
-                                { label: 'Shop', icon: ShoppingBag, onClick: () => navigate('/shop') },
-                                { label: 'Chat', icon: MessageCircle, onClick: () => navigate('/style-check') },
-                                { label: 'Favs', icon: Heart, onClick: () => requirePhoneNumber(() => navigate('/my-picks')), needsPhone: true },
-                                { label: 'Orders', icon: Truck, onClick: () => navigate('/my-orders') },
-                                // Same profile everyone else gets, plus this one admin-only action —
-                                // no separate admin dashboard/profile for now.
-                                ...(user?.role === 'admin'
-                                    ? [{ label: 'Approvals', icon: ShieldCheck, onClick: () => navigate('/admin/brands') }]
-                                    : []),
-                            ].map(({ label, icon: Icon, onClick, needsPhone }) =>
-                                onClick ? (
+                        <h2 className="mb-4 font-kaldera text-lg text-plum-dark">Your account</h2>
+                        <div className={`grid gap-1 pt-2 sm:gap-4 ${isAdmin ? 'grid-cols-4' : 'grid-cols-3'}`}>
+                            {PROFILE_SHORTCUTS.map(({ path, label, icon: Icon, needsPhone }) => {
+                                const blocked = Boolean(needsPhone) && !hasPhoneNumber();
+                                return (
                                     <button
-                                        key={label}
-                                        onClick={onClick}
-                                        title={needsPhone && !hasPhoneNumber() ? 'Phone number required' : undefined}
+                                        key={path}
+                                        onClick={() =>
+                                            needsPhone
+                                                ? requirePhoneNumber(() => navigate(path))
+                                                : navigate(path)
+                                        }
+                                        title={blocked ? 'Phone number required' : undefined}
                                         className={`group flex min-w-0 flex-col items-center gap-2 ${
-                                            needsPhone && !hasPhoneNumber() ? 'cursor-not-allowed opacity-50' : ''
+                                            blocked ? 'cursor-not-allowed opacity-50' : ''
                                         }`}
                                     >
                                         <div className="flex h-12 w-12 items-center justify-center rounded-full bg-plum-dark/6 text-plum-dark transition-colors sm:h-14 sm:w-14 group-hover:bg-plum-dark group-hover:text-cream">
@@ -522,27 +519,27 @@ export function Profile() {
                                         </div>
                                         <span className="w-full truncate text-center text-[11px] text-plum/60 sm:text-xs">{label}</span>
                                     </button>
-                                ) : (
-                                    <div
-                                        key={label}
-                                        className="flex min-w-0 cursor-default flex-col items-center gap-2"
-                                        aria-disabled="true"
-                                    >
-                                        <div className="relative flex h-12 w-12 items-center justify-center rounded-full bg-plum-dark/6 text-plum-dark/40 sm:h-14 sm:w-14">
-                                            <Icon size={20} />
-                                            <span className="absolute -top-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-[#C9A96E] px-1.5 py-0.5 text-[9px] leading-none font-medium uppercase tracking-wide text-white">
-                                                Soon
-                                            </span>
-                                        </div>
-                                        <span className="w-full truncate text-center text-[11px] text-plum/40 sm:text-xs">{label}</span>
+                                );
+                            })}
+
+                            {/* Same profile everyone else gets, plus this one admin-only action —
+                                no separate admin dashboard/profile for now. */}
+                            {isAdmin && (
+                                <button
+                                    onClick={() => navigate('/admin/brands')}
+                                    className="group flex min-w-0 flex-col items-center gap-2"
+                                >
+                                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-plum-dark/6 text-plum-dark transition-colors sm:h-14 sm:w-14 group-hover:bg-plum-dark group-hover:text-cream">
+                                        <ShieldCheck size={20} />
                                     </div>
-                                )
+                                    <span className="w-full truncate text-center text-[11px] text-plum/60 sm:text-xs">Approvals</span>
+                                </button>
                             )}
                         </div>
                         {!hasPhoneNumber() && (
                             <p className="mt-3 flex items-center gap-2 text-sm text-[#C9614E]">
                                 <AlertCircle size={16} />
-                                Add your phone number below to access Favs and Events.
+                                Add your phone number below to access Favs.
                             </p>
                         )}
                     </div>

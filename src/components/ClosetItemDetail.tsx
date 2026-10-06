@@ -7,6 +7,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Header } from './Header';
+import { BackLink } from './BackLink';
 import { Footer } from './Footer';
 import { MessageCircle, Trash2, Pencil, ChevronLeft, ChevronRight, Shirt } from 'lucide-react';
 import { API_CONFIG } from '../utils/api';
@@ -179,9 +180,7 @@ export function ClosetItemDetail() {
             <Header />
             <main className="min-h-screen bg-cream pt-28 pb-20 sm:pt-32">
                 <div className="container mx-auto max-w-2xl px-4">
-                    <Link to="/closet" className="text-sm text-plum/60 hover:text-burgundy transition-colors">
-                        ← Back to Closet
-                    </Link>
+                    <BackLink to="/closet" label="Closet" />
 
                     {error && (
                         <div className="mt-4 rounded-2xl border border-[#C9614E]/25 bg-[#C9614E]/8 px-5 py-4 text-sm text-[#C9614E]">

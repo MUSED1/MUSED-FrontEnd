@@ -1,24 +1,8 @@
 import { useState, useEffect } from 'react'
-import { Menu, X, User, LogOut, ShoppingBag, MessageCircle, Heart, Settings, ShieldCheck, Truck, Shirt } from 'lucide-react'
+import { Menu, X, User, LogOut, ShieldCheck } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
-
-const NAV_LINKS = [
-    { path: '/', label: 'Home' },
-    { path: '/events', label: 'Events' },
-    { path: '/about', label: 'About' },
-]
-
-// Account section of the logged-in drawer. `path: null` = not live yet ("Soon")
-const ACCOUNT_LINKS = [
-    { path: '/profile', label: 'Profile', icon: User },
-    { path: '/closet', label: 'Closet', icon: Shirt },
-    { path: '/shop', label: 'Shop', icon: ShoppingBag },
-    { path: '/style-check', label: 'Chat', icon: MessageCircle },
-    { path: '/my-picks', label: 'Favs', icon: Heart },
-    { path: '/my-orders', label: 'Orders', icon: Truck },
-    { path: '/settings', label: 'Settings', icon: Settings },
-]
+import { SITE_NAV, ACCOUNT_NAV } from '../config/nav'
 
 export function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -108,16 +92,20 @@ export function Header() {
 
                 {/* Right-side drawer — full height, ~half width, slides in from the right */}
                 <nav
-                    className={`fixed inset-y-0 right-0 z-50 flex w-1/2 max-w-sm flex-col items-start justify-center gap-2 border-l border-white/20 bg-plum-dark/60 px-8 backdrop-blur-2xl transition-transform duration-300 ease-in-out sm:px-10 ${
+                    className={`fixed inset-y-0 right-0 z-50 flex w-1/2 max-w-sm flex-col items-start justify-center gap-1 overflow-y-auto border-l border-white/20 bg-plum-dark/60 px-8 py-10 backdrop-blur-2xl transition-transform duration-300 ease-in-out sm:px-10 ${
                         isMenuOpen ? 'translate-x-0' : 'translate-x-full'
                     }`}
                 >
-                    {NAV_LINKS.map(({ path, label }) => (
+                    {/* The site — pages anyone can browse */}
+                    <span className="px-1 pb-1 font-inter text-xs uppercase tracking-label text-cream/40">
+                        Explore
+                    </span>
+                    {SITE_NAV.map(({ path, label }) => (
                         <Link
                             key={path}
                             to={path}
                             onClick={closeMenu}
-                            className="py-2 font-kaldera text-2xl text-cream transition-colors hover:text-gold sm:text-3xl"
+                            className="py-1.5 font-kaldera text-2xl text-cream transition-colors hover:text-gold sm:text-3xl"
                         >
                             {label}
                         </Link>
@@ -126,7 +114,7 @@ export function Header() {
                     <Link
                         to="/partner-with-us"
                         onClick={closeMenu}
-                        className="py-2 font-kaldera text-2xl text-gold transition-colors hover:text-cream sm:text-3xl"
+                        className="py-1.5 font-kaldera text-2xl text-gold transition-colors hover:text-cream sm:text-3xl"
                     >
                         Partner With Us
                     </Link>
@@ -134,47 +122,34 @@ export function Header() {
                         <Link
                             to="/admin/brands"
                             onClick={closeMenu}
-                            className="flex items-center gap-2 py-2 font-kaldera text-2xl text-gold transition-colors hover:text-cream sm:text-3xl"
+                            className="flex items-center gap-2 py-1.5 font-kaldera text-2xl text-gold transition-colors hover:text-cream sm:text-3xl"
                         >
                             <ShieldCheck size={22} />
                             Brand Approvals
                         </Link>
                     )}
 
-                    <div className="my-5 h-px w-9 bg-[#C9A96E]" />
+                    <div className="my-5 h-px w-full bg-cream/15" />
 
-                    <div className="flex flex-col items-start gap-0.5 font-inter">
-                        <span className="px-2 pb-1 text-xs uppercase tracking-label text-cream/40">
-                            {user?.name || 'Account'}
+                    {/* Your account — only yours */}
+                    <div className="flex w-full flex-col items-start gap-0.5 font-inter">
+                        <span className="px-1 pb-1 text-xs uppercase tracking-label text-cream/40">
+                            {user?.name || 'Your account'}
                         </span>
-                        {ACCOUNT_LINKS.map(({ path, label, icon: Icon }) =>
-                            path ? (
-                                <Link
-                                    key={label}
-                                    to={path}
-                                    onClick={closeMenu}
-                                    className="flex items-center gap-2 rounded-full px-2 py-1.5 text-sm text-cream/80 transition-colors hover:text-gold"
-                                >
-                                    <Icon size={15} />
-                                    {label}
-                                </Link>
-                            ) : (
-                                <span
-                                    key={label}
-                                    className="flex cursor-default items-center gap-2 px-2 py-1.5 text-sm text-cream/40"
-                                    aria-disabled="true"
-                                >
-                                    <Icon size={15} />
-                                    {label}
-                                    <span className="rounded-full bg-[#C9A96E] px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wide text-white">
-                                        Soon
-                                    </span>
-                                </span>
-                            )
-                        )}
+                        {ACCOUNT_NAV.map(({ path, label, icon: Icon }) => (
+                            <Link
+                                key={path}
+                                to={path}
+                                onClick={closeMenu}
+                                className="flex items-center gap-2.5 rounded-full px-1 py-1.5 text-sm text-cream/80 transition-colors hover:text-gold"
+                            >
+                                <Icon size={15} />
+                                {label}
+                            </Link>
+                        ))}
                         <button
                             onClick={handleLogout}
-                            className="mt-1 flex items-center gap-2 rounded-full px-2 py-1.5 text-sm text-cream/45 transition-colors hover:text-[#C9614E]"
+                            className="mt-1 flex items-center gap-2.5 rounded-full px-1 py-1.5 text-sm text-cream/45 transition-colors hover:text-[#C9614E]"
                         >
                             <LogOut size={15} />
                             Logout
@@ -221,19 +196,16 @@ export function Header() {
                     {/* Desktop Navigation */}
                     <nav className="hidden md:block">
                         <ul className="flex space-x-8">
-                            {['/', '/shop', '/events', '/about'].map((path, i) => {
-                                const labels = ['Home', 'Shop', 'Events', 'About']
-                                return (
-                                    <li key={path}>
-                                        <Link
-                                            to={path}
-                                            className="text-cream hover:text-gold font-medium transition-all duration-300 ease-in-out transform hover:scale-105 hover:font-semibold font-kaldera"
-                                        >
-                                            {labels[i]}
-                                        </Link>
-                                    </li>
-                                )
-                            })}
+                            {SITE_NAV.map(({ path, label }) => (
+                                <li key={path}>
+                                    <Link
+                                        to={path}
+                                        className="text-cream hover:text-gold font-medium transition-all duration-300 ease-in-out transform hover:scale-105 hover:font-semibold font-kaldera"
+                                    >
+                                        {label}
+                                    </Link>
+                                </li>
+                            ))}
                         </ul>
                     </nav>
 
@@ -267,19 +239,17 @@ export function Header() {
                 {isMenuOpen && (
                     <div className="md:hidden pt-4 pb-2 border-t mt-4 border-gold animate-slideDown">
                         <ul className="space-y-3">
-                            {[['/', 'Home'], ['/shop', 'Shop'], ['/events', 'Events'], ['/about', 'About']].map(
-                                ([path, label]) => (
-                                    <li key={path}>
-                                        <Link
-                                            to={path}
-                                            className="block text-cream hover:text-gold font-medium transition-all duration-300 ease-in-out transform hover:translate-x-2 hover:font-semibold font-kaldera"
-                                            onClick={() => setIsMenuOpen(false)}
-                                        >
-                                            {label}
-                                        </Link>
-                                    </li>
-                                )
-                            )}
+                            {SITE_NAV.map(({ path, label }) => (
+                                <li key={path}>
+                                    <Link
+                                        to={path}
+                                        className="block text-cream hover:text-gold font-medium transition-all duration-300 ease-in-out transform hover:translate-x-2 hover:font-semibold font-kaldera"
+                                        onClick={() => setIsMenuOpen(false)}
+                                    >
+                                        {label}
+                                    </Link>
+                                </li>
+                            ))}
                             <li className="pt-3 mt-3 border-t border-gold/30">
                                 <Link
                                     to="/partner-with-us"

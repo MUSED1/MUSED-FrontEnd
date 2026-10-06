@@ -119,7 +119,7 @@ export function BrandStory() {
                                 She Hosts
                             </h3>
                             <p className="font-sans text-base leading-relaxed" style={{ color: 'rgba(91,27,58,0.75)' }}>
-                                Dinners and community events across Hong Kong, New York, London and Geneva.
+                                Dinners and community events across Hong Kong, New York and London.
                             </p>
                         </div>
 
