@@ -2,12 +2,13 @@
 import { useState, useEffect, lazy, Suspense } from 'react'
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'
 import { AuthProvider } from './context'
-import { Header } from './components/Header'
-import { Hero } from './components/Hero'
-import { BrandStory } from './components/BrandStory'
+// import { Header } from './components/Header'
+// import { Hero } from './components/Hero'
+// import { BrandStory } from './components/BrandStory'
+import { MusedLanding } from './components/MusedLanding'
 // import { JoinWsb } from './components/JoinWsb.tsx'
 // import { HowItWorks } from './components/HowItWorks.tsx'
-import { Footer } from './components/Footer'
+// import { Footer } from './components/Footer'
 import { LoadingScreen } from './components/LoadingScreen'
 // import { Collections } from './components/Collections'
 const Diner = lazy(() => import('./components/Diner').then(m => ({ default: m.Diner })))
@@ -36,6 +37,7 @@ const Profile = lazy(() => import('./components/Profile').then(m => ({ default: 
 const OAuthSuccess = lazy(() => import('./components/OAuthSuccess').then(m => ({ default: m.OAuthSuccess })))
 const Terms = lazy(() => import('./components/Terms').then(m => ({ default: m.Terms })))
 const Privacy = lazy(() => import('./components/Privacy').then(m => ({ default: m.Privacy })))
+const WaitlistTerms = lazy(() => import('./components/WaitlistTerms').then(m => ({ default: m.WaitlistTerms })))
 const CollectionsM = lazy(() => import('./components/CollectionsM').then(m => ({ default: m.CollectionsM })))
 const CollectionsNY = lazy(() => import('./components/CollectionsNY').then(m => ({ default: m.CollectionsNY })))
 const AdminReservations = lazy(() => import('./components/AdminReservations').then(m => ({ default: m.AdminReservations })))
@@ -85,18 +87,7 @@ function HomePage() {
         return <Feed />;
     }
 
-    return (
-        <div className="font-sans">
-            <Header />
-            <main>
-                <Hero />
-                {/* <JoinWsb /> */}
-                {/* <HowItWorks /> */}
-                <BrandStory />
-            </main>
-            <Footer />
-        </div>
-    )
+    return <MusedLanding />;
 }
 
 export function App() {
@@ -120,69 +111,70 @@ export function App() {
             <Router>
                 <ScrollToTop />
                 <Suspense fallback={<div className="min-h-screen" />}>
-                <Routes>
-                    <Route path="/" element={<HomePage />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/signup" element={<Signup />} />
-                    <Route path="/events" element={<Events />} />
-                    <Route path="/events/next" element={<EventDetail />} />
-                    {/* <Route path="/collections" element={<Collections />} /> */}
-                    <Route path="/diner" element={<Diner />} />
-                    <Route path="/about" element={<About />} />
-                    <Route path="/first-dinner" element={<FirstDinner />} />
-                    <Route path="/second-dinner" element={<SecondDinner />} />
-                    <Route path="/upload" element={<ClothingUploadForm />} />
-                    <Route path="/admin/clothing" element={<AdminClothing />} />
-                    <Route path="/dinner-collection-two" element={<DinnerCollectionTwo />} />
-                    <Route path="/confirmation" element={<Confirmation />} />
-                    <Route path="/upload-images" element={<SimpleImageUpload />} />
-                    {/* <Route path="/collection" element={<Collection />} /> */}
-                    {/* <Route path="/the-pics" element={<ThePics />} /> */}
-                    {/* <Route path="/faq" element={<FAQ />} /> */}
-                    {/* <Route path="/reachout" element={<Reachout />} /> */}
-                    <Route path="/closet" element={<Closet />} />
-                    <Route path="/closet/add" element={<ClosetAddItem />} />
-                    <Route path="/closet/outfit/:outfitId" element={<ClosetOutfitDetail />} />
-                    <Route path="/closet/:id" element={<ClosetItemDetail />} />
-                    <Route path="/style-check" element={<StyleCheck />} />
-                    <Route path="/my-uploads" element={<MyUploads />} />
-                    <Route path="/my-picks" element={<MyPicks />} />
-                    <Route path="/my-reservations" element={<MyReservations />} />
-                    <Route path="/my-orders" element={<MyOrders />} />
-                    <Route path="/settings" element={<AccountSettings />} />
-                    <Route path="/profile" element={<Profile />} />
-                    <Route path="/oauth-success" element={<OAuthSuccess />} />
-                    {/* Legal Pages */}
-                    <Route path="/terms" element={<Terms />} />
-                    <Route path="/privacy" element={<Privacy />} />
-                    <Route path="/cookies" element={<Privacy />} />
-                    <Route path="/collections-m" element={<CollectionsM />} />
-                    <Route path="/admin/reservations" element={<AdminReservations />} />
-                    <Route path="/collections-ny" element={<CollectionsNY />} />
+                    <Routes>
+                        <Route path="/" element={<HomePage />} />
+                        <Route path="/login" element={<Login />} />
+                        <Route path="/signup" element={<Signup />} />
+                        <Route path="/events" element={<Events />} />
+                        <Route path="/events/next" element={<EventDetail />} />
+                        {/* <Route path="/collections" element={<Collections />} /> */}
+                        <Route path="/diner" element={<Diner />} />
+                        <Route path="/about" element={<About />} />
+                        <Route path="/first-dinner" element={<FirstDinner />} />
+                        <Route path="/second-dinner" element={<SecondDinner />} />
+                        <Route path="/upload" element={<ClothingUploadForm />} />
+                        <Route path="/admin/clothing" element={<AdminClothing />} />
+                        <Route path="/dinner-collection-two" element={<DinnerCollectionTwo />} />
+                        <Route path="/confirmation" element={<Confirmation />} />
+                        <Route path="/upload-images" element={<SimpleImageUpload />} />
+                        {/* <Route path="/collection" element={<Collection />} /> */}
+                        {/* <Route path="/the-pics" element={<ThePics />} /> */}
+                        {/* <Route path="/faq" element={<FAQ />} /> */}
+                        {/* <Route path="/reachout" element={<Reachout />} /> */}
+                        <Route path="/closet" element={<Closet />} />
+                        <Route path="/closet/add" element={<ClosetAddItem />} />
+                        <Route path="/closet/outfit/:outfitId" element={<ClosetOutfitDetail />} />
+                        <Route path="/closet/:id" element={<ClosetItemDetail />} />
+                        <Route path="/style-check" element={<StyleCheck />} />
+                        <Route path="/my-uploads" element={<MyUploads />} />
+                        <Route path="/my-picks" element={<MyPicks />} />
+                        <Route path="/my-reservations" element={<MyReservations />} />
+                        <Route path="/my-orders" element={<MyOrders />} />
+                        <Route path="/settings" element={<AccountSettings />} />
+                        <Route path="/profile" element={<Profile />} />
+                        <Route path="/oauth-success" element={<OAuthSuccess />} />
+                        {/* Legal Pages */}
+                        <Route path="/terms" element={<Terms />} />
+                        <Route path="/privacy" element={<Privacy />} />
+                        <Route path="/cookies" element={<Privacy />} />
+                        <Route path="/waitlist-terms" element={<WaitlistTerms />} />
+                        <Route path="/collections-m" element={<CollectionsM />} />
+                        <Route path="/admin/reservations" element={<AdminReservations />} />
+                        <Route path="/collections-ny" element={<CollectionsNY />} />
 
-                    <Route path="/third-dinner" element={<ThirdDinner />} />
-                    <Route path="/oauth/callback" element={<OAuthCallback />} />
-                    <Route path="/submission-success" element={<SubmissionSuccess />} />
-                    <Route path="/admin/pickups" element={<AdminPickups />} />
-                    <Route path="/fourth-dinner" element={<FourthDinner />} />
-                    <Route path="/forgot-password" element={<ForgotPassword />} />
-                    <Route path="/reset-password" element={<ResetPassword />} />
-                    <Route path="/collections-hk" element={<CollectionsHK />} />
-                    <Route path="/fifth-dinner" element={<FifthDinner />} />
-                    <Route path="/wishlist" element={<WishlistHK />} />
-                    <Route path="/staff/redeem" element={<StaffRedeem />} />
-                    <Route path="/admin/brands" element={<AdminBrands />} />
-                    <Route path="/partner-with-us" element={<PartnerWithUs />} />
-                    <Route path="/enquiries" element={<Enquiries />} />
-                    <Route path="/seller/login" element={<SellerLogin />} />
-                    <Route path="/seller/signup" element={<SellerSignup />} />
-                    <Route path="/brand" element={<RequireSeller><MyBrand /></RequireSeller>} />
-                    <Route path="/brand/dashboard" element={<RequireSeller><BrandDashboard /></RequireSeller>} />
-                    <Route path="/shop" element={<BrandsShop />} />
-                    <Route path="/shipping-estimate" element={<ShippingEstimate />} />
+                        <Route path="/third-dinner" element={<ThirdDinner />} />
+                        <Route path="/oauth/callback" element={<OAuthCallback />} />
+                        <Route path="/submission-success" element={<SubmissionSuccess />} />
+                        <Route path="/admin/pickups" element={<AdminPickups />} />
+                        <Route path="/fourth-dinner" element={<FourthDinner />} />
+                        <Route path="/forgot-password" element={<ForgotPassword />} />
+                        <Route path="/reset-password" element={<ResetPassword />} />
+                        <Route path="/collections-hk" element={<CollectionsHK />} />
+                        <Route path="/fifth-dinner" element={<FifthDinner />} />
+                        <Route path="/wishlist" element={<WishlistHK />} />
+                        <Route path="/staff/redeem" element={<StaffRedeem />} />
+                        <Route path="/admin/brands" element={<AdminBrands />} />
+                        <Route path="/partner-with-us" element={<PartnerWithUs />} />
+                        <Route path="/enquiries" element={<Enquiries />} />
+                        <Route path="/seller/login" element={<SellerLogin />} />
+                        <Route path="/seller/signup" element={<SellerSignup />} />
+                        <Route path="/brand" element={<RequireSeller><MyBrand /></RequireSeller>} />
+                        <Route path="/brand/dashboard" element={<RequireSeller><BrandDashboard /></RequireSeller>} />
+                        <Route path="/shop" element={<BrandsShop />} />
+                        <Route path="/shipping-estimate" element={<ShippingEstimate />} />
 
 
-                </Routes>
+                    </Routes>
                 </Suspense>
             </Router>
         </AuthProvider>

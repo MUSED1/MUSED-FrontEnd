@@ -25,7 +25,9 @@ export const API_CONFIG = {
         brandAdminAll: '/brand/admin/all',
         brandInquiries: '/brand/inquiries',
         shippingEstimate: '/shipping/estimate',
-        contact: '/contact'
+        contact: '/contact',
+        waitlist: '/waitlist',
+        brandEnquiries: '/brand-enquiries'
     },
     pagination: {
         defaultLimit: 20,

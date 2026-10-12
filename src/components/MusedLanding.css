@@ -1,0 +1,134 @@
+@import url('https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;1,400;1,500&family=Poiret+One&display=swap');
+
+/* Everything is scoped under .mused-landing so it doesn't clash with Tailwind / the rest of the app */
+.mused-landing {
+    --frame: #6b0035;
+    --panel: rgba(112, 0, 56, .82);
+    --cream: #fdf3e0;
+    --wine: #6b0035;
+    --serif: "Playfair Display", Georgia, serif;
+    --sans: "Jost", "Helvetica Neue", Arial, sans-serif;
+    --display: "Poiret One", "Jost", sans-serif;
+    min-height: 100vh;
+    background: var(--frame);
+    color: var(--cream);
+    font-family: var(--sans);
+    font-weight: 300;
+    -webkit-font-smoothing: antialiased;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    overflow-x: hidden;
+}
+.mused-landing *, .mused-landing *::before, .mused-landing *::after { box-sizing: border-box; }
+
+.mused-landing .frame {
+    position: relative; margin: 18px 18px 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 56px 20px 8px;
+    background: linear-gradient(rgba(60,0,32,.62), rgba(60,0,32,.62)), url('public/mused-bg.jpg') center/cover no-repeat;
+}
+.mused-landing .frame > * { position: relative; z-index: 1; }
+.mused-landing .frame::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 240px;
+    background: linear-gradient(to bottom, rgba(60,0,32,0), #3c0020); pointer-events: none;
+}
+
+.mused-landing .logo { margin: 0; line-height: .88; }
+.mused-landing .logo img { display: block; width: clamp(230px, 32vw, 320px); height: auto; margin: 0 auto; }
+
+.mused-landing .tag {
+    font-family: var(--serif); font-style: italic; font-size: clamp(24px, 4vw, 34px);
+    margin: 30px 0 22px; text-shadow: 2px 2px 0 rgba(122,0,60,.9);
+}
+
+.mused-landing .box { width: 100%; max-width: 512px; background: var(--panel); padding: 26px 24px 24px; margin-bottom: 20px; }
+.mused-landing .box h2 { font-family: var(--serif); font-style: italic; font-weight: 400; font-size: clamp(30px, 5vw, 40px); line-height: 1.15; margin: 0 0 10px; }
+.mused-landing .box h2.sm { font-size: 24px; margin-bottom: 16px; }
+.mused-landing .box p { margin: 0 auto 18px; font-size: 17px; line-height: 1.5; max-width: 420px; }
+.mused-landing .box p.ctx { font-size: 16px; opacity: .92; margin-bottom: 12px; }
+.mused-landing .box p.terms { font-size: 13px; opacity: .85; margin: 10px auto 0; max-width: none; }
+.mused-landing .terms a { color: var(--cream); }
+
+.mused-landing form { display: grid; grid-template-columns: 1fr auto; gap: 14px 10px; }
+.mused-landing form .email { grid-column: 1; grid-row: 1; }
+.mused-landing form button { grid-column: 2; grid-row: 1; }
+.mused-landing form .consent { grid-column: 1 / -1; grid-row: 2; }
+
+.mused-landing .consent { display: flex; gap: 12px; align-items: flex-start; text-align: left; font-size: 15px; line-height: 1.45; cursor: pointer; }
+.mused-landing .consent input { flex: none; width: 20px; height: 20px; margin: 2px 0 0; padding: 0; accent-color: var(--cream); cursor: pointer; }
+
+.mused-landing .email {
+    min-width: 0; padding: 14px 16px; border: 0; border-radius: 0;
+    background: var(--cream); color: var(--wine); font: 400 16px var(--sans);
+}
+.mused-landing .email::placeholder { color: #8a5f74; }
+
+.mused-landing button, .mused-landing .btn {
+    font: italic 400 18px var(--serif); padding: 13px 24px; border: 1px solid var(--cream);
+    background: transparent; color: var(--cream); cursor: pointer; text-decoration: none;
+    display: inline-block; border-radius: 0;
+}
+.mused-landing button:hover { background: var(--cream); color: var(--wine); }
+.mused-landing button:disabled { opacity: .6; cursor: default; }
+.mused-landing .btn { background: var(--cream); color: var(--wine); padding: 14px 28px; }
+.mused-landing .btn:hover { background: #f6dfe8; }
+.mused-landing :focus-visible { outline: 2px solid #f6b8cf; outline-offset: 3px; }
+
+.mused-landing .note { font-size: 14px; margin-top: 12px; min-height: 1.3em; }
+.mused-landing .names { font-family: var(--serif); font-style: italic; font-size: 26px; margin: 14px 0 10px; text-shadow: 2px 2px 0 rgba(122,0,60,.9); }
+.mused-landing .ig { color: var(--cream); font-size: 15px; letter-spacing: .02em; }
+
+.mused-landing .cue {
+    display: inline-block; margin-top: 26px; color: var(--cream); font-size: 15px; opacity: .85;
+    text-decoration: none; border-bottom: 1px solid rgba(253,243,224,.45); padding-bottom: 2px;
+    background: none; border-top: 0; border-left: 0; border-right: 0; font-family: var(--sans); cursor: pointer;
+}
+
+.mused-landing .what { margin: 0 18px 18px; background: #3c0020; padding: 32px 24px 80px; text-align: center; }
+.mused-landing .what-in { max-width: 880px; margin: 0 auto; }
+.mused-landing .what h2 { font-family: var(--serif); font-weight: 400; font-size: clamp(32px, 5vw, 46px); line-height: 1.15; margin: 0 0 18px; }
+.mused-landing .what .intro { font-family: var(--serif); font-style: italic; font-size: clamp(18px, 2.4vw, 22px); line-height: 1.5; max-width: 680px; margin: 0 auto 56px; }
+.mused-landing .pillars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; text-align: left; margin-bottom: 56px; }
+.mused-landing .pillars h3 { font-family: var(--serif); font-style: italic; font-weight: 400; font-size: 24px; margin: 0 0 10px; padding-top: 16px; border-top: 1px solid rgba(253,243,224,.4); }
+.mused-landing .pillars p { margin: 0; font-size: 17px; line-height: 1.55; opacity: .92; }
+.mused-landing .what .box { margin: 72px auto 24px; }
+.mused-landing .story { max-width: 560px; margin: 0 auto; font-size: 17px; line-height: 1.65; opacity: .92; }
+.mused-landing .story a { color: var(--cream); }
+
+@media (max-width: 700px) {
+    .mused-landing .what { margin: 0 10px 10px; padding: 32px 20px 56px; }
+    .mused-landing .pillars { grid-template-columns: 1fr; gap: 30px; }
+}
+@media (max-width: 600px) {
+    .mused-landing .frame { margin: 10px 10px 0; padding: 36px 14px 32px; }
+}
+
+/* Honeypot field (anti-spam) — hidden from people */
+.mused-landing .hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+
+/* Get in touch form */
+.mused-landing form.enquiry { display: flex; flex-direction: column; gap: 10px; text-align: left; }
+.mused-landing .field {
+    width: 100%; padding: 13px 16px; border: 0; border-radius: 0;
+    background: var(--cream); color: var(--wine); font: 400 16px var(--sans);
+}
+.mused-landing .field::placeholder { color: #8a5f74; }
+.mused-landing textarea.field { resize: vertical; min-height: 110px; }
+.mused-landing form.enquiry .btn { align-self: center; margin-top: 6px; border: 1px solid var(--cream); }
+.mused-landing .btn:disabled { opacity: .6; cursor: default; }
+
+/* Waitlist Terms & Privacy Notice page */
+.mused-landing .legal {
+    max-width: 760px; margin: 18px auto; padding: 48px 28px 72px;
+    background: #3c0020; line-height: 1.65; font-size: 17px;
+}
+.mused-landing .legal-back { color: var(--cream); font-size: 15px; opacity: .85; text-decoration: none; border-bottom: 1px solid rgba(253,243,224,.45); }
+.mused-landing .legal h1 { font-family: var(--serif); font-weight: 400; font-size: clamp(28px, 4.5vw, 40px); line-height: 1.2; margin: 32px 0 8px; }
+.mused-landing .legal-date { opacity: .8; margin: 0 0 32px; }
+.mused-landing .legal section { padding-top: 22px; margin-top: 22px; border-top: 1px solid rgba(253,243,224,.2); }
+.mused-landing .legal h2 { font-family: var(--serif); font-style: italic; font-weight: 400; font-size: 23px; margin: 0 0 10px; }
+.mused-landing .legal p { margin: 0 0 12px; opacity: .92; }
+.mused-landing .legal ul { margin: 0 0 12px; padding-left: 22px; opacity: .92; }
+.mused-landing .legal li { margin-bottom: 6px; }
+.mused-landing .legal a { color: var(--cream); }
+@media (max-width: 600px) { .mused-landing .legal { margin: 10px; padding: 32px 18px 56px; } }
