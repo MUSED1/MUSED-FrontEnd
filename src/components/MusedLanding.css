@@ -9,6 +9,7 @@
     --serif: "Playfair Display", Georgia, serif;
     --sans: "Jost", "Helvetica Neue", Arial, sans-serif;
     --display: "Poiret One", "Jost", sans-serif;
+    --bg-image: url('https://res.cloudinary.com/dapfjngt2/image/upload/f_auto,q_auto,w_1600/v1791856834/mused-bg_ekoeuu.jpg');
     min-height: 100vh;
     background: var(--frame);
     color: var(--cream);
@@ -21,11 +22,18 @@
 }
 .mused-landing *, .mused-landing *::before, .mused-landing *::after { box-sizing: border-box; }
 
+/* Anchor targets land with a little breathing room */
+.mused-landing #what, .mused-landing #waitlist { scroll-margin-top: 16px; }
+
 .mused-landing .frame {
     position: relative; margin: 18px 18px 0;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     text-align: center; padding: 56px 20px 8px;
-    background: linear-gradient(rgba(60,0,32,.62), rgba(60,0,32,.62)), url('public/mused-bg.jpg') center/cover no-repeat;
+    background-color: #3c0020;
+    background-image: linear-gradient(rgba(60,0,32,.62), rgba(60,0,32,.62)), var(--bg-image);
+    background-position: center, center 18%;
+    background-size: cover, cover;
+    background-repeat: no-repeat;
 }
 .mused-landing .frame > * { position: relative; z-index: 1; }
 .mused-landing .frame::after {
@@ -48,6 +56,8 @@
 .mused-landing .box p.ctx { font-size: 16px; opacity: .92; margin-bottom: 12px; }
 .mused-landing .box p.terms { font-size: 13px; opacity: .85; margin: 10px auto 0; max-width: none; }
 .mused-landing .terms a { color: var(--cream); }
+.mused-landing .box p.mail-alt { font-size: 14px; opacity: .85; margin: 14px auto 0; }
+.mused-landing .mail-alt a { color: var(--cream); }
 
 .mused-landing form { display: grid; grid-template-columns: 1fr auto; gap: 14px 10px; }
 .mused-landing form .email { grid-column: 1; grid-row: 1; }
@@ -81,8 +91,9 @@
 .mused-landing .cue {
     display: inline-block; margin-top: 26px; color: var(--cream); font-size: 15px; opacity: .85;
     text-decoration: none; border-bottom: 1px solid rgba(253,243,224,.45); padding-bottom: 2px;
-    background: none; border-top: 0; border-left: 0; border-right: 0; font-family: var(--sans); cursor: pointer;
+    font-family: var(--sans); cursor: pointer;
 }
+.mused-landing .cue:hover { opacity: 1; }
 
 .mused-landing .what { margin: 0 18px 18px; background: #3c0020; padding: 32px 24px 80px; text-align: center; }
 .mused-landing .what-in { max-width: 880px; margin: 0 auto; }
@@ -105,17 +116,6 @@
 
 /* Honeypot field (anti-spam) — hidden from people */
 .mused-landing .hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
-
-/* Get in touch form */
-.mused-landing form.enquiry { display: flex; flex-direction: column; gap: 10px; text-align: left; }
-.mused-landing .field {
-    width: 100%; padding: 13px 16px; border: 0; border-radius: 0;
-    background: var(--cream); color: var(--wine); font: 400 16px var(--sans);
-}
-.mused-landing .field::placeholder { color: #8a5f74; }
-.mused-landing textarea.field { resize: vertical; min-height: 110px; }
-.mused-landing form.enquiry .btn { align-self: center; margin-top: 6px; border: 1px solid var(--cream); }
-.mused-landing .btn:disabled { opacity: .6; cursor: default; }
 
 /* Waitlist Terms & Privacy Notice page */
 .mused-landing .legal {

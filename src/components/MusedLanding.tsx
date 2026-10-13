@@ -1,10 +1,26 @@
 // components/MusedLanding.tsx
-import { useState, type FormEvent } from 'react';
+import { useState, type FormEvent, type MouseEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { API_CONFIG } from '../utils/api';
 import './MusedLanding.css';
 
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+
+const CONTACT_EMAIL = 'info@mused852.com';
+const INSTAGRAM_URL = 'https://www.instagram.com/mused852/';
+
+// Pre-filled email draft for brands
+const MAILTO_HREF =
+    `mailto:${CONTACT_EMAIL}` +
+    `?subject=${encodeURIComponent('Emerging brand enquiry — MUSED 852')}` +
+    `&body=${encodeURIComponent(
+        "Hi Jana & Eva,\n\n" +
+        "I'd love to tell you about my brand.\n\n" +
+        "Name:\n" +
+        "Brand name:\n" +
+        "Instagram / website:\n\n" +
+        "About the brand:\n\n"
+    )}`;
 
 type ApiResponse = { success: boolean; message?: string };
 
@@ -22,6 +38,20 @@ async function postJson(path: string, body: unknown): Promise<{ ok: boolean; sta
         /* non-JSON response */
     }
     return { ok: res.ok, status: res.status, data };
+}
+
+// Smooth-scroll to an element by id (works with the sticky-free layout)
+function scrollToId(id: string, focusId?: string) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    window.history.replaceState(null, '', `#${id}`);
+    if (focusId) {
+        // focus after the scroll has had time to land, without jumping again
+        window.setTimeout(() => {
+            (document.getElementById(focusId) as HTMLInputElement | null)?.focus({ preventScroll: true });
+        }, 600);
+    }
 }
 
 // ─────────────────────────────────────────────
@@ -76,6 +106,7 @@ function WaitlistForm() {
         <>
             <form onSubmit={handleSubmit} noValidate>
                 <input
+                    id="waitlist-email"
                     className="email"
                     type="email"
                     placeholder="your@email.com"
@@ -115,98 +146,15 @@ function WaitlistForm() {
     );
 }
 
-// ─────────────────────────────────────────────
-// "Emerging brand? Let's talk." — Get in touch form
-// ─────────────────────────────────────────────
-function BrandEnquiryForm() {
-    const [open, setOpen] = useState(false);
-    const [form, setForm] = useState({ name: '', brandName: '', email: '', link: '', message: '' });
-    const [honeypot, setHoneypot] = useState('');
-    const [note, setNote] = useState('');
-    const [sent, setSent] = useState(false);
-    const [submitting, setSubmitting] = useState(false);
-
-    const update = (field: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
-        setForm((f) => ({ ...f, [field]: e.target.value }));
-
-    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-
-        if (!form.name.trim() || !form.brandName.trim() || !form.message.trim()) {
-            setNote('Please fill in your name, brand and message.');
-            return;
-        }
-        if (!EMAIL_RE.test(form.email.trim())) {
-            setNote('Please enter a valid email address.');
-            return;
-        }
-
-        setSubmitting(true);
-        setNote('');
-        try {
-            const { ok, data } = await postJson(API_CONFIG.endpoints.brandEnquiries, { ...form, website: honeypot });
-            if (ok) {
-                setSent(true);
-                setNote(data.message || "Thanks! We'll get back to you soon.");
-                setForm({ name: '', brandName: '', email: '', link: '', message: '' });
-            } else {
-                setNote(data.message || 'Something went wrong. Please try again.');
-            }
-        } catch {
-            setNote('Could not connect. Please check your connection and try again.');
-        } finally {
-            setSubmitting(false);
-        }
-    };
-
-    return (
-        <div className="box">
-            <h2 className="sm">Emerging brand? Let's talk.</h2>
-
-            {!open && !sent && (
-                <button type="button" className="btn" onClick={() => setOpen(true)}>
-                    Get in touch
-                </button>
-            )}
-
-            {open && !sent && (
-                <form className="enquiry" onSubmit={handleSubmit} noValidate>
-                    <input className="field" placeholder="Your name" aria-label="Your name" autoComplete="name" value={form.name} onChange={update('name')} maxLength={120} />
-                    <input className="field" placeholder="Brand name" aria-label="Brand name" autoComplete="organization" value={form.brandName} onChange={update('brandName')} maxLength={120} />
-                    <input className="field" type="email" placeholder="your@email.com" aria-label="Email address" autoComplete="email" value={form.email} onChange={update('email')} maxLength={254} />
-                    <input className="field" placeholder="Instagram or website (optional)" aria-label="Instagram or website" value={form.link} onChange={update('link')} maxLength={300} />
-                    <textarea className="field" placeholder="Tell us about your brand" aria-label="Message" rows={4} value={form.message} onChange={update('message')} maxLength={2000} />
-                    <input
-                        className="hp"
-                        type="text"
-                        name="website"
-                        tabIndex={-1}
-                        autoComplete="off"
-                        aria-hidden="true"
-                        value={honeypot}
-                        onChange={(e) => setHoneypot(e.target.value)}
-                    />
-                    <button type="submit" className="btn" disabled={submitting}>
-                        {submitting ? 'Sending…' : 'Send'}
-                    </button>
-                </form>
-            )}
-
-            <div className="note" role="status" aria-live="polite">
-                {note}
-            </div>
-        </div>
-    );
-}
-
 export function MusedLanding() {
-    const scrollToWhat = () => {
-        document.getElementById('what')?.scrollIntoView({ behavior: 'smooth' });
+    const goToWhat = (e: MouseEvent<HTMLAnchorElement>) => {
+        e.preventDefault();
+        scrollToId('what');
     };
 
-    const scrollToTop = (e: React.MouseEvent) => {
+    const goToWaitlist = (e: MouseEvent<HTMLAnchorElement>) => {
         e.preventDefault();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        scrollToId('waitlist', 'waitlist-email');
     };
 
     return (
@@ -217,7 +165,7 @@ export function MusedLanding() {
                 </h1>
                 <p className="tag">A powerhouse for rising brands.</p>
 
-                <div className="box">
+                <div className="box" id="waitlist">
                     <h2>Coming soon…</h2>
                     <p className="ctx">
                         A curated digital closet for unique pieces from emerging designers, made with intention. A
@@ -232,9 +180,9 @@ export function MusedLanding() {
                     </p>
                 </div>
 
-                <button type="button" className="cue" onClick={scrollToWhat}>
+                <a className="cue" href="#what" onClick={goToWhat}>
                     What is MUSED 852?
-                </button>
+                </a>
             </main>
 
             <section className="what" id="what">
@@ -269,15 +217,23 @@ export function MusedLanding() {
 
                     <p className="story">
                         We started in Hong Kong &amp; now building beyond.{' '}
-                        <a href="#" onClick={scrollToTop}>
+                        <a href="#waitlist" onClick={goToWaitlist}>
                             Join the wait-list.
                         </a>
                     </p>
 
-                    <BrandEnquiryForm />
+                    <div className="box">
+                        <h2 className="sm">Emerging brand? Let's talk.</h2>
+                        <a className="btn" href={MAILTO_HREF}>
+                            Get in touch
+                        </a>
+                        <p className="mail-alt">
+                            or email us at <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+                        </p>
+                    </div>
 
                     <p className="names">Jana &amp; Eva</p>
-                    <a className="ig" href="https://instagram.com/mused852" target="_blank" rel="noopener noreferrer">
+                    <a className="ig" href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer">
                         @mused852 on Instagram
                     </a>
                 </div>
