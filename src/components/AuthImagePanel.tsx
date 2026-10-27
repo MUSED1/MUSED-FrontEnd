@@ -33,25 +33,25 @@ export const AuthImagePanel: React.FC<AuthImagePanelProps> = ({
                     "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",
             }}
         />
-        <div className="absolute inset-x-0 top-0 h-24 sm:h-32 md:h-56 bg-gradient-to-b from-plum-dark/65 to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 h-full sm:h-2/3 bg-gradient-to-t from-plum-dark/90 via-plum-dark/55 sm:via-plum-dark/60 to-transparent" />
+        <div className="absolute inset-x-0 top-0 h-24 sm:h-32 md:h-56 bg-gradient-to-b from-wine-deep/70 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-full sm:h-2/3 bg-gradient-to-t from-wine-deep/90 via-wine-deep/55 sm:via-wine-deep/60 to-transparent" />
         <Link
             to="/"
-            className="absolute left-5 top-5 z-20 inline-flex items-center gap-1 font-inter text-sm font-medium text-cream/80 transition-colors hover:text-gold sm:left-8 sm:top-8"
+            className="absolute left-5 top-5 z-20 inline-flex items-center gap-1 font-jost text-sm text-landing-cream/80 transition-colors hover:text-landing-cream sm:left-8 sm:top-8"
         >
             ← Back to MUSED
         </Link>
 
         <div className="relative z-10 flex h-full flex-col justify-end p-6 sm:p-10 lg:p-14">
-            {/* Wordmark — Kaldera, matching the homepage hero logo */}
-            <span className="mb-3 sm:mb-5 font-kaldera text-lg sm:text-xl tracking-[0.15em] text-cream/85">
+            {/* Wordmark — Jost, matching the landing's wordmark treatment */}
+            <span className="mb-3 sm:mb-5 font-jost text-lg sm:text-xl tracking-[0.15em] text-landing-cream/85">
                 MUSED 852
             </span>
-            <div className="mb-3 sm:mb-5 h-px w-9 bg-[#C9A96E]" />
-            <h1 className="font-amandine font-normal text-2xl sm:text-4xl leading-[1.1] text-cream lg:text-5xl">
+            <div className="mb-3 sm:mb-5 h-px w-9 bg-landing-cream/40" />
+            <h1 className="font-playfair italic font-normal text-2xl sm:text-4xl leading-[1.1] text-landing-cream lg:text-5xl">
                 {heading}
             </h1>
-            <p className="mt-4 hidden max-w-xs font-sans italic text-cream/70 text-base sm:block">
+            <p className="mt-4 hidden max-w-xs font-jost text-landing-cream/70 text-base sm:block">
                 {subtext}
             </p>
         </div>

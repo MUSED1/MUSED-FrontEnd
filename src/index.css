@@ -1,5 +1,7 @@
 /* index.css */
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+/* New brand identity (font-playfair/font-jost/font-poiret) — see tailwind.config.js */
+@import url('https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;1,400;1,500&family=Poiret+One&display=swap');
 
 @font-face {
     font-family: 'Kaldera';

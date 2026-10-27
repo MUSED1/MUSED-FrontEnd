@@ -10,6 +10,14 @@ export default {
                 kaldera: ['Kaldera', 'serif'],
                 abril: ['Abril Display', 'serif'],
                 austin: ['Austin Pen', 'cursive'],
+
+                // New brand identity, introduced on the public landing
+                // (MusedLanding.tsx) — editorial wine/cream boutique look.
+                // Being migrated in screen by screen; old tokens above stay
+                // untouched until every screen that used them is redone.
+                playfair: ['"Playfair Display"', 'Georgia', 'serif'],
+                jost: ['Jost', '"Helvetica Neue"', 'Arial', 'sans-serif'],
+                poiret: ['"Poiret One"', 'Jost', 'sans-serif'],
             },
             colors: {
                 ...colors, // 👈 This brings back rose, amber, and all the default colors!
@@ -38,6 +46,15 @@ export default {
                     ...colors.rose,
                     DEFAULT: colors.rose[500],
                 },
+
+                // New brand identity palette (from MusedLanding.css)
+                wine: {
+                    DEFAULT: '#6b0035',
+                    frame: '#6b0035',
+                    deep: '#3c0020',
+                    panel: 'rgba(112, 0, 56, .82)',
+                },
+                'landing-cream': '#fdf3e0',
             },
             letterSpacing: {
                 'label': '0.2em',

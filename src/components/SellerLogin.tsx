@@ -65,31 +65,31 @@ export const SellerLogin: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen w-full flex flex-col md:flex-row bg-cream-clear">
+        <div className="min-h-screen w-full flex flex-col md:flex-row bg-wine-deep">
             <AuthImagePanel
                 heading={<>Sell with<br />MUSED.</>}
                 subtext="Reach a curated community of muses ready to rent, wear and love your pieces."
             />
 
             {/* Form panel */}
-            <div className="flex w-full items-center justify-center bg-cream px-6 py-12 sm:px-10 md:w-1/2 lg:w-[55%]">
+            <div className="flex w-full items-center justify-center bg-wine-deep px-6 py-12 sm:px-10 md:w-1/2 lg:w-[55%]">
                 <div className="w-full max-w-sm">
                     <div className="mb-8 text-center md:text-left">
-                        <span className="inline-block px-3 py-1 mb-4 rounded-full text-xs font-semibold tracking-wide uppercase bg-plum/10 text-plum">
+                        <span className="inline-block px-3 py-1 mb-4 text-xs font-jost tracking-wide uppercase border border-landing-cream/40 text-landing-cream/80">
                             Seller Portal
                         </span>
-                        <h2 className="font-kaldera font-normal text-5xl text-burgundy mb-3 tracking-tight">
+                        <h2 className="font-playfair italic font-normal text-4xl sm:text-5xl text-landing-cream mb-3">
                             Welcome Back
                         </h2>
-                        <div className="mx-auto mb-3 h-px w-9 bg-[#C9A96E] md:mx-0" />
-                        <p className="text-plum/70 text-base font-sans italic">
+                        <div className="mx-auto mb-3 h-px w-9 bg-landing-cream/40 md:mx-0" />
+                        <p className="text-landing-cream/70 text-base font-jost">
                             Sign in to manage your brand storefront
                         </p>
                     </div>
 
                     <form className="space-y-5" onSubmit={handleSubmit}>
                         {localError && (
-                            <div className="bg-[#C9614E]/8 backdrop-blur-sm border border-[#C9614E]/25 text-[#C9614E] px-5 py-4 rounded-2xl text-sm flex items-start gap-3 font-inter">
+                            <div className="bg-[#C9614E]/10 border border-[#C9614E]/40 text-[#f3a08e] px-5 py-4 text-sm flex items-start gap-3 font-jost">
                                 <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                                 </svg>
@@ -99,14 +99,14 @@ export const SellerLogin: React.FC = () => {
 
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-plum/80 mb-1.5 font-inter">
+                                <label className="block text-sm text-landing-cream/70 mb-1.5 font-jost">
                                     Email Address
                                 </label>
                                 <input
                                     name="email"
                                     type="email"
                                     required
-                                    className="w-full px-5 py-3.5 bg-white/50 backdrop-blur-md border border-white/60 rounded-2xl text-plum placeholder-plum/40 shadow-[inset_0_1px_0_rgba(255,255,255,0.6),0_2px_10px_rgba(93,27,58,0.06)] focus:outline-none focus:ring-2 focus:ring-plum/25 focus:border-plum/40 focus:bg-white/70 transition-all duration-200 font-inter"
+                                    className="w-full px-5 py-3.5 bg-landing-cream text-wine placeholder-wine/40 focus:outline-none focus:ring-2 focus:ring-landing-cream/60 transition-all duration-200 font-jost"
                                     placeholder="you@yourbrand.com"
                                     value={formData.email}
                                     onChange={handleChange}
@@ -115,14 +115,14 @@ export const SellerLogin: React.FC = () => {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-plum/80 mb-1.5 font-inter">
+                                <label className="block text-sm text-landing-cream/70 mb-1.5 font-jost">
                                     Password
                                 </label>
                                 <input
                                     name="password"
                                     type="password"
                                     required
-                                    className="w-full px-5 py-3.5 bg-white/50 backdrop-blur-md border border-white/60 rounded-2xl text-plum placeholder-plum/40 shadow-[inset_0_1px_0_rgba(255,255,255,0.6),0_2px_10px_rgba(93,27,58,0.06)] focus:outline-none focus:ring-2 focus:ring-plum/25 focus:border-plum/40 focus:bg-white/70 transition-all duration-200 font-inter"
+                                    className="w-full px-5 py-3.5 bg-landing-cream text-wine placeholder-wine/40 focus:outline-none focus:ring-2 focus:ring-landing-cream/60 transition-all duration-200 font-jost"
                                     placeholder="••••••••"
                                     value={formData.password}
                                     onChange={handleChange}
@@ -135,49 +135,46 @@ export const SellerLogin: React.FC = () => {
                             <button
                                 type="button"
                                 onClick={() => navigate('/forgot-password')}
-                                className="text-sm text-burgundy hover:text-gold transition-colors font-normal font-inter"
+                                className="text-sm text-landing-cream/70 hover:text-landing-cream transition-colors font-jost"
                             >
                                 Forgot password?
                             </button>
                         </div>
 
-                        <div className="rounded-full shadow-[0_8px_16px_rgba(61,16,40,0.18)]">
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="relative w-full overflow-hidden rounded-full border border-white/15 bg-gradient-to-b from-plum-dark to-plum px-6 py-4 text-base font-normal text-cream focus:outline-none focus:ring-2 focus:ring-plum/40 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:brightness-110 active:scale-[0.98] font-inter"
-                            >
-                                <span className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/10 to-transparent" />
-                                <span className="relative flex items-center justify-center gap-2">
-                                    {loading ? (
-                                        <>
-                                            <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                                            </svg>
-                                            Signing in...
-                                        </>
-                                    ) : (
-                                        'Sign in to your storefront'
-                                    )}
-                                </span>
-                            </button>
-                        </div>
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="w-full border border-landing-cream px-6 py-4 text-base font-playfair italic text-landing-cream focus:outline-none focus:ring-2 focus:ring-landing-cream/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 hover:bg-landing-cream hover:text-wine"
+                        >
+                            <span className="flex items-center justify-center gap-2">
+                                {loading ? (
+                                    <>
+                                        <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                        </svg>
+                                        Signing in...
+                                    </>
+                                ) : (
+                                    'Sign in to your storefront'
+                                )}
+                            </span>
+                        </button>
                     </form>
 
                     <div className="text-center md:text-left pt-6 space-y-2">
-                        <p className="text-plum/60 text-sm font-inter">
+                        <p className="text-landing-cream/60 text-sm font-jost">
                             New brand?{' '}
                             <Link
                                 to="/partner-with-us"
-                                className="text-burgundy font-medium hover:text-gold transition-colors"
+                                className="text-landing-cream font-medium underline underline-offset-2 hover:text-[#f6dfe8] transition-colors"
                             >
                                 Get in touch with us
                             </Link>
                         </p>
-                        <p className="text-plum/40 text-xs font-inter">
+                        <p className="text-landing-cream/40 text-xs font-jost">
                             Shopping instead?{' '}
-                            <Link to="/login" className="underline hover:text-plum/60 transition-colors">
+                            <Link to="/login" className="underline hover:text-landing-cream/60 transition-colors">
                                 Go to customer sign in
                             </Link>
                         </p>
