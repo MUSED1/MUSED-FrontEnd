@@ -40,20 +40,19 @@ const Privacy = lazy(() => import('./components/Privacy').then(m => ({ default: 
 const WaitlistTerms = lazy(() => import('./components/WaitlistTerms').then(m => ({ default: m.WaitlistTerms })))
 const CollectionsM = lazy(() => import('./components/CollectionsM').then(m => ({ default: m.CollectionsM })))
 const CollectionsNY = lazy(() => import('./components/CollectionsNY').then(m => ({ default: m.CollectionsNY })))
-const AdminReservations = lazy(() => import('./components/AdminReservations').then(m => ({ default: m.AdminReservations })))
 const ThirdDinner = lazy(() => import('./components/ThirdDinner').then(m => ({ default: m.ThirdDinner })))
 const OAuthCallback = lazy(() => import('./components/OAuthCallback').then(m => ({ default: m.OAuthCallback })))
 const SubmissionSuccess = lazy(() => import('./components/SubsmissionSuccess').then(m => ({ default: m.SubmissionSuccess })))
-const AdminPickups = lazy(() => import('./components/AdminPickups.tsx').then(m => ({ default: m.AdminPickups })))
 const FourthDinner = lazy(() => import('./components/FourthDinner').then(m => ({ default: m.FourthDinner })))
 const ForgotPassword = lazy(() => import('./components/ForgotPassword').then(m => ({ default: m.ForgotPassword })))
 const ResetPassword = lazy(() => import('./components/ForgotPassword').then(m => ({ default: m.ResetPassword })))
 const CollectionsHK = lazy(() => import('./components/CollectionsHK').then(m => ({ default: m.CollectionsHK })))
 const FifthDinner = lazy(() => import('./components/FifthDinner').then(m => ({ default: m.FifthDinner })))
-const WishlistHK = lazy(() => import('./components/WishlistHK').then(m => ({ default: m.WishlistHK })))
 const StaffRedeem = lazy(() => import('./components/StaffRedeem').then(m => ({ default: m.StaffRedeem })))
 const MyBrand = lazy(() => import('./components/MyBrand').then(m => ({ default: m.MyBrand })))
 const AdminBrands = lazy(() => import('./components/AdminBrands').then(m => ({ default: m.AdminBrands })))
+const AdminHome = lazy(() => import('./components/AdminHome').then(m => ({ default: m.AdminHome })))
+const AdminWaitlist = lazy(() => import('./components/AdminWaitlist').then(m => ({ default: m.AdminWaitlist })))
 const SellerLogin = lazy(() => import('./components/SellerLogin.tsx').then(m => ({ default: m.SellerLogin })))
 const SellerSignup = lazy(() => import('./components/SellerSignup.tsx').then(m => ({ default: m.SellerSignup })))
 import { RequireSeller } from './components/RequireSeller';
@@ -149,21 +148,24 @@ export function App() {
                         <Route path="/cookies" element={<Privacy />} />
                         <Route path="/waitlist-terms" element={<WaitlistTerms />} />
                         <Route path="/collections-m" element={<CollectionsM />} />
-                        <Route path="/admin/reservations" element={<AdminReservations />} />
                         <Route path="/collections-ny" element={<CollectionsNY />} />
 
                         <Route path="/third-dinner" element={<ThirdDinner />} />
                         <Route path="/oauth/callback" element={<OAuthCallback />} />
                         <Route path="/submission-success" element={<SubmissionSuccess />} />
-                        <Route path="/admin/pickups" element={<AdminPickups />} />
                         <Route path="/fourth-dinner" element={<FourthDinner />} />
                         <Route path="/forgot-password" element={<ForgotPassword />} />
                         <Route path="/reset-password" element={<ResetPassword />} />
                         <Route path="/collections-hk" element={<CollectionsHK />} />
                         <Route path="/fifth-dinner" element={<FifthDinner />} />
-                        <Route path="/wishlist" element={<WishlistHK />} />
                         <Route path="/staff/redeem" element={<StaffRedeem />} />
+                        {/* /admin/reservations, /admin/pickups and /wishlist were retired here — their
+                           backend routes (adminRouter, wishlistRouter) are commented out in app.js, so
+                           these screens only 404'd. Nothing in the app links to them. The component
+                           files are still in src/components if the backend routes come back. */}
+                        <Route path="/admin" element={<AdminHome />} />
                         <Route path="/admin/brands" element={<AdminBrands />} />
+                        <Route path="/admin/waitlist" element={<AdminWaitlist />} />
                         <Route path="/partner-with-us" element={<PartnerWithUs />} />
                         <Route path="/enquiries" element={<Enquiries />} />
                         <Route path="/seller/login" element={<SellerLogin />} />

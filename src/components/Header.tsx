@@ -120,12 +120,12 @@ export function Header() {
                     </Link>
                     {isAdmin && (
                         <Link
-                            to="/admin/brands"
+                            to="/admin"
                             onClick={closeMenu}
                             className="flex items-center gap-2 py-1.5 font-kaldera text-2xl text-gold transition-colors hover:text-cream sm:text-3xl"
                         >
                             <ShieldCheck size={22} />
-                            Brand Approvals
+                            Admin
                         </Link>
                     )}
 
@@ -213,11 +213,11 @@ export function Header() {
                     <div className="flex items-center space-x-4">
                         {isAdmin && (
                             <Link
-                                to="/admin/brands"
+                                to="/admin"
                                 className="hidden sm:inline-flex items-center gap-1.5 text-gold hover:text-cream text-xs font-semibold tracking-widest uppercase border border-gold/50 hover:border-gold rounded-full px-4 py-1.5 transition-all duration-300"
                             >
                                 <ShieldCheck size={14} />
-                                Brand Approvals
+                                Admin
                             </Link>
                         )}
                         <Link
@@ -262,11 +262,11 @@ export function Header() {
                             {isAdmin && (
                                 <li>
                                     <Link
-                                        to="/admin/brands"
+                                        to="/admin"
                                         className="block text-gold font-medium transition-all duration-300 ease-in-out transform hover:translate-x-2 font-kaldera"
                                         onClick={() => setIsMenuOpen(false)}
                                     >
-                                        Brand Approvals
+                                        Admin
                                     </Link>
                                 </li>
                             )}

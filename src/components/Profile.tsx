@@ -526,13 +526,13 @@ export function Profile() {
                                 no separate admin dashboard/profile for now. */}
                             {isAdmin && (
                                 <button
-                                    onClick={() => navigate('/admin/brands')}
+                                    onClick={() => navigate('/admin')}
                                     className="group flex min-w-0 flex-col items-center gap-2"
                                 >
                                     <div className="flex h-12 w-12 items-center justify-center rounded-full bg-plum-dark/6 text-plum-dark transition-colors sm:h-14 sm:w-14 group-hover:bg-plum-dark group-hover:text-cream">
                                         <ShieldCheck size={20} />
                                     </div>
-                                    <span className="w-full truncate text-center text-[11px] text-plum/60 sm:text-xs">Approvals</span>
+                                    <span className="w-full truncate text-center text-[11px] text-plum/60 sm:text-xs">Admin</span>
                                 </button>
                             )}
                         </div>

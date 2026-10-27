@@ -11,12 +11,12 @@
 // follow-up composer appears to be missing once a conversation starts
 // (the API supports it, the UI for it doesn't seem to be there) — this
 // version always shows a real follow-up composer.
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from './Header';
 import { BackLink } from './BackLink';
 import { Footer } from './Footer';
-import { Camera, Send, Sparkles, X, RotateCcw } from 'lucide-react';
+import { Camera, Send, Sparkles, X, RotateCcw, Trash2, MessageCircle } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { API_CONFIG, convertHeicIfNeeded } from '../utils/api';
 
@@ -39,6 +39,25 @@ interface MConversation {
     coverImage: string;
     title: string;
     messages: MMessage[];
+}
+
+// What GET /style-check returns per past thread — a summary, not the full thread
+interface ConversationSummary {
+    id: string;
+    coverImage: string;
+    title: string;
+    lastMessage: string;
+    messageCount: number;
+    updatedAt: string;
+}
+
+function formatWhen(iso: string): string {
+    const date = new Date(iso);
+    const dayMs = 24 * 60 * 60 * 1000;
+    const elapsed = Date.now() - date.getTime();
+    if (elapsed < dayMs) return 'Today';
+    if (elapsed < 2 * dayMs) return 'Yesterday';
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
 function fileToDataUrl(file: File): Promise<string> {
@@ -69,6 +88,10 @@ export function StyleCheck() {
     // Follow-up composer
     const [followUpText, setFollowUpText] = useState('');
     const [followUpPhoto, setFollowUpPhoto] = useState<string | null>(null);
+
+    // Past threads — the backend keeps them, so they shouldn't vanish on "New"
+    const [history, setHistory] = useState<ConversationSummary[]>([]);
+    const [openingId, setOpeningId] = useState<string | null>(null);
 
     const threadEndRef = useRef<HTMLDivElement>(null);
 
@@ -112,6 +135,59 @@ export function StyleCheck() {
         };
     };
 
+    const loadHistory = useCallback(async () => {
+        try {
+            const res = await fetch(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.styleCheck}?limit=20`, {
+                headers: getAuthHeaders(),
+            });
+            const result = await res.json();
+            if (res.ok && result.success) setHistory(result.data);
+        } catch {
+            // Non-fatal — you can still start a new conversation without the list.
+        }
+    }, []);
+
+    useEffect(() => {
+        if (isAuthenticated) loadHistory();
+    }, [isAuthenticated, loadHistory]);
+
+    const openConversation = async (id: string) => {
+        setOpeningId(id);
+        setError('');
+        try {
+            const res = await fetch(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.styleCheck}/${id}`, {
+                headers: getAuthHeaders(),
+            });
+            const result = await res.json();
+            if (res.ok && result.success) {
+                setConversation(result.data);
+            } else {
+                throw new Error(result.message || "Couldn't open that conversation.");
+            }
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Couldn't open that conversation.");
+        } finally {
+            setOpeningId(null);
+        }
+    };
+
+    const deleteConversation = async (id: string) => {
+        // Optimistic — put it back if the server disagrees
+        const previous = history;
+        setHistory((list) => list.filter((c) => c.id !== id));
+        try {
+            const res = await fetch(`${API_CONFIG.baseURL}${API_CONFIG.endpoints.styleCheck}/${id}`, {
+                method: 'DELETE',
+                headers: getAuthHeaders(),
+            });
+            if (!res.ok) throw new Error();
+            if (conversation?._id === id) setConversation(null);
+        } catch {
+            setHistory(previous);
+            setError("Couldn't delete that conversation.");
+        }
+    };
+
     const handleStartPhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -150,6 +226,7 @@ export function StyleCheck() {
             const result = await res.json();
             if (res.ok && result.success) {
                 setConversation(result.data);
+                loadHistory();
             } else {
                 throw new Error(result.message || "M couldn't read that outfit — try again.");
             }
@@ -198,6 +275,7 @@ export function StyleCheck() {
 
     const startOver = () => {
         setConversation(null);
+        loadHistory();
         setStartPhoto(null);
         setOccasion(null);
         setDetail('');
@@ -250,6 +328,7 @@ export function StyleCheck() {
                     )}
 
                     {!conversation ? (
+                        <>
                         <div className="rounded-3xl bg-white/60 backdrop-blur-md border border-white/60 p-6 sm:p-8 shadow-[0_2px_10px_rgba(93,27,58,0.06)]">
                             <p className="mb-6 font-sans italic text-plum/70">
                                 I'm M — the roommate you wish you had. Send a photo of your outfit and tell me the occasion, and I'll give you an honest read.
@@ -308,6 +387,56 @@ export function StyleCheck() {
                                 </button>
                             </div>
                         </div>
+
+                        {/* Past threads — the backend keeps them, so you can pick one back up */}
+                        {history.length > 0 && (
+                            <div className="mt-8">
+                                <h2 className="mb-3 font-kaldera text-lg text-plum-dark">Past check-ins</h2>
+                                <ul className="space-y-2">
+                                    {history.map((item) => (
+                                        <li
+                                            key={item.id}
+                                            className="group flex items-center gap-3 rounded-2xl border border-white/60 bg-white/60 p-2.5 backdrop-blur-md transition-colors hover:bg-white"
+                                        >
+                                            <button
+                                                onClick={() => openConversation(item.id)}
+                                                disabled={openingId === item.id}
+                                                className="flex min-w-0 flex-1 items-center gap-3 text-left disabled:opacity-60"
+                                            >
+                                                {item.coverImage ? (
+                                                    <img
+                                                        src={item.coverImage}
+                                                        alt=""
+                                                        className="h-12 w-12 shrink-0 rounded-xl object-cover"
+                                                    />
+                                                ) : (
+                                                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-plum-dark/6 text-plum/40">
+                                                        <MessageCircle size={18} />
+                                                    </div>
+                                                )}
+                                                <div className="min-w-0">
+                                                    <p className="truncate text-sm font-medium text-plum-dark">
+                                                        {item.title || 'Style check'}
+                                                    </p>
+                                                    <p className="truncate text-xs text-plum/50">
+                                                        {openingId === item.id ? 'Opening…' : item.lastMessage || `${item.messageCount} messages`}
+                                                    </p>
+                                                </div>
+                                            </button>
+                                            <span className="shrink-0 text-xs text-plum/40">{formatWhen(item.updatedAt)}</span>
+                                            <button
+                                                onClick={() => deleteConversation(item.id)}
+                                                aria-label={`Delete ${item.title || 'conversation'}`}
+                                                className="shrink-0 rounded-full p-2 text-plum/30 transition-colors hover:bg-[#C9614E]/10 hover:text-[#C9614E]"
+                                            >
+                                                <Trash2 size={15} />
+                                            </button>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+                        </>
                     ) : (
                         <>
                             <div className="space-y-4 rounded-3xl bg-white/60 backdrop-blur-md border border-white/60 p-4 sm:p-6 shadow-[0_2px_10px_rgba(93,27,58,0.06)] max-h-[60vh] overflow-y-auto">
