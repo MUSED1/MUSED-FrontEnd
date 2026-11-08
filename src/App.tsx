@@ -5,6 +5,7 @@ import { AuthProvider } from './context'
 // import { Header } from './components/Header'
 // import { Hero } from './components/Hero'
 // import { BrandStory } from './components/BrandStory'
+
 import { MusedLanding } from './components/MusedLanding'
 // import { JoinWsb } from './components/JoinWsb.tsx'
 // import { HowItWorks } from './components/HowItWorks.tsx'
@@ -68,6 +69,7 @@ const ClosetOutfitDetail = lazy(() => import('./components/ClosetOutfitDetail').
 const StyleCheck = lazy(() => import('./components/StyleCheck').then(m => ({ default: m.StyleCheck })))
 const PartnerWithUs = lazy(() => import('./components/PartnerWithUs').then(m => ({ default: m.PartnerWithUs })))
 const Enquiries = lazy(() => import('./components/Enquiries').then(m => ({ default: m.Enquiries })))
+const ShopifyTest = lazy(() => import('./components/ShopifyTest').then(m => ({ default: m.ShopifyTest })))
 import { useAuth } from './hooks/useAuth';
 
 function ScrollToTop() {
@@ -172,7 +174,7 @@ export function App() {
                         <Route path="/brand/dashboard" element={<RequireSeller><BrandDashboard /></RequireSeller>} />
                         <Route path="/shop" element={<BrandsShop />} />
                         <Route path="/shipping-estimate" element={<ShippingEstimate />} />
-
+                        <Route path="/shopify-test" element={<ShopifyTest />} />
 
                     </Routes>
                 </Suspense>
