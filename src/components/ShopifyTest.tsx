@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { CreditCard, Loader2, Minus, Plus, ShoppingBag, Trash2, Truck } from 'lucide-react';
+import { CreditCard, Loader2, MapPin, Minus, Plus, ShoppingBag, Trash2, Truck } from 'lucide-react';
 import { Header } from './Header';
 import { Footer } from './Footer';
 import { useAuth } from '../hooks/useAuth';
@@ -17,10 +17,18 @@ interface Variant {
     availableForSale: boolean;
 }
 
+interface ShipsFrom {
+    name: string;
+    city: string | null;
+    countryCode: string | null;
+}
+
 interface Product {
     id: string;
     title: string;
     handle: string;
+    vendor: string | null;
+    shipsFrom: ShipsFrom[];
     image: { url: string; altText?: string | null } | null;
     variants: Variant[];
 }
@@ -30,7 +38,33 @@ interface CartLine {
     title: string;
     price: number;
     quantity: number;
+    vendor: string | null;
+    shipsFrom: ShipsFrom[];
 }
+
+// "Warehouse A · Hong Kong, HK"
+const describeLocation = (l: ShipsFrom) =>
+    [l.name, [l.city, l.countryCode].filter(Boolean).join(', ')].filter(Boolean).join(' · ');
+
+// Every ISO country the browser knows a name for, so shipping isn't tied to one country.
+const COUNTRIES = (() => {
+    const names = new Intl.DisplayNames(['en'], { type: 'region', fallback: 'none' });
+    const skip = new Set(['AC', 'CP', 'DG', 'EA', 'EU', 'EZ', 'IC', 'QO', 'TA', 'UN', 'XA', 'XB', 'ZZ']);
+    const out: { code: string; name: string }[] = [];
+    for (let a = 65; a <= 90; a++) {
+        for (let b = 65; b <= 90; b++) {
+            const code = String.fromCharCode(a, b);
+            if (skip.has(code)) continue;
+            try {
+                const name = names.of(code);
+                if (name && name !== code) out.push({ code, name });
+            } catch {
+                /* not a region code */
+            }
+        }
+    }
+    return out.sort((x, y) => x.name.localeCompare(y.name));
+})();
 
 interface Rate {
     handle: string;
@@ -57,7 +91,7 @@ const emptyForm = {
     city: '',
     provinceCode: '',
     zip: '',
-    countryCode: 'US'
+    countryCode: ''
 };
 
 const authHeader = () => ({ Authorization: `Bearer ${localStorage.getItem('token')}` });
@@ -146,7 +180,17 @@ export function ShopifyTest() {
                     l.variantId === variant.id ? { ...l, quantity: Math.min(l.quantity + 1, 10) } : l
                 );
             }
-            return [...prev, { variantId: variant.id, title, price: Number(variant.price), quantity: 1 }];
+            return [
+                ...prev,
+                {
+                    variantId: variant.id,
+                    title,
+                    price: Number(variant.price),
+                    quantity: 1,
+                    vendor: product.vendor,
+                    shipsFrom: product.shipsFrom
+                }
+            ];
         });
         resetQuote();
     };
@@ -169,7 +213,7 @@ export function ShopifyTest() {
         resetQuote();
     };
 
-    const handleField = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleField = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         setForm(f => ({ ...f, [e.target.name]: e.target.value }));
         resetQuote();
     };
@@ -291,10 +335,21 @@ export function ShopifyTest() {
                                                     )}
                                                 </div>
                                                 <div className="pt-3">
+                                                    {product.vendor && (
+                                                        <p className="text-[11px] uppercase tracking-label text-plum/50">
+                                                            {product.vendor}
+                                                        </p>
+                                                    )}
                                                     <h3 className="font-kaldera text-base text-plum-dark">{product.title}</h3>
                                                     <p className="mt-0.5 text-sm text-plum/60">
                                                         {selected ? money(selected.price) : ''}
                                                     </p>
+                                                    {product.shipsFrom.length > 0 && (
+                                                        <p className="mt-0.5 flex items-start gap-1 text-xs text-plum/50">
+                                                            <MapPin size={12} className="mt-0.5 shrink-0" />
+                                                            <span>Ships from {product.shipsFrom.map(describeLocation).join(' / ')}</span>
+                                                        </p>
+                                                    )}
 
                                                     {product.variants.length > 1 && (
                                                         <select
@@ -344,6 +399,13 @@ export function ShopifyTest() {
                                                 <div className="min-w-0">
                                                     <p className="truncate text-plum-dark">{line.title}</p>
                                                     <p className="text-xs text-plum/50">{money(line.price)}</p>
+                                                    {(line.vendor || line.shipsFrom.length > 0) && (
+                                                        <p className="text-xs text-plum/40">
+                                                            {[line.vendor, line.shipsFrom.map(describeLocation).join(' / ')]
+                                                                .filter(Boolean)
+                                                                .join(' — ')}
+                                                        </p>
+                                                    )}
                                                 </div>
                                                 <div className="flex shrink-0 items-center gap-1.5">
                                                     <button
@@ -396,10 +458,15 @@ export function ShopifyTest() {
                                         <input name="city" value={form.city} onChange={handleField} placeholder="City" className={inputClasses} />
                                         <input name="zip" value={form.zip} onChange={handleField} placeholder="ZIP / Postal code" className={inputClasses} />
                                     </div>
-                                    <div className="grid grid-cols-2 gap-2">
-                                        <input name="provinceCode" value={form.provinceCode} onChange={handleField} placeholder="State code (NY)" className={inputClasses} />
-                                        <input name="countryCode" value={form.countryCode} onChange={handleField} maxLength={2} placeholder="Country (US)" className={inputClasses} />
-                                    </div>
+                                    <input name="provinceCode" value={form.provinceCode} onChange={handleField} placeholder="State / province code (if your country has one)" className={inputClasses} />
+                                    <select name="countryCode" value={form.countryCode} onChange={handleField} className={inputClasses}>
+                                        <option value="">Country…</option>
+                                        {COUNTRIES.map(c => (
+                                            <option key={c.code} value={c.code}>
+                                                {c.name}
+                                            </option>
+                                        ))}
+                                    </select>
 
                                     <button
                                         onClick={() => getQuote()}
@@ -414,8 +481,10 @@ export function ShopifyTest() {
                                         <div className="space-y-3">
                                             {quote.rates.length === 0 ? (
                                                 <p className="rounded-2xl bg-[#C9A96E]/15 p-3 text-xs text-plum-dark">
-                                                    No shipping rates for this address. Check Settings → Shipping and delivery in
-                                                    Shopify. You can still create the checkout without shipping.
+                                                    No shipping rates for this destination. In Shopify, open Settings → Shipping and
+                                                    delivery and check that each product's shipping profile has a zone covering this
+                                                    country (or "Rest of world") with a rate. You can still create the checkout without
+                                                    shipping.
                                                 </p>
                                             ) : (
                                                 <div className="space-y-2">
