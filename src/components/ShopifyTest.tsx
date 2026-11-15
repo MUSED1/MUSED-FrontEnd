@@ -51,13 +51,20 @@ const COUNTRIES = (() => {
     const names = new Intl.DisplayNames(['en'], { type: 'region', fallback: 'none' });
     const skip = new Set(['AC', 'CP', 'DG', 'EA', 'EU', 'EZ', 'IC', 'QO', 'TA', 'UN', 'XA', 'XB', 'ZZ']);
     const out: { code: string; name: string }[] = [];
+    const seenNames = new Set<string>();
     for (let a = 65; a <= 90; a++) {
         for (let b = 65; b <= 90; b++) {
             const code = String.fromCharCode(a, b);
             if (skip.has(code)) continue;
             try {
+                // Old aliases (e.g. DD → DE, BU → MM) canonicalize to a different
+                // code. Skip them so only the real ISO code is offered.
+                if (Intl.getCanonicalLocales(`und-${code}`)[0].split('-')[1] !== code) continue;
                 const name = names.of(code);
-                if (name && name !== code) out.push({ code, name });
+                if (name && name !== code && !seenNames.has(name)) {
+                    seenNames.add(name);
+                    out.push({ code, name });
+                }
             } catch {
                 /* not a region code */
             }
