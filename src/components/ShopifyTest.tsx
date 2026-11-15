@@ -252,19 +252,20 @@ export function ShopifyTest() {
 
     // Prices the cart for the address. Call without a handle to list the
     // shipping options, and again with a handle to price a chosen option.
-    const getQuote = async (handle?: string) => {
+    // Rates are identified by title: Shopify's handles change on every request.
+    const getQuote = async (rate?: Rate) => {
         setCheckoutError('');
         setQuoting(true);
         try {
             const res = await axios.post(
                 `${API_URL}/shopify/shipping-rates`,
-                { ...requestBody(), shippingRateHandle: handle },
+                { ...requestBody(), shippingRateHandle: rate?.handle, shippingRateTitle: rate?.title },
                 { headers: authHeader() }
             );
             const q: Quote = res.data.quote;
             // Keep the earlier option list if Shopify omits it on the second pass
             setQuote(prev => ({ ...q, rates: q.rates.length ? q.rates : prev?.rates ?? [] }));
-            if (handle) setSelectedRate(handle);
+            if (rate) setSelectedRate(rate.title);
         } catch (err) {
             setCheckoutError(errMsg(err));
         } finally {
@@ -276,9 +277,14 @@ export function ShopifyTest() {
         setCheckoutError('');
         setPaying(true);
         try {
+            const chosen = quote?.rates.find(r => r.title === selectedRate);
             const res = await axios.post(
                 `${API_URL}/shopify/checkout`,
-                { ...requestBody(), shippingRateHandle: selectedRate || undefined },
+                {
+                    ...requestBody(),
+                    shippingRateHandle: chosen?.handle,
+                    shippingRateTitle: chosen?.title
+                },
                 { headers: authHeader() }
             );
             window.location.href = res.data.checkoutUrl;
@@ -497,9 +503,9 @@ export function ShopifyTest() {
                                                 <div className="space-y-2">
                                                     {quote.rates.map(rate => (
                                                         <label
-                                                            key={rate.handle}
+                                                            key={rate.title}
                                                             className={`flex cursor-pointer items-center justify-between gap-3 rounded-2xl border px-4 py-2.5 text-sm transition-colors ${
-                                                                selectedRate === rate.handle
+                                                                selectedRate === rate.title
                                                                     ? 'border-plum-dark bg-plum-dark/5'
                                                                     : 'border-plum-dark/15'
                                                             }`}
@@ -508,8 +514,8 @@ export function ShopifyTest() {
                                                                 <input
                                                                     type="radio"
                                                                     name="rate"
-                                                                    checked={selectedRate === rate.handle}
-                                                                    onChange={() => getQuote(rate.handle)}
+                                                                    checked={selectedRate === rate.title}
+                                                                    onChange={() => getQuote(rate)}
                                                                     className="accent-[#3D1028]"
                                                                 />
                                                                 {rate.title}
