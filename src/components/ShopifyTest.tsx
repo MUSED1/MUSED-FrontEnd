@@ -81,6 +81,7 @@ interface Rate {
 }
 
 interface Quote {
+    diagnosis?: 'address' | 'zone' | null;
     currency: string;
     subtotal: string;
     shipping: string;
@@ -494,10 +495,12 @@ export function ShopifyTest() {
                                         <div className="space-y-3">
                                             {quote.rates.length === 0 ? (
                                                 <p className="rounded-2xl bg-[#C9A96E]/15 p-3 text-xs text-plum-dark">
-                                                    No shipping rates for this destination. In Shopify, open Settings → Shipping and
-                                                    delivery and check that each product's shipping profile has a zone covering this
-                                                    country (or "Rest of world") with a rate. You can still create the checkout without
-                                                    shipping.
+                                                    {quote.diagnosis === 'address'
+                                                        ? 'We ship to this country, but the address details were not accepted. Check the state / province code and the ZIP / postal code format for this country.'
+                                                        : quote.diagnosis === 'zone'
+                                                            ? "No shipping rate covers this country for these products. In Shopify, check the shipping profile each product belongs to: it needs a zone for this country (or Rest of world) and must fulfil from the location where the product is stocked."
+                                                            : 'No shipping rates for this destination. Check the address and the products\' shipping profile in Shopify.'}
+                                                    {' '}You can still create the checkout without shipping.
                                                 </p>
                                             ) : (
                                                 <div className="space-y-2">
