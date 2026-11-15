@@ -81,7 +81,7 @@ interface Rate {
 }
 
 interface Quote {
-    diagnosis?: 'address' | 'zone' | null;
+    diagnosis?: 'province' | 'address' | 'zone' | null;
     currency: string;
     subtotal: string;
     shipping: string;
@@ -472,7 +472,7 @@ export function ShopifyTest() {
                                         <input name="city" value={form.city} onChange={handleField} placeholder="City" className={inputClasses} />
                                         <input name="zip" value={form.zip} onChange={handleField} placeholder="ZIP / Postal code" className={inputClasses} />
                                     </div>
-                                    <input name="provinceCode" value={form.provinceCode} onChange={handleField} placeholder="State / province code (if your country has one)" className={inputClasses} />
+                                    <input name="provinceCode" value={form.provinceCode} onChange={handleField} placeholder="State / province (code or name), e.g. CA, DF, Ontario" className={inputClasses} />
                                     <select name="countryCode" value={form.countryCode} onChange={handleField} className={inputClasses}>
                                         <option value="">Country…</option>
                                         {COUNTRIES.map(c => (
@@ -495,11 +495,13 @@ export function ShopifyTest() {
                                         <div className="space-y-3">
                                             {quote.rates.length === 0 ? (
                                                 <p className="rounded-2xl bg-[#C9A96E]/15 p-3 text-xs text-plum-dark">
-                                                    {quote.diagnosis === 'address'
-                                                        ? 'We ship to this country, but the address details were not accepted. Check the state / province code and the ZIP / postal code format for this country.'
-                                                        : quote.diagnosis === 'zone'
-                                                            ? "No shipping rate covers this country for these products. In Shopify, check the shipping profile each product belongs to: it needs a zone for this country (or Rest of world) and must fulfil from the location where the product is stocked."
-                                                            : 'No shipping rates for this destination. Check the address and the products\' shipping profile in Shopify.'}
+                                                    {quote.diagnosis === 'province'
+                                                        ? 'Add your state / province. Many countries (Mexico, US, Canada, Australia...) need it before shipping rates can be calculated.'
+                                                        : quote.diagnosis === 'address'
+                                                            ? 'We ship to this country, but the address details were not accepted. Check the ZIP / postal code format and the other address fields.'
+                                                            : quote.diagnosis === 'zone'
+                                                                ? "Still no rate for this country and state. Either the state / province isn't valid for this country, or no shipping profile covers it. In Shopify, check the profile each product belongs to: it needs a zone for this country (or Rest of world) and must fulfil from the location where the product is stocked."
+                                                                : 'No shipping rates for this destination. Check the address and the products\' shipping profile in Shopify.'}
                                                     {' '}You can still create the checkout without shipping.
                                                 </p>
                                             ) : (
